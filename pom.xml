@@ -8,10 +8,10 @@
 		<version>2.6.11</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>ru.hermes</groupId>
-	<artifactId>receiver</artifactId>
-    <version>0.2.22.08-31h-SNAPSHOT</version>
-    <name>receiver</name>
+	<groupId>net.plumbing.msgbus</groupId>
+	<artifactId>Receiver</artifactId>
+    <version>0.2.22.09-09a-SNAPSHOT</version>
+    <name>Receiver</name>
     <description>servlet project for Spring Boot</description>
 
     	<properties>
