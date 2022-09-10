@@ -237,7 +237,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.3.6</version>
+            <version>42.4.2</version>
         </dependency>
 
         <dependency>
@@ -247,11 +247,10 @@
         </dependency>
 
         <dependency>
-            <groupId>com.oracle</groupId>
+            <groupId>com.oracle.ojdbc</groupId>
             <artifactId>orai18n</artifactId>
-            <version>12.1.0.2</version>
-        <scope>system</scope>
-        <systemPath>C:/#_Integration_/ojdbc11-full/orai18n.jar</systemPath>
+            <version>19.3.0.0</version>
+
     </dependency>
 
     </dependencies>
