@@ -1,6 +1,5 @@
 package net.plumbing.msgbus.threads.utils;
 
-
 import net.plumbing.msgbus.common.json.XML;
 import org.slf4j.Logger;
 import java.security.KeyManagementException;
@@ -36,8 +35,7 @@ public class MessageHttpSend {
         }
         return sslContext;
     }
-
-    public static int setHttpGetParams(String PropQueryPostExec, String string_Queue_ID, HashMap<String, String> papamsInXml, boolean IsDebugged, Logger MessegeSend_Log) {
+    public static int setHttpGetParams(long Queue_Id, String PropQueryPostExec, String string_Queue_ID, HashMap<String, String> papamsInXml, boolean IsDebugged, Logger MessegeSend_Log) {
         String[] queryParams;
         int nOfParams=0; papamsInXml.clear();
         queryParams = PropQueryPostExec.split("&");
@@ -46,12 +44,12 @@ public class MessageHttpSend {
 
             if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
                 if ( IsDebugged )
-                MessegeSend_Log.warn(ParamElements[0] + "=" + queryParams[i].substring(ParamElements[0].length() + 1));
+                MessegeSend_Log.warn( "[" + Queue_Id + "] " + ParamElements[0] + "=" + queryParams[i].substring(ParamElements[0].length() + 1));
                 papamsInXml.put(ParamElements[0], XML.escape( queryParams[i].substring(ParamElements[0].length() + 1) ) );
             }
             else {
                 if ( IsDebugged )
-                    MessegeSend_Log.warn(ParamElements[0]);
+                    MessegeSend_Log.warn("[" + Queue_Id + "] " + ParamElements[0]);
                 if ( i == queryParams.length -1 ) // последний параметр
                     papamsInXml.put(ParamElements[0], string_Queue_ID );
                 else

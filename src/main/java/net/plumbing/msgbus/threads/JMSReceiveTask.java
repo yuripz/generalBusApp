@@ -298,8 +298,8 @@ public void run()   {
 
           // получаем JMS-сообщение из очереди
               if (isDebugged)
-                  JMSReceiveTask_Log.info("ReadTextMessageQueue: получаем JMS-сообщение из очереди JMS_Q_Consumer: " + this.JMS_Q_Consumer.toString() );
-          Message.XML_MsgConfirmation.append( ReadTextMessageQueue(10 * 1000, isDebugged, JMSReceiveTask_Log));
+                  JMSReceiveTask_Log.info("ReadTextMessageQueue: ждём появления JMS-сообщение в очереди JMS_Q_Consumer: " + this.JMS_Q_Consumer.toString() );
+          Message.XML_MsgConfirmation.append( ReadTextMessageQueue(120 * 1000, isDebugged, JMSReceiveTask_Log));
         if ( Message.XML_MsgConfirmation.length() > 4 ) // != 'null'
         { // не пустое сообщение
             JMSReceiveTask_Log.info("JMS_MsgInput: [" + Message.XML_MsgConfirmation + "], length =" + Message.XML_MsgConfirmation.length() +

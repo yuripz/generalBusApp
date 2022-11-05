@@ -15,11 +15,6 @@ import net.plumbing.msgbus.model.MessageTemplate4Perform;
 import net.plumbing.msgbus.threads.TheadDataAccess;
 import net.plumbing.msgbus.threads.utils.*;
 import org.apache.commons.lang3.StringUtils;
-//import org.apache.http.HttpClientConnection;
-//import org.apache.http.auth.AuthScope;
-//import org.apache.http.auth.UsernamePasswordCredentials;
-//import org.apache.http.client.CredentialsProvider;
-//import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig;
 //import org.apache.http.conn.params.ConnRouteParams;
 //import org.apache.http.conn.scheme.Scheme;
@@ -30,25 +25,15 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 //import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-//import org.apache.http.conn.HttpClientConnectionManager;
-//import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-//import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-//import org.apache.http.params.BasicHttpParams;
-//import org.apache.http.params.HttpConnectionParams;
-//import org.apache.http.params.HttpParams;
 import org.slf4j.Logger;
 import net.plumbing.msgbus.common.ApplicationProperties;
 import net.plumbing.msgbus.common.XMLchars;
 import net.plumbing.msgbus.common.sStackTracе;
 import net.plumbing.msgbus.common.xlstErrorListener;
-//import ru.hermes.msgbus.model.*;
 import net.plumbing.msgbus.mq.PerformTextMessageJMSQueue;
 import net.plumbing.msgbus.mq.StoreMQpooledConnectionFactory;
-//import ru.hermes.msgbus.threads.utils.*;
-//import ru.hermes.msgbus.ws.client.SoapClientException;
-//import ru.hermes.msgbus.ws.client.core.Security;
-//import ru.hermes.msgbus.ws.client.ssl.SSLUtils;
+
 
 //import java.nio.ByteBuffer;
 //import java.nio.CharBuffer;
@@ -61,25 +46,6 @@ import java.io.IOException;
 import javax.jms.JMSException;
 import javax.net.ssl.SSLContext;
 import javax.xml.transform.TransformerException;
-
-//import static XMLchars.Fault_Rest_End;
-//import static XMLchars.Fault_Server_Rest_Begin;
-
-//import javax.validation.constraints.NotNull;
-//import javax.xml.XMLConstants;
-//import javax.xml.transform.OutputKeys;
-//import javax.xml.transform.Transformer;
-//import javax.xml.transform.TransformerFactory;
-//import javax.xml.transform.stream.StreamResult;
-//import javax.xml.transform.stream.StreamSource;
-//import javax.xml.validation.Schema;
-//import javax.xml.validation.SchemaFactory;
-//import javax.xml.validation.Validator;
-//import java.io.ByteArrayInputStream;
-//import java.io.ByteArrayOutputStream;
-//import java.net.URI;
-//import java.net.URISyntaxException;
-//import java.security.GeneralSecurityException;
 
 
 //import XMLchars;
@@ -327,7 +293,7 @@ public class PerfotmInputMessages {
                         theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id,
                                 "В шаблоне для XSLTExt-обработки " + Message.MessageTemplate4Perform.getTemplate_name() + " нет Envelope4XSLTExt", 3233,
                                  MessegeReceive_Log);
-                        Message.MsgReason.append( "В шаблоне для XSLTExt-обработки " + Message.MessageTemplate4Perform.getTemplate_name() + " нет Envelope4XSLTExt");
+                        Message.MsgReason.append( "В шаблоне для XSLTExt-обработки " ).append( Message.MessageTemplate4Perform.getTemplate_name() ).append( " нет Envelope4XSLTExt");
                         return -35L;
                     }
                 }
@@ -345,7 +311,7 @@ public class PerfotmInputMessages {
                             ( Message.MessageTemplate4Perform.getPropUrl()  == null ) )
                     {
                         // Нет параметров для Rest-HttpGet - надо орать!
-                        Message.MsgReason.append( "В шаблоне для синхронной-обработки " + Message.MessageTemplate4Perform.getPropExeMetodExecute() + " нет параметров для Rest-HttpGet вклюая логин/пароль");
+                        Message.MsgReason.append( "В шаблоне для синхронной-обработки " ).append( Message.MessageTemplate4Perform.getPropExeMetodExecute() ).append( " нет параметров для Rest-HttpGet вклюая логин/пароль");
                         MessegeReceive_Log.error("["+ Queue_Id +"] " + Message.MsgReason.toString());
                         theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, Message.MsgReason.toString(), 3242,
                                MessegeReceive_Log);
@@ -691,7 +657,7 @@ public class PerfotmInputMessages {
                                     if (Message.MessageTemplate4Perform.getIsDebugged())
                                         MessegeReceive_Log.info("[" + messageQueueVO.getQueue_Id() + "]" + " MessageTemplate4Perform.getPropQueryPostExec:'" + Message.MessageTemplate4Perform.getPropQueryPostExec() + "'");
 
-                                    int numOfParams = MessageHttpSend.setHttpGetParams(Message.MessageTemplate4Perform.getPropQueryPostExec(), Link_Queue_Id.toString(),
+                                    int numOfParams = MessageHttpSend.setHttpGetParams(messageQueueVO.getQueue_Id(), Message.MessageTemplate4Perform.getPropQueryPostExec(), Link_Queue_Id.toString(),
                                                                                        HttpGetParams,
                                                                                        Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log );
                                     String RestResponse =
