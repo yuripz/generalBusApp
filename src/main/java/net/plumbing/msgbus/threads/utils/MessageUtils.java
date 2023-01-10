@@ -265,21 +265,25 @@ public class MessageUtils {
         return result;
     }
 
-    public static String PrepareEnvelope4XSLTExt(MessageQueueVO messageQueueVO, MessageDetails messageDetails, Logger MessegeReceive_Log) {
+    public static String PrepareEnvelope4XSLTExt(MessageQueueVO messageQueueVO, StringBuilder XML_Request_Method, Logger MessegeReceive_Log) {
         // Искуственный Envelope/Head/Body + XML_Request_Method
-        int nn = 0;
-        StringBuilder SoapEnvelope = new StringBuilder(XMLchars.Envelope_noNS_Begin);
+        int nn = XML_Request_Method.length() +
+                2 * (XMLchars.Envelope_noNS_End.length() + XMLchars.Header_noNS_End.length() + XMLchars.MsgId_End.length() + XMLchars.Body_noNS_End.length() )
+                 + 24;
+        StringBuilder SoapEnvelope = new StringBuilder( nn );
+        SoapEnvelope.append(XMLchars.Envelope_noNS_Begin);
         SoapEnvelope.append(XMLchars.Header_noNS_Begin);
-        SoapEnvelope.append("<MsgId>" + messageQueueVO.getQueue_Id() +"</MsgId>");
+        SoapEnvelope.append(XMLchars.MsgId_Begin + messageQueueVO.getQueue_Id() + XMLchars.MsgId_End);
         SoapEnvelope.append(XMLchars.Header_noNS_End);
 
         SoapEnvelope.append(XMLchars.Body_noNS_Begin);
-        SoapEnvelope.append( messageDetails.XML_Request_Method );
+        SoapEnvelope.append( XML_Request_Method );
         SoapEnvelope.append(XMLchars.Body_noNS_End);
         SoapEnvelope.append(XMLchars.Envelope_noNS_End);
         MessegeReceive_Log.warn( "PrepareEnvelope4XSLTExt: {"+ SoapEnvelope.toString() + "}" );
         return SoapEnvelope.toString();
     }
+
     public static int ReadMessage(TheadDataAccess theadDataAccess, long Queue_Id, @NotNull MessageDetails messageDetails, boolean IsDebugged, Logger MessegeSend_Log) {
         messageDetails.Message.clear();
         messageDetails.MessageRowNum = 0;
@@ -818,7 +822,7 @@ public class MessageUtils {
                     MessegeReceive_Log);
 
         } catch (NullPointerException  ex) { // | IOException
-            ex.printStackTrace(System.out);
+            ex.printStackTrace(System.err);
             MessegeReceive_Log.error("[" + Queue_Id + "] SaveMessage4Input fault:" + ex.getMessage());
             MessageUtils.ProcessingIn2ErrorIN(  messageQueueVO, messageDetails,  theadDataAccess,
                     "SaveMessage4Input.SAXBuilder fault:"  + ex.getMessage() + " " + messageDetails.XML_MsgClear.toString()  ,

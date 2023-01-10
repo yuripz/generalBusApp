@@ -23,6 +23,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import net.plumbing.msgbus.common.ApplicationProperties;
 import net.plumbing.msgbus.common.HikariDataAccess;
+import net.plumbing.msgbus.common.ExtSystemDataAccess;
 import net.plumbing.msgbus.config.ConnectionProperties;
 import net.plumbing.msgbus.config.DBLoggingProperties;
 
@@ -137,19 +138,38 @@ public class ServletApplication implements CommandLineRunner {
         );
             ApplicationProperties.DataSourcePoolMetadata = HikariDataAccess.DataSourcePoolMetadata;
     } catch (Exception e) {
-        AppThead_log.error("НЕ удалось подключится к базе данных:" + e.getMessage());
+        AppThead_log.error("НЕ удалось подключится к базе данных сообщений:" + e.getMessage());
             System.exit(-19);
     }
 
-        AppThead_log.info("DataSource = " + ApplicationProperties.dataSource );
+        AppThead_log.info("message DataSource = " + ApplicationProperties.dataSource );
         if ( ApplicationProperties.dataSource != null )
         {
-            AppThead_log.info("DataSource = " + ApplicationProperties.dataSource
+            AppThead_log.info("message DataSource = " + ApplicationProperties.dataSource
                     + " JdbcUrl:" + ApplicationProperties.dataSource.getJdbcUrl()
                     + " isRunning:" + ApplicationProperties.dataSource.isRunning()
                     + " 4 dbSchema:" + ApplicationProperties.HrmsSchema);
         }
 
+        try {
+            ApplicationProperties.extSystemDataSource = ExtSystemDataAccess.HiDataSource (connectionProperties.getextsysPoint(),
+                    connectionProperties.getextsysDbLogin(),
+                    connectionProperties.getextsysDbPasswd()
+            );
+            ApplicationProperties.extSystemDataSourcePoolMetadata = ExtSystemDataAccess.DataSourcePoolMetadata;
+        } catch (Exception e) {
+            AppThead_log.error("НЕ удалось подключится к базе данных внешней системы:" + e.getMessage());
+            System.exit(-20);
+        }
+
+        AppThead_log.info("extSystem DataSource = " + ApplicationProperties.extSystemDataSource );
+        if ( ApplicationProperties.extSystemDataSource != null )
+        {
+            AppThead_log.info("extSystem DataSource = " + ApplicationProperties.extSystemDataSource
+                    + " JdbcUrl:" + ApplicationProperties.extSystemDataSource.getJdbcUrl()
+                    + " isRunning:" + ApplicationProperties.extSystemDataSource.isRunning()
+                    + " 4 dbSchema:" + ApplicationProperties.ExtSysSchema);
+        }
 
         ActiveMQService activeMQService= new ActiveMQService();
         try {

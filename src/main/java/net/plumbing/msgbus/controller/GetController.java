@@ -36,8 +36,8 @@ public class GetController  {
 
     private static final Logger Controller_log = LoggerFactory.getLogger(GetController.class);
 
-// "/HermesSOAPService/GetHttpRequest/*"
-    @GetMapping(path ={"/HermesService/GetHttpRequest/*", "/MsgBusService/GetHttpRequest/*" }, produces = MediaType.ALL_VALUE,  consumes = MediaType.ALL_VALUE)
+// "/HermesSOAPService/GetHttpRequest/*" - HE-10225, в синхронном ответе возвращать xml
+    @GetMapping(path ={"/HermesService/GetHttpRequest/*", "/MsgBusService/GetHttpRequest/*","/HermesSOAPService/GetHttpRequest/*" }, produces = MediaType.ALL_VALUE,  consumes = MediaType.ALL_VALUE)
     @CrossOrigin(origins = "*")
 //    @ResponseStatus(HttpStatus.OK)
     @ResponseBody

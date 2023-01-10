@@ -9,6 +9,12 @@ public  class ApplicationProperties {
     public static String HrmsPoint;
     public static String hrmsDbLogin;
     public static String hrmsDbPasswd;
+
+    public static String ExtSysSchema;
+    public static String ExtSysPoint;
+    public static String ExtSysDbLogin;
+    public static String ExtSysDbPasswd;
+    // extSystemDataSource
     public static Long TotalTimeTasks;
     public static Integer WaitTimeBetweenScan;
     public static Integer ApiRestWaitTime;
@@ -45,5 +51,7 @@ public  class ApplicationProperties {
     }
 
     public static HikariDataSource dataSource; //= HiDataSource();
+    public static HikariDataSource extSystemDataSource;
     public static HikariDataSourcePoolMetadata DataSourcePoolMetadata;
+    public static HikariDataSourcePoolMetadata extSystemDataSourcePoolMetadata;
 }

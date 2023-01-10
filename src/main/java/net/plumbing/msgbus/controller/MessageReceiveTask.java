@@ -88,9 +88,8 @@ public class MessageReceiveTask
                 "; passwd:" + ApplicationProperties.hrmsDbPasswd + " Schema: " + ApplicationProperties.HrmsSchema  + ".");
         theadDataAccess.make_Hikari_Connection(
                 ApplicationProperties.HrmsSchema,
-                ApplicationProperties.hrmsDbLogin, ApplicationProperties.hrmsDbPasswd,
+                ApplicationProperties.hrmsDbLogin,
                 ApplicationProperties.dataSource,
-                ApplicationProperties.HrmsPoint,
                 MessegeReceive_Log
                 );
         if ( theadDataAccess.Hermes_Connection == null ){
@@ -314,7 +313,7 @@ public class MessageReceiveTask
             MessegeReceive_Log.error("performMessage Exception Queue_Id:[" + messageQueueVO.getQueue_Id() + "] " +e.getMessage());
             MessegeReceive_Log.error( "что то пошло совсем не так...");
             MessageUtils.ProcessingIn2ErrorIN(  messageQueueVO, Message,  theadDataAccess,
-                    "SaveMessage4Input.SAXBuilder fault:"  + e.getMessage() + " " + Message.XML_MsgClear.toString()  ,
+                    "performMessage Exception fault:"  + e.getMessage() + " " + Message.XML_MsgClear.toString()  ,
                     null ,  MessegeReceive_Log);
             //  создание Http-клиента перенеено в PerfotmInputMessagesюperformMessage()
 

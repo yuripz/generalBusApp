@@ -103,6 +103,8 @@ public class XMLchars {
             "</Header>";
     public static final String Header_noNS_Begin="<Header>";
     public static final String Header_noNS_End="</Header>";
+    public static final String MsgId_Begin="<MsgId>";
+    public static final String MsgId_End="</MsgId>";
     public static final String Body_noNS_Begin="<Body>";
     public static final String Body_noNS_End="</Body>";
     public static final String Parametrs_Begin="<Parametrs>";

@@ -69,6 +69,7 @@ public class MessageTemplate4Perform {
     private String PropEncoding_In;
     private Integer PropTimeout_Conn;
     private Integer PropTimeout_Read;
+    private boolean isExtSystemAccess =false;
 
     private Integer ShortRetryCount;
     private Integer ShortRetryInterval;
@@ -109,7 +110,7 @@ public class MessageTemplate4Perform {
 
 
     private final String  PropNameExeMetod     = "ExeMetod";
-    private final String  PropNameJavaJndiConn = "jndi_conn";
+    private final String  PropExtSystemAccess = "extSysDbAccess";
     private final String  PropNameShName       = "script";
     private final String  PropNameParamPref    = "ParamList";
     private final String  PropNameWebMetod     = "WebMetod";
@@ -195,8 +196,6 @@ public class MessageTemplate4Perform {
             this.EnvelopeInXSLT = messageTemplateVO.getEnvelopeInXSLT();
             this.AckAnswXSLT = messageTemplateVO.getAckAnswXSLT();
 
-
-
             this.ConfigExecute = messageTemplateVO.getConfigExecute();
             if (this.ConfigExecute != null) {
                 Properties properties=new Properties();
@@ -249,6 +248,17 @@ public class MessageTemplate4Perform {
                             {
                                 MessageTemplate_Log.info( "[" + Queue_Id + "]" + "PropDebug Property[" + key +"]=UPPER[" + properties.getProperty(key) + "]" );
                                 this.isDebugged=true;
+                            }
+                        }
+                        if ( key.equals(PropExtSystemAccess) ) {
+                            if (( properties.getProperty(key).equalsIgnoreCase("on") ) ||
+                                    ( properties.getProperty(key).equalsIgnoreCase("true") ) ||
+                                    ( properties.getProperty(key).equalsIgnoreCase("ON") ) ||
+                                    ( properties.getProperty(key).equalsIgnoreCase("TRUE") )
+                            )
+                            {
+                                MessageTemplate_Log.info( "[" + Queue_Id + "]" + "PropExtSystemAccess Property[" + key +"]=[" + properties.getProperty(key) + "]" );
+                                this.isExtSystemAccess=true;
                             }
                         }
 
@@ -321,6 +331,11 @@ public String getPropJavaMethodName() { return  this.PropJavaMethodName; }
         // TODO: this.isDebugged=true; -- для Документирования
         //return true;
         return this.isDebugged;
+    }
+    public boolean getIsExtSystemAccess() {
+        // TODO: this.isExtSystemAccess=true; -- для Документирования
+        //return true;
+        return this.isExtSystemAccess;
     }
     public  Integer getPropTimeout_Conn() { return  this.PropTimeout_Conn;}
     public  Integer getPropTimeout_Read() { return  this.PropTimeout_Read;}

@@ -102,9 +102,8 @@ public class RestAPI_ReceiveTask {
                     "; passwd:" + ApplicationProperties.hrmsDbPasswd + ".");
         theadDataAccess.make_Hikari_Connection(
                 ApplicationProperties.HrmsSchema,
-                ApplicationProperties.hrmsDbLogin, ApplicationProperties.hrmsDbPasswd,
+                ApplicationProperties.hrmsDbLogin,
                 ApplicationProperties.dataSource,
-                ApplicationProperties.HrmsPoint,
                 RestAPI_Receive_Log
         );
         if ( theadDataAccess.Hermes_Connection == null ){
@@ -281,7 +280,7 @@ public class RestAPI_ReceiveTask {
             RestAPI_Receive_Log.error("performMessage Exception Queue_Id:[" + messageQueueVO.getQueue_Id() + "] " +e.getMessage());
             RestAPI_Receive_Log.error( "что то пошло совсем не так...");
             MessageUtils.ProcessingIn2ErrorIN(  messageQueueVO, Message,  theadDataAccess,
-                    "SaveMessage4Input.SAXBuilder fault:"  + e.getMessage() + " " + Message.XML_MsgClear.toString()  ,
+                    "performMessage  fault:"  + e.getMessage() + " " + Message.XML_MsgClear.toString()  ,
                     null ,  RestAPI_Receive_Log);
 
         }

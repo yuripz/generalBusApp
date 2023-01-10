@@ -3,13 +3,46 @@ package net.plumbing.msgbus.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-
 //@Validated
 // @SuppressWarnings({"unused", "WeakerAccess"})
 @Component
 @ConfigurationProperties(prefix = "hermes")
 
 public class ConnectionProperties {
+
+ // extSystem
+ private String extsysDbSchema;
+    public String getextsysDbSchema() {
+        return extsysDbSchema;
+    }
+    public void setextsysDbSchema(String extsysDbSchema) {this.extsysDbSchema = extsysDbSchema;}
+    //   @Value("${extsysDbLogin")
+    private String extsysDbLogin;
+    public String getextsysDbLogin() {
+        return extsysDbLogin;
+    }
+    public void setextsysDbLogin(String extsysDbLogin) {
+        this.extsysDbLogin = extsysDbLogin;
+    }
+
+    //    @Value("${extsysDbPasswd")
+    private String extsysDbPasswd;
+    public String getextsysDbPasswd() {
+        return extsysDbPasswd;
+    }
+    public void setextsysDbPasswd(String extsysDbPasswd) {
+        this.extsysDbPasswd = extsysDbPasswd;
+    }
+
+    //    @Value("${extsysPoint")
+    private String extsysPoint;
+    public String getextsysPoint() {
+        return extsysPoint;
+    }
+    public void setextsysPoint(String extsysPoint) {
+        this.extsysPoint = extsysPoint;
+    }
+
 
     private String hrmsDbSchema;
     public String gethrmsDbSchema() {

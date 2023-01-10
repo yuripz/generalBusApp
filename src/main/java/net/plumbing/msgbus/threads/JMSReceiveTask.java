@@ -195,9 +195,8 @@ public void run()   {
                 "; passwd:" + ApplicationProperties.hrmsDbPasswd + ".");
     theadDataAccess.make_Hikari_Connection(
             ApplicationProperties.HrmsSchema,
-            ApplicationProperties.hrmsDbLogin, ApplicationProperties.hrmsDbPasswd,
+            ApplicationProperties.hrmsDbLogin,
             ApplicationProperties.dataSource,
-            ApplicationProperties.HrmsPoint,
             JMSReceiveTask_Log
     );
     if ( theadDataAccess.Hermes_Connection == null ){

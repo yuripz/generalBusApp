@@ -12,6 +12,7 @@ import net.plumbing.msgbus.model.MessageDetails;
 import net.plumbing.msgbus.model.MessageQueueVO;
 import net.plumbing.msgbus.model.MessageTemplate;
 import net.plumbing.msgbus.model.MessageTemplate4Perform;
+import net.plumbing.msgbus.threads.ExtSystemDataConnection;
 import net.plumbing.msgbus.threads.TheadDataAccess;
 import net.plumbing.msgbus.threads.utils.*;
 import org.apache.commons.lang3.StringUtils;
@@ -173,8 +174,9 @@ public class PerfotmInputMessages {
 
             case XMLchars.DirectIN:
 
-                if ((Message.MessageTemplate4Perform.getPropExeMetodExecute() != null) && ( Message.MessageTemplate4Perform.getPropExeMetodExecute().equals(Message.MessageTemplate4Perform.JavaClassExeMetod) ) )
-                { // 2.1) Это JDBC-обработчик
+                if ((Message.MessageTemplate4Perform.getPropExeMetodExecute() != null) &&
+                    ( Message.MessageTemplate4Perform.getPropExeMetodExecute().equals(Message.MessageTemplate4Perform.JavaClassExeMetod) ) )
+                { // 2.1) Это JDBC-обработчик, но может быть указан custom Java метод, см. PropJavaMethodName
                     //--------------------------------------------------
                     if (Message.MessageTemplate4Perform.getIsDebugged()) {
                         MessegeReceive_Log.info("[" + Queue_Id + "] getPropJavaMethodName(" +Message.MessageTemplate4Perform.getPropJavaMethodName() + ")");
@@ -237,16 +239,19 @@ public class PerfotmInputMessages {
                     if (( Message.MessageTemplate4Perform.getEnvelopeXSLTExt() != null ) &&
                         ( Message.MessageTemplate4Perform.getEnvelopeXSLTExt().length() > 0 ) &&
                         ( Message.MessageTemplate4Perform.getPropJavaMethodName() == null))
-                    { // 2) EnvelopeXSLTExt !!
+                    { // 2) EnvelopeXSLTExt !! => JDBC-обработчик
 
                         if (Message.MessageTemplate4Perform.getIsDebugged()) {
                             MessegeReceive_Log.info("[" + Queue_Id + "] Шаблон для SQL-XSLTExt-обработки(" + Message.MessageTemplate4Perform.getEnvelopeXSLTExt() + ")");
+                            if (Message.MessageTemplate4Perform.getIsExtSystemAccess()) {
+                                MessegeReceive_Log.info("[" + Queue_Id + "] Шаблон для SQL-XSLTExt-обработки использует пулл коннектов для внешней системы(" + Message.MessageTemplate4Perform.getEnvelopeXSLTExt() + ")");
+                            }
                         }
                         String Passed_Envelope4XSLTExt = null;
                         try {
                             Passed_Envelope4XSLTExt = XMLutils.ConvXMLuseXSLT(Queue_Id,
                                     // Message.XML_MsgClear.toString(),
-                                    MessageUtils.PrepareEnvelope4XSLTExt(messageQueueVO, Message, MessegeReceive_Log), // Искуственный Envelope/Head/Body + XML_Request_Method
+                                    MessageUtils.PrepareEnvelope4XSLTExt(messageQueueVO, Message.XML_Request_Method, MessegeReceive_Log), // Искуственный Envelope/Head/Body + XML_Request_Method
                                     Message.MessageTemplate4Perform.getEnvelopeXSLTExt(),  // через EnvelopeXSLTExt
                                     Message.MsgReason, // результат помещаем сюда
                                     ConvXMLuseXSLTerr,
@@ -273,13 +278,24 @@ public class PerfotmInputMessages {
                             if (Message.MessageTemplate4Perform.getIsDebugged())
                                 MessegeReceive_Log.info("[" + Queue_Id + "] try ExecuteSQLincludedXML (" + Passed_Envelope4XSLTExt + ")");
 
-                            final int resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, Passed_Envelope4XSLTExt, messageQueueVO, Message, MessegeReceive_Log);
+                            int resultSQL;
+                            if (Message.MessageTemplate4Perform.getIsExtSystemAccess()) {
+                                ExtSystemDataConnection extSystemDataConnection = new ExtSystemDataConnection(Queue_Id, MessegeReceive_Log);
+                                if ( extSystemDataConnection.ExtSystem_Connection == null ){
+                                    Message.MsgReason.append("Ошибка на приёме сообщения - ExtSystemDataConnection return: NULL!"  );
+                                    return -33L;
+                                }
+                                resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, true, extSystemDataConnection.ExtSystem_Connection ,
+                                                                                  Passed_Envelope4XSLTExt, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
+                            }
+                            else
+                            resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, false, null, Passed_Envelope4XSLTExt, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
                             if (resultSQL != 0) {
                                 MessegeReceive_Log.error("[" + Queue_Id + "] Envelope4XSLTExt:" + ConvXMLuseXSLTerr.toString());
                                 MessegeReceive_Log.error("[" + Queue_Id + "] Ошибка ExecuteSQLinXML:" + Message.MsgReason.toString());
                                 theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка ExecuteSQLinXML: " + Message.MsgReason.toString(), 3231,
                                         MessegeReceive_Log);
-                                return -33L;
+                                return -34L;
                             } else {
                                 if (Message.MessageTemplate4Perform.getIsDebugged())
                                     MessegeReceive_Log.info("[" + Queue_Id + "] Исполнение ExecuteSQLinXML:" + Message.MsgReason.toString());
@@ -808,7 +824,8 @@ public class PerfotmInputMessages {
                 }
 
                 // проверяем НАЛИЧИЕ пост-обработчика в Шаблоне
-                if ( Message.MessageTemplate4Perform.getConfigPostExec() != null ) { // 1) ConfigPostExe
+                if (( Message.MessageTemplate4Perform.getConfigPostExec() != null ) &&
+                    ( Message.MessageTemplate4Perform.getPropExeMetodPostExec()  != null )){ // 1) ConfigPostExec не пуст и обозначен Метод!
                     messageQueueVO.setQueue_Direction(XMLchars.DirectPOSTIN);
                     if ( Message.MessageTemplate4Perform.getPropExeMetodPostExec().equals(Message.MessageTemplate4Perform.JavaClassExeMetod) )
                     { // 2.1) Это JDBC-обработчик
@@ -850,7 +867,8 @@ public class PerfotmInputMessages {
 
                                 }
 
-                                final int resultSQL = XmlSQLStatement.ExecuteSQLincludedXML( theadDataAccess, Passed_Envelope4XSLTPost, messageQueueVO, Message, MessegeReceive_Log);
+                                final int resultSQL = //XmlSQLStatement.ExecuteSQLincludedXML( theadDataAccess, Passed_Envelope4XSLTPost, messageQueueVO, Message, MessegeReceive_Log);
+                                    XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, false, null, Passed_Envelope4XSLTPost, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
                                 if (resultSQL != 0) {
                                     MessegeReceive_Log.error("["+ Queue_Id +"] Envelope4XSLTPost:" + MessageUtils.PrepareEnvelope4XSLTPost( messageQueueVO) );
                                     MessegeReceive_Log.error("["+ Queue_Id +"] Ошибка ExecuteSQLinXML:" + Message.MsgReason.toString() );

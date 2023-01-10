@@ -181,7 +181,7 @@ public class TheadDataAccess {
         } else {
             rdbmsVendor = "postgresql";
         }
-        dataAccess_log.info( "Try(thead) Hermes getConnection: " + connectionUrl + " as " + db_userid );
+        dataAccess_log.info( "Try(thead) MessegeDB getConnection: " + connectionUrl + " as " + db_userid );
 
         try {
             Hermes_Connection = dataSource.getConnection();
@@ -204,9 +204,8 @@ public class TheadDataAccess {
     }
 
     public Connection make_Hikari_Connection(  String HrmsSchema,
-                                                String db_userid , String db_password,
+                                                String db_userid ,
                                                  HikariDataSource dataSource,
-                                                 String HrmsPoint,
                                                  Logger dataAccess_log) {
         Connection Target_Connection ;
         String connectionUrl= dataSource.getJdbcUrl() ;
@@ -238,7 +237,7 @@ public class TheadDataAccess {
             PreparedStatement stmt_SetTimeZone = Hermes_Connection.prepareStatement("set SESSION time zone 3");//.nativeSQL( "set SESSION time zone 3" );
             stmt_SetTimeZone.execute();
             stmt_SetTimeZone.close();
-        }catch (Exception e) {
+        }catch (SQLException e) {
               dataAccess_log.error(e.getMessage());
               e.printStackTrace();
               return ( null);
