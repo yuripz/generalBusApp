@@ -495,8 +495,8 @@ public class TheadDataAccess {
     public  int doUPDATE_QUEUElog( String ROWID_QUEUElog, // TODO RowId ROWID_QUEUElog, (oracle)
                                   long Queue_Id, String sResponse,
                                                        Logger dataAccess_log ) {
-        dataAccess_log.info( "[" + Queue_Id + "] doUPDATE_QUEUElog: \"update " + dbSchema + ".MESSAGE_QUEUElog L set l.Resp_DT = current_timestamp, l.Response = '" +sResponse +
-                "' " + "where l.Queue_Id = "+ Queue_Id +" and ROWID = '" + ROWID_QUEUElog + "' ;" );
+        dataAccess_log.info( "[" + Queue_Id + "] doUPDATE_QUEUElog: `update " + dbSchema + ".MESSAGE_QUEUElog L set l.Resp_DT = current_timestamp, l.Response = '" +sResponse +
+                "' " + "where l.Queue_Id = "+ Queue_Id +" and ROWID = '" + ROWID_QUEUElog + "' ;`" );
         try {
            // TODO for Postgree !!!
             stmt_UPDATE_QUEUElog.setString( 3,  ROWID_QUEUElog );
@@ -776,16 +776,12 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
     public  int doUPDATE_MessageQueue_In2Ok(Long Queue_Id, Integer Operation_Id,
                                             Integer MsgDirection_Id , String SubSys_Cod,
                                             String Msg_Type, String Msg_Type_own,
-                                            String Msg_Reason, Long OutQueue_Id,
+                                            String Msg_Reason, String OutQueue_Id,
                                             Logger dataAccess_log ) {
-        //dataAccess_log.info( "[" + Queue_Id + "] doUPDATE_MessageQueue_In: \"update ARTX_PROJ.MESSAGE_QUEUE Q " +
-        //        "set q.Queue_Direction = 'IN', q.Msg_Reason = '"+ Msg_Reason+ "' " +
-        //        ", q.Msg_Date= current_timestamp,  q.Msg_Status = 0, q.Retry_Count= 1 " +
-        //        ", q.Prev_Queue_Direction='TMP', q.Prev_Msg_Date=q.Msg_Date " +
-        // "where 1=1 and q.Queue_Id = "+ Queue_Id +"  ;" );
+        // dataAccess_log.info( "[" + Queue_Id + "] doUPDATE_MessageQueue_In2Ok: " + UPDATE_MessageQueue_In2Ok + " {"+ Queue_Id +"} SubSys_Cod=`" + SubSys_Cod+ "`" );
         try {
             stmt_UPDATE_MessageQueue_In2Ok.setInt( 1, Operation_Id );
-            stmt_UPDATE_MessageQueue_In2Ok.setLong( 2, OutQueue_Id );
+            stmt_UPDATE_MessageQueue_In2Ok.setLong( 2, Long.parseLong(OutQueue_Id) );
             stmt_UPDATE_MessageQueue_In2Ok.setString( 3, Msg_Type );
             stmt_UPDATE_MessageQueue_In2Ok.setString( 4, Msg_Reason.length() > maxReasonLen ? Msg_Reason.substring(0, maxReasonLen) : Msg_Reason );
             stmt_UPDATE_MessageQueue_In2Ok.setInt( 5, MsgDirection_Id );
@@ -797,12 +793,13 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
             Hermes_Connection.commit();
 
         } catch (SQLException e) {
-            dataAccess_log.error( "update " + dbSchema + ".MESSAGE_QUEUE for [" + Queue_Id+  "]:  doUPDATE_MessageQueue_In2Ok ) fault: " + e.getMessage() );
-            System.err.println( "update " + dbSchema + ".MESSAGE_QUEUE for [" + Queue_Id+  "]: doUPDATE_MessageQueue_In2Ok )) fault: ");
+            dataAccess_log.error( "[" + Queue_Id + "]  " + UPDATE_MessageQueue_In2Ok + " for [" + Queue_Id+  "]:  doUPDATE_MessageQueue_In2Ok ) fault: " + e.getMessage() );
+            System.err.println( "[" + Queue_Id + "]  " + UPDATE_MessageQueue_In2Ok + " for [" + Queue_Id+  "]: doUPDATE_MessageQueue_In2Ok )) fault: ");
+            e.printStackTrace();
             try {
                 Hermes_Connection.rollback(); } catch (SQLException SQLe) {
-                dataAccess_log.error( "[" + Queue_Id + "] rollback(" + UPDATE_MessageQueue_In2ExeIn + ") fault: " + SQLe.getMessage() );
-                System.err.println( "[" + Queue_Id + "] rollback (" + UPDATE_MessageQueue_In2ExeIn + ") fault: " + SQLe.getMessage()  );
+                dataAccess_log.error( "[" + Queue_Id + "] rollback(" + UPDATE_MessageQueue_In2Ok + ") fault: " + SQLe.getMessage() );
+                System.err.println( "[" + Queue_Id + "] rollback (" + UPDATE_MessageQueue_In2Ok + ") fault: " + SQLe.getMessage()  );
             }
             e.printStackTrace();
             return -1;

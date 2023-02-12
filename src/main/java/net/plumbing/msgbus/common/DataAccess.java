@@ -25,8 +25,8 @@ public  class DataAccess {
     private static PreparedStatement stmtCurrentTimeDateRead;
     public static  String HrmsSchema="orm";
     public static  String rdbmsVendor="oracle";
-    private static final String SQLCurrentTimeStringRead= "SELECT to_char(current_timestamp, 'YYYYMMDDHH24MISS') as InitTime FROM dual";
-    private static final String SQLCurrentTimeDateRead= "SELECT current_timestamp as InitTime FROM dual";
+    private static  String SQLCurrentTimeStringRead;
+    private static  String SQLCurrentTimeDateRead;
 
     public static  Connection make_Hermes_Connection( String DbSchema,  Connection pTarget_Connection, String dst_point, String db_userid , String db_password, Logger dataAccess_log) {
         Connection Target_Connection = null;
@@ -63,6 +63,19 @@ public  class DataAccess {
             }
 
             Target_Connection.setAutoCommit(false);
+            if ( !rdbmsVendor.equals("oracle") ) {
+                SQLCurrentTimeStringRead= "SELECT to_char( clock_timestamp(), 'YYYYMMDDHH24MISS') as InitTime";
+                SQLCurrentTimeDateRead= "SELECT clock_timestamp() as InitTime";
+                dataAccess_log.info("Try setup Connection: `set SESSION time zone 3`");
+                PreparedStatement stmt_SetTimeZone = Target_Connection.prepareStatement("set SESSION time zone 3");//.nativeSQL( "set SESSION time zone 3" );
+                stmt_SetTimeZone.execute();
+                stmt_SetTimeZone.close();
+            }
+            else
+            { // используем DUAL
+                SQLCurrentTimeStringRead= "SELECT to_char(current_timestamp, 'YYYYMMDDHH24MISS') as InitTime FROM dual";
+                SQLCurrentTimeDateRead= "SELECT current_timestamp as InitTime FROM dual";
+            }
 
             DataAccess.Hermes_Connection = Target_Connection;
             dateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss");

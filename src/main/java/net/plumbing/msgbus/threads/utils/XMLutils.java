@@ -128,7 +128,7 @@ public class XMLutils {
                 messageQueueVO.setMsg_Type( MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type() );
                 messageQueueVO.setMsg_Type_own( MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type_own() );
                 messageQueueVO.setOperation_Id( EventOperationId );
-                messageQueueVO.setOutQueue_Id( EventKey );
+                messageQueueVO.setOutQueue_Id( EventKey.toString() );
                 messageQueueVO.setMsg_Reason( MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type() + "() Ok." );
 
                 MessegeSend_Log.info("Нашли [" + MessageTypeVO_Key + "] Msg_Type(" +

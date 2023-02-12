@@ -3,7 +3,8 @@ package net.plumbing.msgbus.model;
 public class MessageQueueVO {
     protected long    Queue_Id;          // собственный идентификатор сообщения
     protected java.sql.Timestamp    Queue_Date;  //  время создания  сообщения
-    protected long    OutQueue_Id;
+    // java.math.BigDecimal
+    protected String OutQueue_Id;
     protected java.sql.Timestamp    Msg_Date;             //   время установки последнего  статуса
     protected int     Msg_Status=0;         //  статус сообщения
     protected int     MsgDirection_Id;     // Идентификатор sysId: для входящего - источник, для исходящего - получатель
@@ -24,7 +25,7 @@ public class MessageQueueVO {
     public void setMessageQueue(
             long    Queue_Id,
             java.sql.Timestamp    Queue_Date,
-            long    OutQueue_Id,
+            String OutQueue_Id,
             java.sql.Timestamp    Msg_Date,
             int     Msg_Status,
             int     MsgDirection_Id,
@@ -85,7 +86,7 @@ public class MessageQueueVO {
     public void  setOperation_Id( int pOperation_Id) { this.Operation_Id = pOperation_Id; }
     public void  setMsg_Type( String pMsg_Type) { this.Msg_Type = pMsg_Type; }
     public void  setMsg_Type_own( String pMsg_Type_own) { this.Msg_Type_own = pMsg_Type_own; }
-    public void  setOutQueue_Id( Long pOutQueue_Id) { this.OutQueue_Id = pOutQueue_Id; }
+    public void  setOutQueue_Id( String pOutQueue_Id) { this.OutQueue_Id = pOutQueue_Id; }
     public void  setMsg_Reason(  String pMsg_Reason) { this.Msg_Reason = pMsg_Reason; }
     public void  setMsg_Result(  String pMsg_Result) { this.Msg_Result = pMsg_Result; }
 
@@ -98,7 +99,8 @@ public class MessageQueueVO {
 
     public  int  getRetry_Count() { return this.Retry_Count;  }
     public  long  getQueue_Id() { return this.Queue_Id; }
-    public  long  getOutQueue_Id() { return this.OutQueue_Id; }
+    public  String getOutQueue_Id() { return this.OutQueue_Id; } //!!
+
     public  int  getMsgDirection_Id() { return this.MsgDirection_Id; }
     public String getSubSys_Cod() { return this.SubSys_Cod; }
     public  int  getOperation_Id() { return this. Operation_Id; }

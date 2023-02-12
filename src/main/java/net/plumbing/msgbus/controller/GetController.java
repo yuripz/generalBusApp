@@ -51,7 +51,10 @@ public class GetController  {
         String queryString;
         try {
             queryString = URLDecoder.decode(httpRequest.getQueryString(), "UTF-8");
-        } catch (UnsupportedEncodingException | NullPointerException e) {
+        } catch (UnsupportedEncodingException | NullPointerException | IllegalArgumentException e) {
+            Controller_log.error( "httpRequest.getRequestURL `" + url + "` URLDecoder.decode `" + httpRequest.getQueryString() +" `fault "  + e.getMessage());
+            System.err.println( "httpRequest.getRequestURL `" + url + "` URLDecoder.decode `" + httpRequest.getQueryString() +" `fault "  + e.getMessage());
+            e.printStackTrace();
             queryString = httpRequest.getQueryString();
         }
         if ( url.indexOf("/HermesSOAPService/") > 0 )  is_TextJsonResponse=false;
@@ -156,7 +159,7 @@ public class GetController  {
                 messageReceiveTask = new MessageReceiveTask();
                 // получив на вход интерфейса (на основе входного URL) ищем для него Шаблон
                 int MessageTemplateVOkey = MessageRepositoryHelper.look4MessageTemplate_2_Interface(Interface_id, Controller_log);
-                boolean isDebugged = false; // TODO: this.isDebugged=true; -- для Документирования
+                boolean isDebugged = true ; // TODO: this.isDebugged=true; -- для Документирования // false
 
                 Long Queue_ID;
                 Queue_ID = messageReceiveTask.ProcessInputMessage(Interface_id, Message, MessageTemplateVOkey, isDebugged);

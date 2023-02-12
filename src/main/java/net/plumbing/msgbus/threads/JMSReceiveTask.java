@@ -156,8 +156,8 @@ public class JMSReceiveTask  implements Runnable {
         }
 
         try {
-            JMSReceiveTask_Log.warn("Пробуем переподключится к брокеру сообщений ActiveMQ, QueueName:" + jmsQueueName + " через 160 сек." );
-            Thread.sleep(TimeUnit.SECONDS.toMillis(160));
+            JMSReceiveTask_Log.warn("Пробуем переподключится к брокеру сообщений ActiveMQ, QueueName:" + jmsQueueName + " через 60 сек." );
+            Thread.sleep(TimeUnit.SECONDS.toMillis(60));
         } catch (InterruptedException eE ) {
             JMSReceiveTask_Log.error("JMSReceiveTask was Interrupted" + eE.getMessage());
         }

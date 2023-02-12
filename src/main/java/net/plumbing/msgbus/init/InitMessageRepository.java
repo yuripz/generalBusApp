@@ -35,10 +35,10 @@ public class InitMessageRepository {
         {  AppThead_log.error("ReReadMsgTypes: DataAccess.Hermes_Connection == null");
             return -3;
         }
-        PreparedStatement stmtMsgTypeReRead;
+        PreparedStatement stmtMsgTypeReRead=null;
         String selectMsgTypeReRead;
         if ( DataAccess.rdbmsVendor.equalsIgnoreCase("oracle"))
-            // todo Oracle date - YYYY-MM-DD HH24:MI:SS
+            //  Oracle date - YYYY-MM-DD HH24:MI:SS
             selectMsgTypeReRead = "select t.interface_id, " +
                     "t.operation_id, t.msg_type, t.msg_type_own, t.msg_typedesc, t.msg_direction, " +
                     "t.msg_handler, t.url_soap_send, t.url_soap_ack, t.max_retry_count, t.max_retry_time " +
@@ -46,15 +46,13 @@ public class InitMessageRepository {
                         "where (1=1) and t.msg_direction like '%IN%' " +
                         "and t.LAST_UPDATE_DT > ( sysDate  -  ( 180 + " + intervalReInit + " )/(24*3600)  )" +
                         "order by t.interface_id, t.operation_id";
-        else // todo PostGree
-            selectMsgTypeReRead = "select t.interface_id,\n" +
-                    "t.operation_id, t.msg_type, t.msg_type_own, t.msg_typedesc, t.msg_direction,\n" +
-                    "t.msg_handler, t.url_soap_send, t.url_soap_ack, t.max_retry_count, t.max_retry_time\n" +
-                    "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS t\n" +
-                        "where (1=1) and t.msg_direction like '%IN%'\n" +
-                        "and t.LAST_UPDATE_DT >  ( current_timestamp  - Interval '1 Second' * ( 180 + " + intervalReInit + " )  )" +
-                        //"and t.LAST_UPDATE_DT > ( to_timestamp('" + DataAccess.dateFormat.format( DataAccess.InitDate ) +"', 'YYYY-MM-DD HH24:MI:SS') " +
-                        // " - ( Interval '1 Second' * ( 180 + " + intervalReInit + " )) ) " +
+        else //  PostGree
+            selectMsgTypeReRead = "select t.interface_id, " +
+                    "t.operation_id, t.msg_type, t.msg_type_own, t.msg_typedesc, t.msg_direction, " +
+                    "t.msg_handler, t.url_soap_send, t.url_soap_ack, t.max_retry_count, t.max_retry_time " +
+                    "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS t " +
+                        "where (1=1) and t.msg_direction like '%IN%' " +
+                        "and t.LAST_UPDATE_DT >  ( clock_timestamp()  - Interval '1 Second' * ( 180 + " + intervalReInit + " )  )" +
                         "order by t.interface_id, t.operation_id";
         try {
             stmtMsgTypeReRead = DataAccess.Hermes_Connection.prepareStatement( selectMsgTypeReRead );
@@ -103,6 +101,7 @@ public class InitMessageRepository {
         } catch (Exception e) {
             AppThead_log.error("ReReadMsgTypes (" + selectMsgTypeReRead + ") fault: " + sStackTracе.strInterruptedException(e));
             try {
+                if ( stmtMsgTypeReRead != null) stmtMsgTypeReRead.close();
                 DataAccess.Hermes_Connection.rollback();
             } catch ( SQLException SQLe) {
                 AppThead_log.error("rollback (" + selectMsgTypeReRead + ") fault: " + sStackTracе.strInterruptedException(SQLe));
@@ -144,9 +143,7 @@ public class InitMessageRepository {
                     "t.dst_subcod, t.lastmaker, t.lastdate " +
                     "from " + DataAccess.HrmsSchema + ".MESSAGE_TemplateS t " +
                     "where (1=1) " +
-                    "and t.LastDate >  ( current_timestamp  - Interval '1 Second' * ( 180 + " + intervalReInit + " )  )" +
-                    // "and t.LastDate > ( to_timestamp('" + DataAccess.dateFormat.format( DataAccess.InitDate ) +"', 'YYYY-MM-DD HH24:MI:SS') " +
-                    // " - (Interval '1 Second' * (3 * 60 + " + intervalReInit + ")) ) " + //"and t.LastDate > to_date( ?, 'YYYY-MM-DD HH24:MI:SS) " +
+                    "and t.LastDate >  ( clock_timestamp()  - Interval '1 Second' * ( 180 + " + intervalReInit + " )  )" +
                     "and t.template_dir like '%IN%' " +  // "and t.operation_id in (0, 154 ) " +
                     "order by t.interface_id, t.operation_id, t.destin_id, t.dst_subcod";
 
@@ -341,21 +338,20 @@ public class InitMessageRepository {
 
         if ( DataAccess.Hermes_Connection != null )
             try {
-                stmtMsgType = DataAccess.Hermes_Connection.prepareStatement("select t.interface_id,\n" +
-                        "t.operation_id,\n" +
-                        "t.msg_type,\n" +
-                        "t.msg_type_own,\n" +
-                        "t.msg_typedesc,\n" +
-                        "t.msg_direction,\n" +
-                        "t.msg_handler,\n" +
-                        "t.url_soap_send,\n" +
-                        "t.url_soap_ack,\n" +
-                        "t.max_retry_count,\n" +
-                        "t.max_retry_time\n" +
-                        "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS t\n" +
+                stmtMsgType = DataAccess.Hermes_Connection.prepareStatement("select t.interface_id, " +
+                        "t.operation_id, " +
+                        "t.msg_type, " +
+                        "t.msg_type_own, " +
+                        "t.msg_typedesc, " +
+                        "t.msg_direction, " +
+                        "t.msg_handler, " +
+                        "t.url_soap_send, " +
+                        "t.url_soap_ack, " +
+                        "t.max_retry_count, " +
+                        "t.max_retry_time " +
+                        "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS t " +
                         "where (1=1) " +
-                        "and t.msg_direction like '%IN%'\n" +
-                        // "and t.operation_id =0 " +
+                        "and t.msg_direction like '%IN%' " +
                         "order by t.interface_id, t.operation_id");
 
             } catch (Exception e) {

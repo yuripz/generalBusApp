@@ -41,6 +41,7 @@ import net.plumbing.msgbus.mq.StoreMQpooledConnectionFactory;
 //import java.nio.charset.Charset;
 //import java.nio.charset.CharsetEncoder;
 //import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
@@ -244,7 +245,7 @@ public class PerfotmInputMessages {
                         if (Message.MessageTemplate4Perform.getIsDebugged()) {
                             MessegeReceive_Log.info("[" + Queue_Id + "] Шаблон для SQL-XSLTExt-обработки(" + Message.MessageTemplate4Perform.getEnvelopeXSLTExt() + ")");
                             if (Message.MessageTemplate4Perform.getIsExtSystemAccess()) {
-                                MessegeReceive_Log.info("[" + Queue_Id + "] Шаблон для SQL-XSLTExt-обработки использует пулл коннектов для внешней системы(" + Message.MessageTemplate4Perform.getEnvelopeXSLTExt() + ")");
+                                MessegeReceive_Log.info("[" + Queue_Id + "] Шаблон для SQL-XSLTExt-обработки использует пулл коннектов для внешней системы");
                             }
                         }
                         String Passed_Envelope4XSLTExt = null;
@@ -287,6 +288,9 @@ public class PerfotmInputMessages {
                                 }
                                 resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, true, extSystemDataConnection.ExtSystem_Connection ,
                                                                                   Passed_Envelope4XSLTExt, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
+                                try {  extSystemDataConnection.ExtSystem_Connection.close(); } catch (SQLException e) {
+                                    MessegeReceive_Log.error("[" + Queue_Id + "] ExtSystem_Connection.close() fault:" + e.getMessage());
+                                }
                             }
                             else
                             resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, false, null, Passed_Envelope4XSLTExt, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
@@ -512,6 +516,11 @@ public class PerfotmInputMessages {
                     Integer ShortRetryIntervalPostExec = Message.MessageTemplate4Perform.getShortRetryIntervalPostExec();
                     Integer LongRetryCountPostExec  = Message.MessageTemplate4Perform.getLongRetryCountPostExec();
                     Integer LongRetryIntervalPostExec  = Message.MessageTemplate4Perform.getLongRetryIntervalPostExec();
+                    if ( Message.MessageTemplate4Perform.getIsDebugged() )
+                        MessegeReceive_Log.warn("[" + Queue_Id + "] Time-out calculate: ShortRetryCountPostExec=" + ShortRetryCountPostExec +
+                                " ; ShortRetryIntervalPostExec=" + ShortRetryIntervalPostExec +
+                                " ; LongRetryCountPostExec=" + LongRetryCountPostExec +
+                                " ; LongRetryIntervalPostExec=" + LongRetryIntervalPostExec);
                     if ( ( LongRetryIntervalPostExec != null ) &&
                          ( LongRetryCountPostExec != null )) {
                         //time4waitMessageReplyQueue = LongRetryIntervalPostExec * LongRetryCountPostExec;
@@ -630,7 +639,8 @@ public class PerfotmInputMessages {
 
                         if ((Message.MessageTemplate4Perform.getConfigPostExec()!= null) && (Message.MessageTemplate4Perform.getMsgAnswXSLT() != null ))
                          { // Есть Post-обработчик , работающий ПОВЕРХ результата порожденного OUT-сообщения
-                            // надо читать ответ из Confirmation родного OUT, куда дополнительный обработчик положит Confirmation, перезаписав
+                            // надо читать ответ из Confirmation родного OUT, куда дополнительный обработчик положит Confirmation, перезаписав его
+                            // или обработчик порожденного OUT-сообщения перезаписывает Confirmation входящего по результатам прикладной обработки Confirmation от Link_Queue
                             /////////////////////////////////////////////////
                             if ( Message.MessageTemplate4Perform.getPropExeMetodPostExec().equals(Message.MessageTemplate4Perform.WebRestExeMetod) ) { // 2.2) Это Rest-HttpGet-вызов
 
@@ -723,9 +733,11 @@ public class PerfotmInputMessages {
                                             MessegeReceive_Log);
                                     return -48L;
                                 }
+                            } // закончили Rest-Post-обработку
+                              // обработчик порожденного OUT-сообщения перезаписывает Confirmation, его надо перезачитать и обработать MsgAnswXSLT
 
                                 if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                                    MessegeReceive_Log.warn("MsgAnswXSLT: " + Message.MessageTemplate4Perform.getMsgAnswXSLT());
+                                    MessegeReceive_Log.warn("[" + Queue_Id + "]: ожидается, что обработчик порожденного OUT-сообщения перезаписывает Confirmation, MsgAnswXSLT: " + Message.MessageTemplate4Perform.getMsgAnswXSLT());
                                 // ReadConfirmation очищает Message.XML_MsgConfirmation и помещает туда чстанный из БД Confirmation
                                 int ConfirmationRowNum = MessageUtils.ReadConfirmation(theadDataAccess, Queue_Id, Message, MessegeReceive_Log);
                                 if (ConfirmationRowNum < 1) {
@@ -767,7 +779,7 @@ public class PerfotmInputMessages {
                                 theadDataAccess.doUPDATE_MessageQueue_ExeIn2DelIN(Queue_Id, MessegeReceive_Log);
                                 return  0L;
 
-                            } // закончили Rest-Post-обработку
+
                             /////////////////////////////////////////////////
                         }
                     }
@@ -838,7 +850,6 @@ public class PerfotmInputMessages {
 
                                 String Passed_Envelope4XSLTPost;
                                 try {
-
                                     Passed_Envelope4XSLTPost= XMLutils.ConvXMLuseXSLT( messageQueueVO.getQueue_Id(),
                                             MessageUtils.PrepareEnvelope4XSLTPost( messageQueueVO),  // Искуственный Envelope/Head/Body=null
                                             Message.MessageTemplate4Perform.getEnvelopeXSLTPost(),  // через EnvelopeXSLTPost
@@ -892,13 +903,11 @@ public class PerfotmInputMessages {
                             }
                         }
                         else
-                        {
-                            // Нет EnvelopeXSLTPost - надо орать!
+                        { // Нет EnvelopeXSLTPost - надо орать!
                             MessegeReceive_Log.error("["+ Queue_Id +"] В шаблоне для пост-обработки " + Message.MessageTemplate4Perform.getPropExeMetodPostExec() + " нет EnvelopeXSLTPost");
                             theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(messageQueueVO.getQueue_Id(),
                                     "В шаблоне для пост-обработки " + Message.MessageTemplate4Perform.getPropExeMetodPostExec() + " нет EnvelopeXSLTPost", 1237,
                                       MessegeReceive_Log);
-
                             return -105L;
                         }
                     }

@@ -119,7 +119,7 @@ public class MessageUtils {
                 messageQueueVO.setMessageQueue(
                         rs.getLong("Queue_Id"),
                         rs.getTimestamp("Queue_Date"),
-                        rs.getLong("OutQueue_Id"),
+                        rs.getString("OutQueue_Id"),
                         rs.getTimestamp("Msg_Date"),
                         rs.getInt("Msg_Status"),
                         rs.getInt("MsgDirection_Id"),
@@ -144,6 +144,7 @@ public class MessageUtils {
         catch (SQLException e)
         {
             MessegeReceive_Log.error(e.getMessage());
+            System.err.println("Queue_Id=[ NewMessage_Queue ] :" + e.getMessage() );
             e.printStackTrace();
             MessegeReceive_Log.error( "что то пошло совсем не так...:" + theadDataAccess.selectMessageStatement);
             //if ( rs !=null ) rs.close();
@@ -158,7 +159,8 @@ public class MessageUtils {
             // MessegeReceive_Log.info(  ">" + theadDataAccess.INSERT_Message_Queue + ":Queue_Id=[" + Queue_Id + "] done");
 
         } catch (SQLException e) {
-            MessegeReceive_Log.error(theadDataAccess.INSERT_Message_Queue + ":Queue_Id=[" + Queue_Id + "] :" + sStackTracе.strInterruptedException(e));
+            MessegeReceive_Log.error("["+ Queue_Id +"] MakeNewMessage_Queue `" + theadDataAccess.INSERT_Message_Queue + "` fault: " + sStackTracе.strInterruptedException(e));
+            System.err.println("["+ Queue_Id +"] MakeNewMessage_Queue `" + theadDataAccess.INSERT_Message_Queue + "` fault: " + e.getMessage());
             e.printStackTrace();
             try {
                 theadDataAccess.Hermes_Connection.rollback();
@@ -170,7 +172,7 @@ public class MessageUtils {
         try {
             theadDataAccess.Hermes_Connection.commit();
         } catch (SQLException exp) {
-            MessegeReceive_Log.error("Hermes_Connection.commit() fault: " + exp.getMessage());
+            MessegeReceive_Log.error("["+ Queue_Id +"] MakeNewMessage_Queue Hermes_Connection.commit()  fault: " + sStackTracе.strInterruptedException(exp));
             return null;
         }
         return Queue_Id;
@@ -344,6 +346,7 @@ public class MessageUtils {
             }
         } catch (SQLException e) {
             MessegeSend_Log.error("Queue_Id=[" + Queue_Id + "] :" + sStackTracе.strInterruptedException(e));
+            System.err.println("["+ Queue_Id +"] select  from MESSAGE_QUEUEdet  fault: " + e.getMessage());
             e.printStackTrace();
             return messageDetails.MessageRowNum;
         }
@@ -494,9 +497,9 @@ public class MessageUtils {
                 rs.close();
             } catch (Exception e) {
                 MessegeReceive_Log.error(e.getMessage());
-                System.err.println("["+ Queue_Id +"] select Queue_Direction from ARTX_PROJ.MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage());
+                System.err.println("["+ Queue_Id +"] select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage());
                 //e.printStackTrace();
-                MessegeReceive_Log.error( "["+ Queue_Id +"] select Queue_Direction from ARTX_PROJ.MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
+                MessegeReceive_Log.error( "["+ Queue_Id +"] select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
                 return false;
             }
             if ( Queue_Direction != null)
@@ -522,8 +525,9 @@ public class MessageUtils {
             rs.close();
         } catch (Exception e) {
             MessegeReceive_Log.error(e.getMessage());
+            System.err.println("["+ Queue_Id +"] isLink_Queue_Finish(): select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
             e.printStackTrace();
-            MessegeReceive_Log.error( "["+ Queue_Id +"] select Queue_Direction from ARTX_PROJ.MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
+            MessegeReceive_Log.error( "["+ Queue_Id +"] select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
             return false;
         }
         if ( Queue_Direction != null)
@@ -543,7 +547,7 @@ public class MessageUtils {
                 pXML_MsgConfirmation.setLength(0); pXML_MsgConfirmation.trimToSize();
                 pXML_MsgConfirmation.append( rs.getString("Msg_Reason"));
                 if ( isDebugged )
-                    MessegeReceive_Log.info( "["+ Queue_Id +"] isLink_Queue_Finish:" + rs.getString("Queue_Direction") +
+                    MessegeReceive_Log.info( "["+ Queue_Id +"] get_Link_Queue_Finish:" + rs.getString("Queue_Direction") +
                             " Msg_status:[ " + rs.getString("Msg_status") + "] Msg_Reason=" + rs.getString("Msg_Reason") +
                             "] Msg_Result=" + rs.getString("Msg_Result"));
                 // Очистили Message от всего, что там было
@@ -552,8 +556,9 @@ public class MessageUtils {
             rs.close();
         } catch (Exception e) {
             //MessegeReceive_Log.error(e.getMessage());
+            System.err.println("["+ Queue_Id +"] get_Link_Queue_Finish(): select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
             e.printStackTrace();
-            MessegeReceive_Log.error( "["+ Queue_Id +"] select Queue_Direction from ARTX_PROJ.MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
+            MessegeReceive_Log.error( "["+ Queue_Id +"] get_Link_Queue_Finish(): select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
             return null;
         }
         if ( Queue_Direction != null)
@@ -572,7 +577,7 @@ public class MessageUtils {
             while (rs.next()) {
                 msg_infostreamid = rs.getInt("msg_infostreamid");
                 if ( isDebugged )
-                MessegeReceive_Log.info( "["+ Queue_Id +"] isLink_Queue_Finish:" + rs.getString("Queue_Direction") +
+                MessegeReceive_Log.info( "["+ Queue_Id +"] get_SelectLink_msg_InfostreamId:" + rs.getString("Queue_Direction") +
                         " Msg_status:[ " + rs.getString("Msg_status") + "] Msg_Reason=" + rs.getString("Msg_Reason") +
                         "] msg_infostreamid =" + rs.getInt("msg_infostreamid"));
                 // Очистили Message от всего, что там было
@@ -581,8 +586,8 @@ public class MessageUtils {
             rs.close();
         } catch (Exception e) {
             MessegeReceive_Log.error(e.getMessage());
-            System.err.println("Queue_Id=[" + Queue_Id + "] select Queue_Direction from ARTX_PROJ.MESSAGE_QUEUE q Where  Q.queue_id = ? fault " + sStackTracе.strInterruptedException(e));
-            MessegeReceive_Log.error( "["+ Queue_Id +"] select Queue_Direction from ARTX_PROJ.MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
+            System.err.println("Queue_Id=[" + Queue_Id + "] get_SelectLink_msg_InfostreamId() select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault " + sStackTracе.strInterruptedException(e));
+            MessegeReceive_Log.error( "["+ Queue_Id +"] get_SelectLink_msg_InfostreamId() select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
             return -2;
         }
 
@@ -620,7 +625,7 @@ public class MessageUtils {
             messageDetails.XML_MsgConfirmation.trimToSize();
             Integer Tag_Num=-1;
 
-            try { // получаем Confirmation Tag_Num из select Tag_Num from  artx_proj.message_queuedet  WHERE QUEUE_ID = ?Queue_Id and Tag_Par_Num = 0 and tag_Id ='Confirmation'
+            try { // получаем Confirmation Tag_Num из select Tag_Num from  Message_QueueDet  WHERE QUEUE_ID = ?Queue_Id and Tag_Par_Num = 0 and tag_Id ='Confirmation'
                 theadDataAccess.stmtMsgQueueConfirmationTag.setLong(1, Queue_Id);
                 ResultSet rs = theadDataAccess.stmtMsgQueueConfirmationTag.executeQuery();
                 while (rs.next()) {
@@ -629,6 +634,7 @@ public class MessageUtils {
                 rs.close();
             } catch (SQLException e) {
                 MessegeReceive_Log.error("Queue_Id=[" + Queue_Id + "] :" + sStackTracе.strInterruptedException(e));
+                System.err.println("Queue_Id=[" + Queue_Id + "] :" + e.getMessage() );
                 e.printStackTrace();
                 return messageDetails.ConfirmationRowNum;
             }

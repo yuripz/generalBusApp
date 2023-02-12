@@ -122,6 +122,7 @@ public class ServletApplication implements CommandLineRunner {
         ApplicationProperties.hrmsDbLogin = connectionProperties.gethrmsDbLogin();
         ApplicationProperties.hrmsDbPasswd =  connectionProperties.gethrmsDbPasswd();
         ApplicationProperties.ConnectMsgBus = connectionProperties.getconnectMsgBus();
+        ApplicationProperties.ExtSysSchema = connectionProperties.getextsysDbSchema();
         if ( ApplicationProperties.ConnectMsgBus == null) ApplicationProperties.ConnectMsgBus = "tcp://localhost:61216";
 
         int FirstInfoStreamId = 101;
@@ -179,6 +180,8 @@ public class ServletApplication implements CommandLineRunner {
         //activeMQService.StartJMSQueueConnection("4444");
         } catch (JMSException e) {
             AppThead_log.error("НЕ удалось подключится к брокеру сообщений ActiveMQ:" + e.getMessage());
+            System.err.println("НЕ удалось подключится к брокеру сообщений ActiveMQ:");
+            e.printStackTrace();
 
         }
         // AppThead_log.warn("Подключились к брокеру сообщений ActiveMQ!"  );System.exit(-11);
@@ -321,7 +324,7 @@ public class ServletApplication implements CommandLineRunner {
             try {
 
                 // Thread.sleep(25000);
-                Thread.sleep(TimeUnit.SECONDS.toMillis(34) );
+                Thread.sleep(TimeUnit.SECONDS.toMillis(30) );
                 DataAccess.Hermes_Connection = null;
                 DataAccess.Hermes_Connection = ApplicationProperties.dataSource.getConnection();
                 DataAccess.Hermes_Connection.setAutoCommit(false);
@@ -356,9 +359,12 @@ public class ServletApplication implements CommandLineRunner {
                 if ( StoreMQpooledConnectionFactory.MQpooledConnectionFactory == null )
                     try {
                         activeMQService.MakeActiveMQConnectionFactory( ApplicationProperties.ConnectMsgBus );
+                        activeMQService.StartJMSQueueConnection("123-321");
                         AppThead_log.warn("Удалось пере-подключится к встренному брокеру сообщений ActiveMQ :" + ApplicationProperties.ConnectMsgBus );
                     } catch (JMSException e) {
                         AppThead_log.error("НЕ удалось подключится встренному  к брокеру сообщений ActiveMQ [" + ApplicationProperties.ConnectMsgBus + "] :" + e.getMessage());
+                        System.err.println("НЕ удалось подключится к брокеру сообщений ActiveMQ:");
+                        e.printStackTrace();
                     }
                 /* JMS_MessageDirection_MQConnectionFactory вынесен в поток jmsReceiveTask
                 if ( JMS_MessageDirection_MQConnectionFactory.MQconnectionFactory == null )

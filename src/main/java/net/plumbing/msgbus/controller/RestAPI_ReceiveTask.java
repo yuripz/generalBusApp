@@ -140,7 +140,7 @@ public class RestAPI_ReceiveTask {
                 messageQueueVO.setMsg_Type( MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type() );
                 messageQueueVO.setMsg_Type_own( MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type_own() );
                 messageQueueVO.setOperation_Id( MessageOperationId );
-                messageQueueVO.setOutQueue_Id( Queue_Id );
+                messageQueueVO.setOutQueue_Id( Queue_Id.toString() );
                 messageQueueVO.setMsg_Reason( MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type() + "() Ok." );
 
                 if ( isDebugged )
