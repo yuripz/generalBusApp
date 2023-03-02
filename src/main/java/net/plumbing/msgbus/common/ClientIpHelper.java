@@ -8,8 +8,10 @@ import javax.servlet.http.HttpServletRequest;
 import net.plumbing.msgbus.common.json.JSONArray;
 import net.plumbing.msgbus.common.json.JSONException;
 import net.plumbing.msgbus.common.json.JSONObject;
+import net.plumbing.msgbus.common.json.XML;
 import net.plumbing.msgbus.model.MessageTemplate;
 import net.plumbing.msgbus.model.MessageTemplateVO;
+import net.plumbing.msgbus.threads.utils.MessageUtils;
 import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
@@ -344,6 +346,34 @@ public class ClientIpHelper {
             XML_Request_Method.append(XMLchars.EndTag);
             XML_Request_Method.append("RecordFilters" ) ;
             XML_Request_Method.append(XMLchars.CloseTag);
+
+    }
+
+
+    // Sort
+    public static void add2XML_Request_Method_CustomTags(StringBuilder XML_Request_Method,  String ParamElement,  Logger Controller_log )
+            throws  StringIndexOutOfBoundsException
+    {
+        Controller_log.warn("add2XML_Request_Method_CustomTags:`" + ParamElement + "`"  );
+    if (ParamElement.length() > 3 ) {
+        if (( ParamElement.charAt(0) == '{') || ( ParamElement.charAt(0) == '[') ) {
+            try {
+                JSONObject RestResponseJSON = new JSONObject(ParamElement);
+                XML.setMessege_Log( Controller_log );
+
+                XML_Request_Method.append( XML.toString(RestResponseJSON, XMLchars.NameRootTagContentJsonResponse ) );
+
+            } catch (Exception e) {
+                XML_Request_Method.append(ParamElement);
+                Controller_log.error("add2XML_Request_Method_CustomTags fault: " + sStackTracе.strInterruptedException(e));
+                return;
+            }
+        }
+        else
+            XML_Request_Method.append(ParamElement);
+        // int ParamElementNameLength = ( ParamElementName.indexOf(']') > 0) ? ParamElementName.indexOf(']') : ParamElementName.length() ;
+
+    }
 
     }
 // Sort

@@ -573,7 +573,9 @@ public class GetController  {
 
                         if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
                             //Controller_log.warn(queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1));
-                            Message.XML_Request_Method.append(queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1));
+                            // Если передан JSon, то пробуем превратить его в XML для обработки
+                            ClientIpHelper.add2XML_Request_Method_CustomTags(Message.XML_Request_Method, queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1),  Controller_log);
+                            // Message.XML_Request_Method.append(queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1));
                         }
 
                         Message.XML_Request_Method.append(OpenTag);
