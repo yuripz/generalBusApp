@@ -15,7 +15,12 @@ public class ExtSystemDataConnection {
         Connection Target_Connection;
 
         String rdbmsVendor;
-        HikariDataSource dataSource = ApplicationProperties.extSystemDataSource;
+        ;
+        if ( ApplicationProperties.extSystemDataSource == null ) {
+            dataAccess_log.error("[" + Queue_Id + "] ExtSystem getConnection() fault: ApplicationProperties.extSystemDataSource is null" );
+            return ;
+        }
+        HikariDataSource dataSource= ApplicationProperties.extSystemDataSource;
         String connectionUrl = dataSource.getJdbcUrl();
         // попробуй ARTX_PROJ / rIYmcN38St5P  || hermes / uthvtc
         //String db_userid = "HERMES";

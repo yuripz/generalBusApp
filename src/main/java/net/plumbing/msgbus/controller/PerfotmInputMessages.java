@@ -159,7 +159,7 @@ public class PerfotmInputMessages {
                     return -19L;
                 }
                 try {
-                    if ( MessageUtils.ProcessingIn_setIN(messageQueueVO, Message, theadDataAccess, MessegeReceive_Log) < 0 ) {
+                    if ( MessageUtils.ProcessingIn_setIN(messageQueueVO,  theadDataAccess, MessegeReceive_Log) < 0 ) {
                         Message.MsgReason.append("Не удалось сохранить заголовок сообщения в твблицу очереди");
                         return -21L;
                     }
@@ -283,7 +283,7 @@ public class PerfotmInputMessages {
                             if (Message.MessageTemplate4Perform.getIsExtSystemAccess()) {
                                 ExtSystemDataConnection extSystemDataConnection = new ExtSystemDataConnection(Queue_Id, MessegeReceive_Log);
                                 if ( extSystemDataConnection.ExtSystem_Connection == null ){
-                                    Message.MsgReason.append("Ошибка на приёме сообщения - ExtSystemDataConnection return: NULL!"  );
+                                    Message.MsgReason.append("Ошибка на приёме сообщения - нет соединения с внешней базой данных (extSystemDataConnection return NULL), обратитесь к системному администратору !");
                                     return -33L;
                                 }
                                 resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, true, extSystemDataConnection.ExtSystem_Connection ,

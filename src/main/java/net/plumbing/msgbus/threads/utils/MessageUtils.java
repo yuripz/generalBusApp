@@ -179,14 +179,15 @@ public class MessageUtils {
     }
 
     public static String PrepareEnvelope4XSLTPost( MessageQueueVO messageQueueVO) {
-        int nn = 0;
+        //int nn = 0;
         StringBuilder SoapEnvelope = new StringBuilder(XMLchars.Envelope_noNS_Begin);
         SoapEnvelope.append(XMLchars.Header_noNS_Begin);
-        SoapEnvelope.append("<MsgId>" + messageQueueVO.getQueue_Id() +"</MsgId>");
+        // SoapEnvelope.append("<MsgId>" + messageQueueVO.getQueue_Id() +"</MsgId>");
+        SoapEnvelope.append( XMLchars.MsgId_Begin ).append( messageQueueVO.getQueue_Id()).append(  XMLchars.MsgId_End );
         SoapEnvelope.append(XMLchars.Header_noNS_End);
 
         SoapEnvelope.append(XMLchars.Body_noNS_Begin);
-        SoapEnvelope.append( "<MsgId>" + messageQueueVO.getQueue_Id() +"</MsgId>" );
+        SoapEnvelope.append( XMLchars.MsgId_Begin ).append( messageQueueVO.getQueue_Id()).append(  XMLchars.MsgId_End );
         SoapEnvelope.append(XMLchars.Body_noNS_End);
         SoapEnvelope.append(XMLchars.Envelope_noNS_End);
 
@@ -235,7 +236,7 @@ public class MessageUtils {
         return -1;
     }
 */
-    public static Integer ProcessingIn_setIN(MessageQueueVO messageQueueVO, MessageDetails messageDetails, TheadDataAccess theadDataAccess,
+    public static Integer ProcessingIn_setIN(MessageQueueVO messageQueueVO,  TheadDataAccess theadDataAccess,
                                              Logger MessegeReceive_Log)
     {
 
@@ -623,7 +624,7 @@ public class MessageUtils {
             messageDetails.Confirmation_Tag_Num = 0;
             messageDetails.XML_MsgConfirmation.setLength(0);
             messageDetails.XML_MsgConfirmation.trimToSize();
-            Integer Tag_Num=-1;
+            int Tag_Num=-1;
 
             try { // получаем Confirmation Tag_Num из select Tag_Num from  Message_QueueDet  WHERE QUEUE_ID = ?Queue_Id and Tag_Par_Num = 0 and tag_Id ='Confirmation'
                 theadDataAccess.stmtMsgQueueConfirmationTag.setLong(1, Queue_Id);
@@ -730,7 +731,7 @@ public class MessageUtils {
 
             // !было:  StringBuilder XML_Tag = new StringBuilder( XMLchars.OpenTag + messageDetailVO.Tag_Id );
             // стало:
-            messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag + messageDetailVO.Tag_Id);
+            messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag).append(messageDetailVO.Tag_Id);
             // XML_Tag.append ( "<" + messageDetailVO.Tag_Id + ">" );
             // цикл по формированию параметров-аьтрибутов элемента
             for (int i = 0; i < messageDetails.Confirmation.size(); i++) {
@@ -753,7 +754,10 @@ public class MessageUtils {
                     else
                         // !было: XML_Tag.append ( XMLchars.Space + messageChildVO.Tag_Id + XMLchars.Equal + XMLchars.Quote + XMLchars.Quote );
                         // стало:
-                        messageDetails.XML_MsgConfirmation.append(XMLchars.Space + messageChildVO.Tag_Id + XMLchars.Equal + XMLchars.Quote + "noName" +XMLchars.Quote);
+                        messageDetails.XML_MsgConfirmation.append(XMLchars.Space)
+                                                          .append( messageChildVO.Tag_Id)
+                                                          .append( XMLchars.Equal)
+                                                          .append( XMLchars.Quote).append( "noName").append(XMLchars.Quote);
                 }
             }
             // !было: XML_Tag.append( XMLchars.CloseTag);
@@ -779,14 +783,15 @@ public class MessageUtils {
 
             // !было: XML_Tag.append( XMLchars.OpenTag + XMLchars.EndTag + messageDetailVO.Tag_Id + XMLchars.CloseTag);
             // стало:
-            messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag + XMLchars.EndTag + messageDetailVO.Tag_Id + XMLchars.CloseTag);
+            messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag).append(XMLchars.EndTag).append( messageDetailVO.Tag_Id ).append(XMLchars.CloseTag);
             return 1; //XML_Tag;
         } else {
             // !было: return 0;
             // Теряются отрибуты по считывании Confirmation
             if ( messageDetailVO.Tag_Value != null ) {   // !было:XML_Tag.append ( XMLchars.Space + messageChildVO.Tag_Id + XMLchars.Equal + XMLchars.Quote + messageChildVO.Tag_Value + XMLchars.Quote );
                 // стало:
-                messageDetails.XML_MsgConfirmation.append(XMLchars.Space + messageDetailVO.Tag_Id + XMLchars.Equal + XMLchars.Quote + messageDetailVO.Tag_Value + XMLchars.Quote);
+                messageDetails.XML_MsgConfirmation.append(XMLchars.Space).append( messageDetailVO.Tag_Id).append( XMLchars.Equal)
+                                                  .append( XMLchars.Quote).append( messageDetailVO.Tag_Value).append( XMLchars.Quote);
                 return 1; //XML_Tag;
             }
             else
@@ -1149,7 +1154,7 @@ public class MessageUtils {
             }
         } catch ( Exception e) {
             MessegeReceive_Log.error(theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "]["+ iNumberRecordInConfirmation +"] :" + sStackTracе.strInterruptedException(e));
-            messageDetails.MsgReason.append( "ReplaceConfirmation ["+ iNumberRecordInConfirmation +"] " + sStackTracе.strInterruptedException(e) );
+            messageDetails.MsgReason.append( "ReplaceConfirmation [").append( iNumberRecordInConfirmation).append("] ").append( sStackTracе.strInterruptedException(e) );
             e.printStackTrace();
             try {
                 theadDataAccess.Hermes_Connection.rollback();

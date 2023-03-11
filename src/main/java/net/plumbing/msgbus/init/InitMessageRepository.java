@@ -320,7 +320,7 @@ public class InitMessageRepository {
 
             }
             rs.close();
-            //  stmtMsgDirectionReRead.close();
+            stmtMsgDirection.close();
         } catch (Exception e) {
             e.printStackTrace();
             return -2;
