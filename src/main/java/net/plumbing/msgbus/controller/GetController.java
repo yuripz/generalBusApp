@@ -50,8 +50,8 @@ public class GetController  {
         boolean is_TextJsonResponse=true;
         String queryString;
         try {
-            queryString = URLDecoder.decode(httpRequest.getQueryString(), "UTF-8");
-        } catch (UnsupportedEncodingException | NullPointerException | IllegalArgumentException e) {
+            queryString = URLDecoder.decode(httpRequest.getQueryString(), StandardCharsets.UTF_8);
+        } catch (NullPointerException | IllegalArgumentException e) {
             Controller_log.error( "httpRequest.getRequestURL `" + url + "` URLDecoder.decode `" + httpRequest.getQueryString() +" `fault "  + e.getMessage());
             System.err.println( "httpRequest.getRequestURL `" + url + "` URLDecoder.decode `" + httpRequest.getQueryString() +" `fault "  + e.getMessage());
             e.printStackTrace();
@@ -124,10 +124,10 @@ public class GetController  {
         {
             MessageDetails Message = new MessageDetails();
             Message.XML_Request_Method.append(Parametrs_Begin);
-            String queryParams[];
+            String[] queryParams;
             queryParams = queryString.split("&");
             for (int i = 0; i < queryParams.length; i++) { // Controller_log.warn( queryParams[i]);
-                String ParamElements[] = queryParams[i].split("=");
+                String[] ParamElements = queryParams[i].split("=");
                 //Controller_log.warn(ParamElements[0]);
 
                 Message.XML_Request_Method.append(OpenTag);
@@ -177,7 +177,7 @@ public class GetController  {
                 }
                 */
                 if (Queue_ID == 0L) {
-                    String isRest;
+                   // String isRest;
                     getResponse.setStatus(200);
                     if ( MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_Rest_2_Interface(Url_Soap_Send, Controller_log))
                        // в URL_SOAP_Ack интерфейса записан REST, значит без <Body></Body>
@@ -547,7 +547,7 @@ public class GetController  {
                 String ParamElements[] = queryParams[queryParamIndex].split("=");
                 // Controller_log.warn(ParamElements[0]);
 
-                //String ParamElementName = ClientIpHelper.toCamelCase(ParamElements[0], "_");
+                // String ParamElementName = ClientIpHelper.toCamelCase(ParamElements[0], "_");
                 //int ParamElementNameLength = (ParamElementName.indexOf(']') > 0) ? ParamElementName.indexOf(']') : ParamElementName.length();
                 try { // ?_end=5&_order=DESC&_sort=username&_start=0
                     //Controller_log.warn("ParamElements[0]=" + ParamElements[0] + " indexOf(_Filter)=" + ParamElements[0].indexOf("_Filter") );
@@ -565,6 +565,14 @@ public class GetController  {
                       }
                     else
                     {
+//                    {
+//                   if (ParamElementName.equalsIgnoreCase("Range"))
+//                       ClientIpHelper.add2XML_Request_Method_RangeTags(Message.XML_Request_Method, queryParamIndex, queryParams, ParamElements, Controller_log);
+//                    if (ParamElementName.equalsIgnoreCase("Filter"))
+//                        ClientIpHelper.add2XML_Request_Method_FilterTags(Message.XML_Request_Method, queryParamIndex, queryParams, ParamElements, Controller_log);
+//                    if (ParamElementName.equalsIgnoreCase("Sort"))
+//                        ClientIpHelper.add2XML_Request_Method_SortTags(Message.XML_Request_Method, queryParamIndex, queryParams, ParamElements, Controller_log);
+//                    }
                         // Controller_log.warn(ParamElements[0]);
 
                         Message.XML_Request_Method.append(OpenTag);
@@ -584,14 +592,6 @@ public class GetController  {
                         Message.XML_Request_Method.append(CloseTag);
                     }
 
-//                    {
-//                    if (ParamElementName.equalsIgnoreCase("Range"))
-//                        ClientIpHelper.add2XML_Request_Method_RangeTags(Message.XML_Request_Method, queryParamIndex, queryParams, ParamElements, Controller_log);
-//                    if (ParamElementName.equalsIgnoreCase("Filter"))
-//                        ClientIpHelper.add2XML_Request_Method_FilterTags(Message.XML_Request_Method, queryParamIndex, queryParams, ParamElements, Controller_log);
-//                    if (ParamElementName.equalsIgnoreCase("Sort"))
-//                        ClientIpHelper.add2XML_Request_Method_SortTags(Message.XML_Request_Method, queryParamIndex, queryParams, ParamElements, Controller_log);
-//                }
             }
                 catch (StringIndexOutOfBoundsException | NumberFormatException e) {
                     // org.apache.commons.text.StringEscapeUtils.escapeJson();

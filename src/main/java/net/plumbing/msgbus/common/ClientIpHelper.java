@@ -369,12 +369,13 @@ public class ClientIpHelper {
                 return;
             }
         }
-        else
-            XML_Request_Method.append(ParamElement);
+        else // - это не Json, добавляем строку как есть
+        XML_Request_Method.append(ParamElement);
         // int ParamElementNameLength = ( ParamElementName.indexOf(']') > 0) ? ParamElementName.indexOf(']') : ParamElementName.length() ;
 
     }
-
+    else // - это не может быть Json добавляем строку как есть
+        XML_Request_Method.append(ParamElement);
     }
 // Sort
 public static void add2XML_Request_Method_SortTags(StringBuilder XML_Request_Method, int queryParamIndex,  String queryParams[], String ParamElements[], Logger Controller_log )
