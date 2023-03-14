@@ -175,7 +175,7 @@ public class ServletApplication implements CommandLineRunner {
         ActiveMQService activeMQService= new ActiveMQService();
         try {
         activeMQService.MakeActiveMQConnectionFactory( ApplicationProperties.ConnectMsgBus );
-        activeMQService.StartJMSQueueConnection("123");
+        activeMQService.StartJMSQueueConnection("178");
         //activeMQService.StartJMSQueueConnection("333");
         //activeMQService.StartJMSQueueConnection("4444");
         } catch (JMSException e) {
@@ -359,7 +359,7 @@ public class ServletApplication implements CommandLineRunner {
                 if ( StoreMQpooledConnectionFactory.MQpooledConnectionFactory == null )
                     try {
                         activeMQService.MakeActiveMQConnectionFactory( ApplicationProperties.ConnectMsgBus );
-                        activeMQService.StartJMSQueueConnection("123-321");
+                        activeMQService.StartJMSQueueConnection("123-362");
                         AppThead_log.warn("Удалось пере-подключится к встренному брокеру сообщений ActiveMQ :" + ApplicationProperties.ConnectMsgBus );
                     } catch (JMSException e) {
                         AppThead_log.error("НЕ удалось подключится встренному  к брокеру сообщений ActiveMQ [" + ApplicationProperties.ConnectMsgBus + "] :" + e.getMessage());

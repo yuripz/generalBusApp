@@ -109,21 +109,7 @@ public class PerfotmInputMessages {
         );
         if ( Message.MessageTemplate4Perform.getIsDebugged() )
         MessegeReceive_Log.info("[" + Queue_Id + "] MessageTemplate4Perform[" + Message.MessageTemplate4Perform.printMessageTemplate4Perform() );
-/*
-        CloseableHttpClient SimpleHttpClient = null; // Message.SimpleHttpClient;
-        String isProxySet = System.getProperty("http.proxySet");
 
-            SimpleHttpClient = getCloseableHttpClient(
-                    Message.sslContext, Message.MessageTemplate4Perform,
-                    //Message.MessageTemplate4Perform.getPropTimeout_Read() * 1000,
-                    //Message.MessageTemplate4Perform.getPropTimeout_Conn() * 1000,
-                    MessegeReceive_Log
-            );
-        if ( SimpleHttpClient == null) {
-            return -22L;
-        }
-        Message.SimpleHttpClient = SimpleHttpClient;
-*/
         switch (Queue_Direction){
             case XMLchars.DirectNEWIN:
 

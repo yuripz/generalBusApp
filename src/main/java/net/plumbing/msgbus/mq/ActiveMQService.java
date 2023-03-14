@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 // @Configuration
 //
 
@@ -25,10 +26,10 @@ public class ActiveMQService {
     private static final Logger ActiveMQService_Log = LoggerFactory.getLogger(ActiveMQService.class);
 
 
-   public Connection  StartJMSQueueConnection( String TextMessageSring) throws JMSException {
+   public Connection  StartJMSQueueConnection( String TextMessageSring) throws JMSException, UnknownHostException {
 
        Connection Qconnection = StoreMQpooledConnectionFactory.MQpooledConnectionFactory.createConnection();
-       Qconnection.setClientID("JMS.Receiver.QUEUEz");
+       Qconnection.setClientID("JMS.Receiver." + InetAddress.getLocalHost().getHostAddress() );
        Qconnection.start();
        Session Qsession = Qconnection.createSession(false,
                Session.AUTO_ACKNOWLEDGE);
