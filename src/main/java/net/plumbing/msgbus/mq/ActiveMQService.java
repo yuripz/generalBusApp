@@ -27,9 +27,9 @@ public class ActiveMQService {
 
 
    public Connection  StartJMSQueueConnection( String TextMessageSring) throws JMSException, UnknownHostException {
-
+       Long pid = ProcessHandle.current().pid();
        Connection Qconnection = StoreMQpooledConnectionFactory.MQpooledConnectionFactory.createConnection();
-       Qconnection.setClientID("JMS.Receiver." + InetAddress.getLocalHost().getHostAddress() );
+       Qconnection.setClientID("JMS.Receiver." + pid.toString() + "-" + InetAddress.getLocalHost().getHostAddress() );
        Qconnection.start();
        Session Qsession = Qconnection.createSession(false,
                Session.AUTO_ACKNOWLEDGE);
@@ -81,6 +81,7 @@ public class ActiveMQService {
     // @Bean
     public ActiveMQConnectionFactory MakeActiveMQConnectionFactory(String brokerURL ) throws Exception {
         String localHostAddress;
+        Long pid = ProcessHandle.current().pid();
         try {
             localHostAddress = InetAddress.getLocalHost().getHostAddress();
         } catch ( java.net.UnknownHostException e )
@@ -92,7 +93,7 @@ public class ActiveMQService {
 
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerURL);
         connectionFactory.setAlwaysSyncSend(true);
-        connectionFactory.setClientID("JMS.Interlal."  + localHostAddress);
+        connectionFactory.setClientID("JMS.Interlal." + pid.toString() + "-" + localHostAddress);
         connectionFactory.setClientIDPrefix("ReceiverI");
         connectionFactory.setMaxThreadPoolSize(50);
         connectionFactory.setAlwaysSyncSend(true);

@@ -74,6 +74,7 @@ public class JMSReceiveTask  implements Runnable {
         JMSReceiveTask_Log.info("ActiveMQConnectionFactory MsgBus preSet");
         JMSReceiveTask_Log.info("ActiveMQConnectionFactory MsgBus TCP connect: [" + brokerURL + "]");
         String localHostAddress;
+        Long pid = ProcessHandle.current().pid();
         try {
             localHostAddress = InetAddress.getLocalHost().getHostAddress() + "-" + Thread.currentThread().getId();
         } catch (java.net.UnknownHostException e) {
@@ -82,7 +83,7 @@ public class JMSReceiveTask  implements Runnable {
         }
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerURL);
         connectionFactory.setAlwaysSyncSend(true);
-        connectionFactory.setClientID("JMS.Receiver.Q." + localHostAddress);
+        connectionFactory.setClientID("JMS.Receiver.Q." + pid.toString() + "-" + localHostAddress);
         connectionFactory.setClientIDPrefix("ReceiverZ");
         connectionFactory.setMaxThreadPoolSize(50);
         connectionFactory.setAlwaysSyncSend(true);

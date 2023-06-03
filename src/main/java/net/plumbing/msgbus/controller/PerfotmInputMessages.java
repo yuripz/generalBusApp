@@ -166,9 +166,11 @@ public class PerfotmInputMessages {
                 { // 2.1) Это JDBC-обработчик, но может быть указан custom Java метод, см. PropJavaMethodName
                     //--------------------------------------------------
                     if (Message.MessageTemplate4Perform.getIsDebugged()) {
+                        if  ( Message.MessageTemplate4Perform.getPropJavaMethodName() != null)
                         MessegeReceive_Log.info("[" + Queue_Id + "] getPropJavaMethodName(" +Message.MessageTemplate4Perform.getPropJavaMethodName() + ")");
+
                     }
-                    if ( ( Message.MessageTemplate4Perform.getPropJavaMethodName() != null) )
+                    if  ( Message.MessageTemplate4Perform.getPropJavaMethodName() != null)
                     // есть конкретный Java-обрабочик - PropJavaMethodName имя метода для кастомизации
                     { String JavaMethodName = Message.MessageTemplate4Perform.getPropJavaMethodName();
                         int resultSQL = 0;

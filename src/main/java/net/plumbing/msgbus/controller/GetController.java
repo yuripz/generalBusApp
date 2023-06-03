@@ -126,23 +126,43 @@ public class GetController  {
             Message.XML_Request_Method.append(Parametrs_Begin);
             String[] queryParams;
             queryParams = queryString.split("&");
-            for (int i = 0; i < queryParams.length; i++) { // Controller_log.warn( queryParams[i]);
-                String[] ParamElements = queryParams[i].split("=");
+            for (int queryParamIndex = 0; queryParamIndex < queryParams.length; queryParamIndex++) { // Controller_log.warn( queryParams[i]);
+                String[] ParamElements = queryParams[queryParamIndex].split("=");
                 //Controller_log.warn(ParamElements[0]);
+//-------------------------------------------------
+                Message.XML_Request_Method.append(OpenTag);
+                //Message.XML_Request_Method.append( ClientIpHelper.mapQryParam2SQLRequest(ParamElements[0]) );
+                 Message.XML_Request_Method.append(ParamElements[0]);
+                Message.XML_Request_Method.append(CloseTag);
 
+                if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
+                    //Controller_log.warn(queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1));
+                    // Если передан JSon, то пробуем превратить его в XML для обработки
+                    ClientIpHelper.add2XML_Request_Method_CustomTags(Message.XML_Request_Method, queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1),  Controller_log);
+                    // Message.XML_Request_Method.append(queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1));
+                }
+
+                Message.XML_Request_Method.append(OpenTag);
+                Message.XML_Request_Method.append(EndTag);
+                // Message.XML_Request_Method.append( ClientIpHelper.mapQryParam2SQLRequest(ParamElements[0]) );
+                Message.XML_Request_Method.append(ParamElements[0]);
+                Message.XML_Request_Method.append(CloseTag);
+//-------------------------------------------------/
+/*=============================================================
                 Message.XML_Request_Method.append(OpenTag);
                 Message.XML_Request_Method.append(ParamElements[0]);
                 Message.XML_Request_Method.append(CloseTag);
 
                 if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
                     // Controller_log.warn(queryParams[i].substring(ParamElements[0].length() + 1));
-                    Message.XML_Request_Method.append(queryParams[i].substring(ParamElements[0].length() + 1));
+                    Message.XML_Request_Method.append(queryParams[queryParamIndex].substring(ParamElements[0].length() + 1));
                 }
 
                 Message.XML_Request_Method.append(OpenTag);
                 Message.XML_Request_Method.append(EndTag);
                 Message.XML_Request_Method.append(ParamElements[0]);
                 Message.XML_Request_Method.append(CloseTag);
+                //===================================================*/
             }
             Message.XML_Request_Method.append(Parametrs_End);
             Controller_log.info("input XML_Request_Method: [" + Message.XML_Request_Method.toString() + "]");
@@ -539,12 +559,12 @@ public class GetController  {
             MessageDetails Message = new MessageDetails();
 
             Message.XML_Request_Method.append(Parametrs_Begin);
-            String queryParams[];
+            String[] queryParams;
             queryParams = queryString.split("&");
             // filter={}&range=[0,9]&sort=["id","ASC"])
             for (int queryParamIndex = 0; queryParamIndex < queryParams.length; queryParamIndex++) { // Controller_log.warn( queryParams[i]);
 
-                String ParamElements[] = queryParams[queryParamIndex].split("=");
+                String[] ParamElements = queryParams[queryParamIndex].split("=");
                 // Controller_log.warn(ParamElements[0]);
 
                 // String ParamElementName = ClientIpHelper.toCamelCase(ParamElements[0], "_");

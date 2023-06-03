@@ -61,11 +61,16 @@ public class RestAPI_ReceiveTask {
                 MessageDirections.AllMessageDirections.get(MsgDirectionVO_Key).getSubsys_Cod() + " : вернул Template_Id="  + MessageOperationTemplateVOkey);
 
         //MessegeReceive_Log.info(Queue_Direction + " [" + Queue_Id + "]  Шаблон под оперрацию =" + Template_Id);
-        String EnvelopeInXSLT = MessageTemplate.AllMessageTemplate.get( MessageOperationTemplateVOkey ).getEnvelopeInXSLT();
-        if ( EnvelopeInXSLT != null ) {
-            RestAPI_Receive_Log.info("`" + Queue_Direction + "`: MessageXSLT Шаблон под оперрацию `" + EnvelopeInXSLT + "`");
-        }
-            else {
+        MessageTemplateVO messageTemplateVO = MessageTemplate.AllMessageTemplate.get( MessageOperationTemplateVOkey );
+        String EnvelopeInXSLT;
+        if ( messageTemplateVO  != null ) {
+            EnvelopeInXSLT = MessageTemplate.AllMessageTemplate.get(MessageOperationTemplateVOkey).getEnvelopeInXSLT();
+            if (EnvelopeInXSLT != null) {
+                RestAPI_Receive_Log.info("`" + Queue_Direction + "`: MessageXSLT Шаблон под оперрацию `" + EnvelopeInXSLT + "`");
+            } else {
+                RestAPI_Receive_Log.info("`" + Queue_Direction + "`: MessageXSLT Шаблон под оперрацию `-NULL-`");
+            }
+        }else { EnvelopeInXSLT= null;
             RestAPI_Receive_Log.info("`" + Queue_Direction + "`: MessageXSLT Шаблон под оперрацию `-NULL-`");
         }
 

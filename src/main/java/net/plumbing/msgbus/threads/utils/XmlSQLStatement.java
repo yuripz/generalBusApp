@@ -224,36 +224,6 @@ public class XmlSQLStatement {
                 // todo
                // boolean is_NoConfirmation =
                 //        MessageRepositoryHelper.isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation(  messageQueueVO.getOperation_Id(), MessegeSend_Log );
-                if ( SQLStatement_functionORselect.equals( OperTypeUpdt ) )
-                    try {
-                        PreparedStatement preparedStatement;
-                        // Step 2.B: Creating JDBC CallableStatement
-                        preparedStatement = current_Connection_4_ExecuteSQL.prepareStatement (SQLcallableStatementExpression);
-                        if (isDebugged)
-                            MessegeSend_Log.info( SQLcallableStatementExpression );
-                        // register OUT parameter
-                        for ( int k =0; k < SQLparamValues.size(); k++ )
-                            //   MessegeSend_Log.warn( "SQLparamValues.get(" + k + " )=" + SQLparamValues.get(k).toString());
-                            preparedStatement.setString(1+k, SQLparamValues.get(k) );
-
-                        try {
-                            // Step 2.C: Executing CallableStatement
-                            preparedStatement.execute();
-                        } catch (SQLException e) {
-                            ;
-                            messageDetails.MsgReason.append(", SQLException preparedStatement.execute(`"+ messageQueueVO.getOutQueue_Id() + "`):=" + sStackTracе.strInterruptedException(e) );
-                            MessegeSend_Log.error(messageDetails.MsgReason.toString());
-                            preparedStatement.close();
-                            return -3;
-                        }
-                        // get count and print in console
-                        preparedStatement.close();
-                        current_Connection_4_ExecuteSQL.commit();
-                    } catch (SQLException e) {
-                        messageDetails.MsgReason.append("SQLException Hermes_Connection.preparedStatement `"+ messageQueueVO.getOutQueue_Id() + "`:=" ); messageDetails.MsgReason.append( sStackTracе.strInterruptedException(e) );
-                        MessegeSend_Log.error(messageDetails.MsgReason.toString());
-                        return -2;
-                    }
                 if ( SQLStatement_functionORselect.equals( OperTypeFunc ) )
                     try {
                         current_Connection_4_ExecuteSQL.clearWarnings();
@@ -263,6 +233,9 @@ public class XmlSQLStatement {
                         if (isDebugged)
                             MessegeSend_Log.info( SQLcallableStatementExpression );
                         // register OUT parameter
+                        if (  isExtSystemAccess ) // Внешний вызов возвращает "0~Message"
+                            callableStatement.registerOutParameter(1, Types.VARCHAR);
+                        else
                         callableStatement.registerOutParameter(1, Types.INTEGER);
                         for ( int k =0; k < SQLparamValues.size(); k++ ) {
                             if (isDebugged)
@@ -303,10 +276,42 @@ public class XmlSQLStatement {
                             warning = warning.getNextWarning();
                         }
                         // todo было: String countS = callableStatement.getString(1);
-                        Integer callableStatementResult = callableStatement.getInt(1); //getString(1);
-                        MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] "+ SQLcallableStatementExpression + " callableStatement.getInt=" + callableStatementResult.toString());
-                        callableStatement.close();
-                        current_Connection_4_ExecuteSQL.commit();
+                        if (  isExtSystemAccess ) // Внешний вызов возвращает "0~Message"
+                        {
+                            String callableStatementResult = callableStatement.getString(1); // Внешняя функция возвращает строку
+                            MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] " + SQLcallableStatementExpression + " callableStatement.getString=" + callableStatementResult);
+                            callableStatement.close();
+                            current_Connection_4_ExecuteSQL.commit();
+                            // - Формируем Confirmation из пришедшей стороки
+                            String callStatement_Message;
+                            Integer callStatementResult = 0;
+                            if ( callableStatementResult != null ) {
+                                String[] callableStatementResults = callableStatementResult.split("~");
+                                callStatementResult = Integer.parseInt(callableStatementResults[0]);
+                                if (callableStatementResults.length > 1) {
+                                    if (callableStatementResults[1] != null)
+                                        callStatement_Message = callableStatementResults[1];
+                                    else callStatement_Message = "`пустое тектовое сообшение`";
+                                } else
+                                    callStatement_Message = "`нет тектового сообшения`";
+                            } else {
+                                callStatementResult = 12821;
+                                callStatement_Message = "`неожиданно пусто`";
+                            }
+                            // Формируем псевдо XML_ClearBodyResponse из function
+                            MakeConfirmation4Function( callStatementResult, "Функция была успешно вызвана,callableStatement_MessageResult =" , callStatement_Message, messageDetails);
+                            // Устанавливаеи признак завершения работы прикладного обработчика  == "EXEIN" , для функции из внешей БД
+                            int result = theadDataAccess.doUPDATE_MessageQueue_IN2ExeIN(messageQueueVO.getQueue_Id(),
+                                    msg_Reason.toString(),  MessegeSend_Log);
+                             messageQueueVO.setQueue_Direction(XMLchars.DirectEXEIN);
+                        }
+                        else {
+                            Integer callableStatementResult = callableStatement.getInt(1);
+                            MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] " + SQLcallableStatementExpression + " callableStatement.getInt=" + callableStatementResult.toString());
+                            callableStatement.close();
+                            current_Connection_4_ExecuteSQL.commit();
+                        }
+
                     } catch (SQLException e) {
                         messageDetails.MsgReason.append(OperTypeFunc +  " SQLException Connection.prepareCall :=" ); messageDetails.MsgReason.append( e.getMessage() ); //sStackTracе.strInterruptedException(e) );
                         MessegeSend_Log.error(messageDetails.MsgReason.toString());
@@ -533,8 +538,9 @@ public class XmlSQLStatement {
 
                         // get count and print in console
                         selectStatement.close();
+                        // Устанавливаеи признак завершения работы прикладного обработчика  == "EXEIN"
                         int result = theadDataAccess.doUPDATE_MessageQueue_IN2ExeIN(messageQueueVO.getQueue_Id(),
-                                msg_Reason.toString(),  MessegeSend_Log);
+                                                                                    msg_Reason.toString(),  MessegeSend_Log);
                         messageQueueVO.setQueue_Direction(XMLchars.DirectEXEIN);
                         current_Connection_4_ExecuteSQL.commit();
                     } catch (SQLException e) {
@@ -659,5 +665,64 @@ public class XmlSQLStatement {
         return messageDetails.ConfirmationRowNum;
     }
 
+    private static void MakeConfirmation4Function(Integer callableStatementResult, String p_Run_String, String p_Message_String, MessageDetails messageDetails) {
+        // Формируем псевдо XML_ClearBodyResponse из function
+        String s_Message_String;
+        if ( p_Message_String !=null ) s_Message_String = p_Message_String;
+        else s_Message_String = "";
+        messageDetails.XML_MsgConfirmation.setLength(0);
+        messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag + XMLchars.TagConfirmation + XMLchars.CloseTag // <Confirmation>
+                + XMLchars.OpenTag + XMLchars.NameTagFaultResult + XMLchars.CloseTag //  <ResultCode>
+                + callableStatementResult.toString()
+                + XMLchars.OpenTag + XMLchars.EndTag + XMLchars.NameTagFaultResult + XMLchars.CloseTag // </ResultCode>
+                + XMLchars.OpenTag + XMLchars.NameTagFaultTxt + XMLchars.CloseTag //  <Message>
+                + s_Message_String
+                + XMLchars.OpenTag + XMLchars.EndTag + XMLchars.NameTagFaultTxt + XMLchars.CloseTag // </Message>
+        );
 
+        messageDetails.XML_MsgConfirmation.append( XMLchars.OpenTag + XMLchars.TagDetailList + XMLchars.CloseTag //  <DetailList>
+                + XMLchars.OpenTag + XMLchars.NameTagFaultResult + XMLchars.CloseTag //  <ResultCode>
+                + callableStatementResult.toString()
+                + XMLchars.OpenTag + XMLchars.EndTag + XMLchars.NameTagFaultResult + XMLchars.CloseTag // </ResultCode>
+                + XMLchars.OpenTag + XMLchars.NameTagFaultTxt + XMLchars.CloseTag //  <Message>
+                + p_Run_String + s_Message_String
+                + XMLchars.OpenTag + XMLchars.EndTag + XMLchars.NameTagFaultTxt + XMLchars.CloseTag // </Messag
+                + XMLchars.OpenTag + XMLchars.EndTag + XMLchars.TagDetailList + XMLchars.CloseTag // ЗАКРЫВАЕМ  </DetailList>
+                + XMLchars.OpenTag + XMLchars.EndTag + XMLchars.TagConfirmation + XMLchars.CloseTag //  ЗАКРЫВАЕМ </Confirmation>
+        );
+    }
+    /*
+    {
+
+        messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag + XMLchars.TagConfirmation + XMLchars.CloseTag // <Confirmation>
+                        + XMLchars.OpenTag + XMLchars.NameTagFaultResult + XMLchars.CloseTag //  <ResultCode>
+                        + "0"
+                        + XMLchars.OpenTag + XMLchars.EndTag + XMLchars.NameTagFaultResult + XMLchars.CloseTag // </ResultCode>
+                        + XMLchars.OpenTag + XMLchars.TagDetailList + XMLchars.CloseTag //  <DetailList>
+                // + XMLchars.OpenTag + XMLchars.EndTag + XMLchars.TagDetailList + XMLchars.CloseTag // не ЗАКРЫВАЕМ  </DetailList>
+                //+ XMLchars.OpenTag + XMLchars.EndTag + XMLchars.TagConfirmation + XMLchars.CloseTag // не ЗАКРЫВАЕМ </Confirmation>
+        );
+        String ColumnLabel;
+        while (rs.next()) {
+            messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag + RowTag + XMLchars.CloseTag //  <ROW>
+            );
+            num_Rows4Perform += 1;
+            for (i = 1; i < ColumnCount + 1; i++) {
+                ColumnLabel = toCamelCase( ResultSetMetaData.getColumnLabel(i), "_" );
+                messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag);
+                messageDetails.XML_MsgConfirmation.append( ColumnLabel); messageDetails.XML_MsgConfirmation.append(XMLchars.CloseTag);
+                messageDetails.XML_MsgConfirmation.append( StringEscapeUtils.escapeXml10(rs.getString(i)) )   ;
+                messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag); messageDetails.XML_MsgConfirmation.append(XMLchars.EndTag);
+                messageDetails.XML_MsgConfirmation.append( ColumnLabel ); messageDetails.XML_MsgConfirmation.append(XMLchars.CloseTag);
+            }
+            messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag + XMLchars.EndTag + RowTag + XMLchars.CloseTag //  </ROW>
+            );
+            num_Rows4Perform += 1;
+        } // Цикл по выборке
+
+        messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag + XMLchars.EndTag + XMLchars.TagDetailList + XMLchars.CloseTag //   </DetailList>
+                + XMLchars.OpenTag + XMLchars.EndTag + XMLchars.TagConfirmation + XMLchars.CloseTag // </Confirmation>
+        );
+    }
+    */
 }
