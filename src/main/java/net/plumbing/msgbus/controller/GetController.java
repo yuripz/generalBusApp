@@ -372,9 +372,6 @@ public class GetController  {
    // @ResponseStatus(HttpStatus.OK)
     @ResponseBody
 
-
-    // @ResponseStatus(HttpStatus.OK)
-
     public String GetHermesRestApi(ServletRequest getServletRequest, HttpServletResponse getResponse, Authentication httpRequestAuthentication, Principal httpRequestUserPrincipal) {
         //@PathVariable
         HttpServletRequest httpRequest = (HttpServletRequest) getServletRequest;
@@ -585,16 +582,6 @@ public class GetController  {
                       }
                     else
                     {
-//                    {
-//                   if (ParamElementName.equalsIgnoreCase("Range"))
-//                       ClientIpHelper.add2XML_Request_Method_RangeTags(Message.XML_Request_Method, queryParamIndex, queryParams, ParamElements, Controller_log);
-//                    if (ParamElementName.equalsIgnoreCase("Filter"))
-//                        ClientIpHelper.add2XML_Request_Method_FilterTags(Message.XML_Request_Method, queryParamIndex, queryParams, ParamElements, Controller_log);
-//                    if (ParamElementName.equalsIgnoreCase("Sort"))
-//                        ClientIpHelper.add2XML_Request_Method_SortTags(Message.XML_Request_Method, queryParamIndex, queryParams, ParamElements, Controller_log);
-//                    }
-                        // Controller_log.warn(ParamElements[0]);
-
                         Message.XML_Request_Method.append(OpenTag);
                         Message.XML_Request_Method.append( ClientIpHelper.mapQryParam2SQLRequest(ParamElements[0]) );
                         Message.XML_Request_Method.append(CloseTag);
@@ -625,97 +612,10 @@ public class GetController  {
                     //getResponse.setStatus(422);
                     return HttpResponse;
                 }
-//                {
-//                    Message.XML_Request_Method.append(OpenTag);
-//                    Message.XML_Request_Method.append( "FirstRecord2Fetch"  ) ;
-//                    Message.XML_Request_Method.append(CloseTag);
-//                    if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
-//                        Controller_log.warn(queryParams[i].substring(ParamElements[0].length() + 1));
-//                        String FirstRecord2Fetch = queryParams[i].substring(ParamElements[0].length() + 1);
-//                        // извлекаем из [0,9] первое число после "[" до ","
-//                        Message.XML_Request_Method.append( FirstRecord2Fetch.substring(
-//                                FirstRecord2Fetch.indexOf('[') +1,
-//                                FirstRecord2Fetch.indexOf(',')
-//                                ) ) ;
-//                    }
-//
-//                    Message.XML_Request_Method.append(OpenTag);
-//                    Message.XML_Request_Method.append(EndTag);
-//                    Message.XML_Request_Method.append("FirstRecord2Fetch" ) ;
-//                    Message.XML_Request_Method.append(CloseTag);
-//
-//                    if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
-//                        Message.XML_Request_Method.append(OpenTag);
-//                        Message.XML_Request_Method.append( "Page_Size"  ) ;
-//                        Message.XML_Request_Method.append(CloseTag);
-//
-//                        Controller_log.warn(queryParams[i].substring(ParamElements[0].length() + 1));
-//                        String FirstRecord2Fetch = queryParams[i].substring(ParamElements[0].length() + 1);
-//                        // извлекаем из [0,9] первое число после "[" до ","
-//                        Message.XML_Request_Method.append( FirstRecord2Fetch.substring(
-//                                FirstRecord2Fetch.indexOf(',') +1,
-//                                FirstRecord2Fetch.indexOf(']')
-//                                )
-//                        );
-//                        Message.XML_Request_Method.append(OpenTag);
-//                        Message.XML_Request_Method.append(EndTag);
-//                        Message.XML_Request_Method.append( "Page_Size"  ) ;
-//                        Message.XML_Request_Method.append(CloseTag);
-//
-//                    }
-//
-//                }
-
-
-//                Message.XML_Request_Method.append(OpenTag);
-//                Message.XML_Request_Method.append( ParamElementName.substring(0, ParamElementNameLength ) ) ;
-//                Message.XML_Request_Method.append(CloseTag);
-//
-//                if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
-//                    Controller_log.warn(queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1));
-//                    if ( !queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1, ParamElements[0].length() + 1 + 1).equals("-") )
-//                      Message.XML_Request_Method.append(queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1));
-//                    else
-//                      Message.XML_Request_Method.append(queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1 +1 )); // сдвигаем на 1н символ из-за '-'
-//                }
-//
-//                Message.XML_Request_Method.append(OpenTag);
-//                Message.XML_Request_Method.append(EndTag);
-//                Message.XML_Request_Method.append(ParamElementName.substring(0, ParamElementNameLength ) ) ;
-//                Message.XML_Request_Method.append(CloseTag);
-
-//                if ( ( ParamElementName.substring(0, ParamElementNameLength ).equalsIgnoreCase("sort")) &&
-//                     ( ParamElements.length > 1) &&
-//                     ( ParamElements[1] != null) )
-//                {
-//                    if ( queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1, ParamElements[0].length() + 1 + 1).equals("-") )
-//                    {
-//                        Message.XML_Request_Method.append(OpenTag); Message.XML_Request_Method.append("Order_By");Message.XML_Request_Method.append(CloseTag);
-//                        Message.XML_Request_Method.append("DESC");
-//                        Message.XML_Request_Method.append(OpenTag); Message.XML_Request_Method.append(EndTag);Message.XML_Request_Method.append("Order_By");Message.XML_Request_Method.append(CloseTag);
-//                    }
-//                    else
-//                    {
-//                        Message.XML_Request_Method.append(OpenTag); Message.XML_Request_Method.append("OrderBY");Message.XML_Request_Method.append(CloseTag);
-//                        Message.XML_Request_Method.append("ASC");
-//                        Message.XML_Request_Method.append(OpenTag); Message.XML_Request_Method.append(EndTag);Message.XML_Request_Method.append("OrderBY");Message.XML_Request_Method.append(CloseTag);
-//                    }
-//
-//                }
             }
             Message.XML_Request_Method.append(Parametrs_End);
 
-            // Controller_log.info("XML_Request_Method: `" + Message.XML_Request_Method.toString()+"`");
-/*
-            Message.XML_MsgInput = Envelope_noNS_Begin
-                    + Header_noNS_Begin + Header_noNS_End
-                    + Body_noNS_Begin
-                    + Message.XML_Request_Method.toString()
-                    + Body_noNS_End + Envelope_noNS_End
-            ;*/
-
         Message.XML_MsgInput = Envelope_noNS_Begin
-                // + EmptyHeader
                 + Header_4BusOperationId_Begin + OperationId + Header_4BusOperationId_End
                 + Body_noNS_Begin
                 + Message.XML_Request_Method.toString()
@@ -737,11 +637,20 @@ public class GetController  {
                 if (Queue_ID == 0L) {
                     getResponse.setStatus(200);
                     if (MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_Rest_2_Interface(Url_Soap_Send, Controller_log))
-                        // в URL_SOAP_Ack интерфейса записан REST, значит без <Body></Body>
-                        HttpResponse = Message.XML_MsgResponse.toString();
+                    { // в URL_SOAP_Ack интерфейса записан REST, значит без <Body></Body>
+                        if (MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_RestExel_2_Interface(Url_Soap_Send, Controller_log))
+                        // на интерфейсе прописан `REST-EXCEL` , надо сказать браузеру, что возвращаем MML-файл в Excel-формат
+                            HttpResponse = """
+                                    <?xml version="1.0" encoding="UTF-8"?>
+                                    <?mso-application progid="Excel.Sheet"?>                                                                           
+                                    """
+                                    + Message.XML_MsgResponse.toString();
+                        else HttpResponse = Message.XML_MsgResponse.toString();
+                    }
+                    // добавляем  <Body></Body>
                     else HttpResponse = Body_noNS_Begin +
-                            Message.XML_MsgResponse.toString() +
-                            Body_noNS_End;
+                                        Message.XML_MsgResponse.toString() +
+                                        Body_noNS_End;
                 } else {
                     getResponse.setStatus(422);
                     if (Queue_ID > 0L) {
@@ -762,8 +671,21 @@ public class GetController  {
                 // Controller_log.warn("XML-HttpResponse готов" );
 
                 if (MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_RestXML_2_Interface(Url_Soap_Send, Controller_log))
-                {       // если на интерфейсе прописан REST-XML , то возвращаем XML
-                    getResponse.setContentType("text/xml;charset=UTF-8");
+                {       // если на интерфейсе прописан REST-XML или REST-EXCEL, то возвращаем XML
+                    if (isDebugged) Controller_log.info("на интерфейсе прописан REST-XML , то возвращаем XML" );
+                    //getResponse.setContentType("text/xml;charset=UTF-8");
+                    // HttpHeaders header;
+                    //MediaType exelMediaType = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                    if (MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_RestExel_2_Interface(Url_Soap_Send, Controller_log)) {
+                        // на интерфейсе прописан `REST-EXCEL` , надо сказать браузеру, что возвращаем MML-файл в Excel-формат
+                        getResponse.setContentType("application/vnd.ms-excel");
+                        // header.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=my_file.xls");
+                        getResponse.setHeader("Content-Disposition", "attachment; filename=" + BusOperationMesssageType + ".xml");
+                        //getResponse.setContentLength(HttpResponse.codePointCount(0, HttpResponse.length() ) );
+                    }
+                    else
+                        getResponse.setContentType("text/xml;charset=UTF-8");
+
                 }
                 else
                 {  // возвращаем JSON

@@ -192,8 +192,8 @@ public class MessageRepositoryHelper {
         return false;
     }
 
-    public static  boolean isLooked4MessageTypeURL_SOAP_Ack_RestXML_2_Interface(String Url_Soap_Send,  Logger messegeSend_log) {
-        //messegeSend_log.info("isLooked4MessageTypeURL_SOAP_Ack_Rest_2_Interface[0-" + MessageType.AllMessageType.size() + "]:" + Url_Soap_Send);
+    public static  boolean isLooked4MessageTypeURL_SOAP_Ack_RestExel_2_Interface(String Url_Soap_Send,  Logger messegeSend_log) {
+        //messegeSend_log.info("isLooked4MessageTypeURL_SOAP_Ack_RestXML_2_Interface[0-" + MessageType.AllMessageType.size() + "]:" + Url_Soap_Send);
         for (int i = 0; i < MessageType.AllMessageType.size(); i++) {
             MessageTypeVO messageTypeVO = MessageType.AllMessageType.get(i);
             if (messageTypeVO.getOperation_Id() == 0 ){ // Это ИНТПРФЕЙС, тип, у которого № ОПЕРАЦИЯ == 0
@@ -202,14 +202,38 @@ public class MessageRepositoryHelper {
                     if ( URL_SOAP_Send.equals(Url_Soap_Send) ) {    //  нашли операцию,
                         String isRest = messageTypeVO.getURL_SOAP_Ack();
                         if ( isRest != null )
-                             return isRest.equalsIgnoreCase("REST-XML"); // в формируемое для преобразования не будет добвленр <Body></Body>
+                            return isRest.equalsIgnoreCase("REST-EXCEL")
+                                    ; // в формируемое для преобразования не будет добвленр <Body></Body>
                         else
                             return false;
                     }
                 }
             }
         }
-        messegeSend_log.warn("isLooked4MessageTypeURL_SOAP_Ack_Rest_2_Interface[0-" + MessageType.AllMessageType.size() + "]:" + Url_Soap_Send + " не нашёл итерфейса по URL");
+        messegeSend_log.warn("isLooked4MessageTypeURL_SOAP_Ack_RestExel_2_Interface[0-" + MessageType.AllMessageType.size() + "]:" + Url_Soap_Send + " не нашёл итерфейса по URL");
+        return false;
+    }
+
+    public static  boolean isLooked4MessageTypeURL_SOAP_Ack_RestXML_2_Interface(String Url_Soap_Send,  Logger messegeSend_log) {
+        //messegeSend_log.info("isLooked4MessageTypeURL_SOAP_Ack_RestXML_2_Interface[0-" + MessageType.AllMessageType.size() + "]:" + Url_Soap_Send);
+        for (int i = 0; i < MessageType.AllMessageType.size(); i++) {
+            MessageTypeVO messageTypeVO = MessageType.AllMessageType.get(i);
+            if (messageTypeVO.getOperation_Id() == 0 ){ // Это ИНТПРФЕЙС, тип, у которого № ОПЕРАЦИЯ == 0
+                String URL_SOAP_Send = messageTypeVO.getURL_SOAP_Send();
+                if ( URL_SOAP_Send != null ) {
+                    if ( URL_SOAP_Send.equals(Url_Soap_Send) ) {    //  нашли операцию,
+                        String isRest = messageTypeVO.getURL_SOAP_Ack();
+                        if ( isRest != null )
+                                 return isRest.equalsIgnoreCase("REST-XML") ||
+                                        isRest.equalsIgnoreCase("REST-EXCEL")
+                                         ; // в формируемое для преобразования не будет добвленр <Body></Body>
+                        else
+                            return false;
+                    }
+                }
+            }
+        }
+        messegeSend_log.warn("isLooked4MessageTypeURL_SOAP_Ack_RestXML_2_Interface[0-" + MessageType.AllMessageType.size() + "]:" + Url_Soap_Send + " не нашёл итерфейса по URL");
         return false;
     }
 /*  не используется, вместо неё isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation

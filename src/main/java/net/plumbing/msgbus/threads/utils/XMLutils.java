@@ -618,15 +618,11 @@ public class XMLutils {
         {
             TransformerFactory XSLTransformerFactory = TransformerFactory.newInstance();
             XSLTransformerFactory.setErrorListener( XSLTErrorListener ); //!!!! java.lang.IllegalArgumentException: ErrorListener !!!
-           /* XSLTransformerFactory.setErrorListener(new ErrorListener() {
-                public void warning(TransformerException te) {
-                    log.warn("Warning received while processing a stylesheet", te);
-                }
-                */
-            // transformer = TransformerFactory.newInstance().newTransformer(srcxslt);
             transformer = XSLTransformerFactory.newTransformer(srcxslt);
             if ( transformer != null) {
                 transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
                 transformer.transform(source, result);
             }
             else result = null;

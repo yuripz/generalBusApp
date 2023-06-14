@@ -730,7 +730,7 @@ public class PerfotmInputMessages {
                                 int ConfirmationRowNum = MessageUtils.ReadConfirmation(theadDataAccess, Queue_Id, Message, MessegeReceive_Log);
                                 if (ConfirmationRowNum < 1) {
                                     // Ругаемся, что обработчик не сформировал Confirmation
-                                    Message.MsgReason.append("[" + Queue_Id + "] обработчик Исходящего события не сформировал Confirmation, нарушено соглашение о взаимодействии с Шиной");
+                                    Message.MsgReason.append("[" + Queue_Id + "] обработчик порожденного Исходящего события не сформировал Confirmation, нарушено соглашение о взаимодействии с Шиной");
                                     MessegeReceive_Log.error( Message.MsgReason.toString());
                                     theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, Message.MsgReason.toString(), 3245,
                                             MessegeReceive_Log);
