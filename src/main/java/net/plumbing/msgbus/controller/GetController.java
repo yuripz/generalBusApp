@@ -630,21 +630,23 @@ public class GetController  {
                 int MessageOperationId = Integer.parseInt(OperationId);
                 // получив на вход интерфейса (на основе входного URL) ищем для него Шаблон
                 int MessageTemplateVOkey = MessageRepositoryHelper.look4MessageTemplate_2_Interface(Interface_id, Controller_log);
-                boolean isDebugged =  true;  // TODO: this.isDebugged=true; -- для Документированияfalse;
+                boolean isDebugged = false;  // TODO: this.isDebugged=true; -- для Документирования false;
 
                 Long Queue_ID = messageReceiveTask.ProcessRestAPIMessage(Interface_id, Message, MessageOperationId, isDebugged);
 
                 if (Queue_ID == 0L) {
                     getResponse.setStatus(200);
                     if (MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_Rest_2_Interface(Url_Soap_Send, Controller_log))
-                    { // в URL_SOAP_Ack интерфейса записан REST, значит без <Body></Body>
-                        if (MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_RestExel_2_Interface(Url_Soap_Send, Controller_log))
-                        // на интерфейсе прописан `REST-EXCEL` , надо сказать браузеру, что возвращаем MML-файл в Excel-формат
+                    {  if (isDebugged) Controller_log.info( "в URL_SOAP_Ack интерфейса записан REST, значит без <Body></Body>" );
+                        if (MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_RestExel_2_Interface(Url_Soap_Send, Controller_log)) {
+                            if (isDebugged)
+                                Controller_log.info("на интерфейсе прописан `REST-EXCEL` , надо сказать браузеру, что возвращаем MML-файл в Excel-формат");
                             HttpResponse = """
                                     <?xml version="1.0" encoding="UTF-8"?>
                                     <?mso-application progid="Excel.Sheet"?>                                                                           
                                     """
                                     + Message.XML_MsgResponse.toString();
+                        }
                         else HttpResponse = Message.XML_MsgResponse.toString();
                     }
                     // добавляем  <Body></Body>
@@ -667,7 +669,7 @@ public class GetController  {
                 }
 
                 if (isDebugged)
-                    Controller_log.info("HttpResponse:" + HttpResponse);
+                    Controller_log.info("HttpResponse:`" + HttpResponse + "`");
                 // Controller_log.warn("XML-HttpResponse готов" );
 
                 if (MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_RestXML_2_Interface(Url_Soap_Send, Controller_log))
@@ -693,7 +695,7 @@ public class GetController  {
                     try
                     {
                         String jsonPrettyPrintString;
-                        if (HttpResponse.equals("<data/>")) {
+                        if (HttpResponse.startsWith("<data/>")) {
                             jsonPrettyPrintString = "[]";
                             Controller_log.warn("пустой JSON-HttpResponse сформирован");
                         } else
@@ -730,7 +732,7 @@ public class GetController  {
                             Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
                             SQLe.printStackTrace();
                         }
-                        Controller_log.info("Response.Status=" + getResponse.getStatus() + "DataSourcePool=" + DataSourcePoolMetadata.getActive());
+                        Controller_log.info("Response.Status=" + getResponse.getStatus() + "; DataSourcePool=" + DataSourcePoolMetadata.getActive());
 
                         getResponse.setHeader("Access-Control-Allow-Origin", "*");
 //                    getResponse.setHeader("Access-Control-Expose-Headers", "X-Total-Count");
