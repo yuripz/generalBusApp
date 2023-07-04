@@ -1,7 +1,7 @@
 package net.plumbing.msgbus;
 
 
-import net.plumbing.msgbus.mq.JMS_MessageDirection_MQConnectionFactory;
+//import net.plumbing.msgbus.mq.JMS_MessageDirection_MQConnectionFactory;
 import net.plumbing.msgbus.telegramm.NotifyByChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,9 +69,7 @@ public class ServletApplication implements CommandLineRunner {
     public DBLoggingProperties dbLoggingProperties;
     @Autowired
     public TelegramProperties telegramProperties;
-	/*@Autowired
-	private ApplicationContext applicationContext;
-*/
+
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ServletApplication.class, args);
     }
