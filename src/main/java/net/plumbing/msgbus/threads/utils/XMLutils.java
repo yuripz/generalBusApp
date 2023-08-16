@@ -621,8 +621,9 @@ public class XMLutils {
             transformer = XSLTransformerFactory.newTransformer(srcxslt);
             if ( transformer != null) {
                 transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-                transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+                // TODO OutputKeys.INDENT for ExeL
+                // transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                // transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
                 transformer.transform(source, result);
             }
             else result = null;

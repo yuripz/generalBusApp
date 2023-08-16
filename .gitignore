@@ -4,4 +4,5 @@
 /_Logz
 /target
 mvnw.cmd
+*.log
 HE-6025.Receiver.log*

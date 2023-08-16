@@ -160,6 +160,9 @@ public class CustomJavaMethods {
 			stmt_SELECT_QUEUElog_Response = null;
 
 		}catch (SQLException e) {
+			MessegeSend_Log.error( "["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "' fault: " + e.getMessage());
+			System.err.println( "["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "' fault: " + e.getMessage());
+			messageDetails.XML_MsgResponse.append("["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "' fault: " + e.getMessage() );
 			e.printStackTrace();
 			if ( stmt_SELECT_QUEUElog_Response != null )
 				try { stmt_SELECT_QUEUElog_Response.close(); } catch (SQLException ex) { ex.printStackTrace(); }
