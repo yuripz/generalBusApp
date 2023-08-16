@@ -384,7 +384,8 @@ public class PerfotmInputMessages {
                                         .header("Content-Type", "text/json;charset=UTF-8")
                                         .basicAuth(Message.MessageTemplate4Perform.getPropUser(), Message.MessageTemplate4Perform.getPropPswd())
                                         .body(jsonPrettyPrintString)
-                                        .asString().getBody();
+                                        .asString()
+                                        .getBody();
                             if (Message.MessageTemplate4Perform.getIsDebugged())
                                 MessegeReceive_Log.info("[" + messageQueueVO.getQueue_Id() + "]" + " MetodExec.Unirest.post(" + EndPointUrl + "?queue_id=" + Queue_Id.toString() + ") RestResponse=(" + RestResponse + ")");
                         }
