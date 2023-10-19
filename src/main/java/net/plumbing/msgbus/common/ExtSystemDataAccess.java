@@ -30,6 +30,8 @@ public class ExtSystemDataAccess {
             ClassforName = "oracle.jdbc.driver.OracleDriver";
         else ClassforName = "org.postgresql.Driver";
 
+        // when  connectionUrl contains  'PuPoVozer_DevReceiver' - then  Set_config('md.surname.crypt', 'true', false);
+
 //        hikariConfig.setDriverClassName("oracle.jdbc.driver.OracleDriver");
 //        hikariConfig.setJdbcUrl( "jdbc:oracle:thin:@"+ JdbcUrl); //("jdbc:oracle:thin:@//10.242.36.8:1521/hermes12");
         ServletApplication.AppThead_log.info( "ExtSystemDataAccess: Try make hikariConfig: JdbcUrl `" + connectionUrl + "` as " + Username + " ["+ Password + "] , Class.forName:" + ClassforName);
@@ -97,12 +99,35 @@ public class ExtSystemDataAccess {
             PreparedStatement prepareStatement = tryConn.prepareStatement( connectionTestQuery );
             prepareStatement.executeQuery();
             prepareStatement.close();
-            ServletApplication.AppThead_log.info( "DataSourcePool ( at prepareStatement ): getMax: " + DataSourcePoolMetadata.getMax()
+            ServletApplication.AppThead_log.info( "DataSourcePool ( at " + connectionTestQuery + " ): getMax: " + DataSourcePoolMetadata.getMax()
                     + ", getIdle: " + DataSourcePoolMetadata.getIdle()
                     + ", getActive: " + DataSourcePoolMetadata.getActive()
                     + ", getMax: " + DataSourcePoolMetadata.getMax()
                     + ", getMin: " + DataSourcePoolMetadata.getMin()
+                    + ", getUsage: " + DataSourcePoolMetadata.getUsage()
             );
+            if ( connectionUrl.indexOf("postgresql") > 0 ) {
+                String set_config_Query;
+                if ( connectionUrl.indexOf("PuPoVozer_DevReceiver") > 0 ) {
+                    set_config_Query = "select set_config('md.surname.crypt', 'true', false)";
+                }
+                else {
+                    set_config_Query = "select set_config('md.surname.crypt', 'false', false)";
+                }
+
+                try {
+                    PreparedStatement set_config_Statement = tryConn.prepareStatement( set_config_Query );
+                    set_config_Statement.executeQuery();
+                    set_config_Statement.close();
+                    ServletApplication.AppThead_log.info( "DataSourcePool ( at prepareStatement ): set_config: " + set_config_Query
+                    );
+                }
+                catch (java.sql.SQLException e)
+                { ServletApplication.AppThead_log.error( "dataSource set_config fault `" + set_config_Query + "` :" +  e.getMessage());
+
+                }
+            }
+
             tryConn.close();
             ServletApplication.AppThead_log.info( "getJdbcUrl: "+ hikariConfig.getJdbcUrl());
         }

@@ -254,7 +254,7 @@ public class XMLutils {
         }
         catch ( JDOMParseException e)
         {
-            MessegeSend_Log.error("documentBuilder.build (" + messageDetails.XML_MsgClear.toString() + ")fault"  );
+            MessegeSend_Log.error("documentBuilder.build {" + messageDetails.XML_MsgClear.toString() + "} fault :" + e.getMessage() );
             throw new JDOMParseException("client.post, 2й проход - получаем элемент Context из заголовка ( если есть ) :getClearRequest=(" + messageDetails.XML_MsgClear.toString() + ")", e);
         }
 

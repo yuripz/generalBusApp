@@ -180,6 +180,9 @@ public class PostController {
         //PropEncoding_In = "UTF-8";
         try (InputStreamReader reader = new InputStreamReader(inputStream, Charsets.toCharset(PropEncoding_In))// Charsets.UTF_8)
         ) {
+            if ( isDebugged ) {
+                Controller_log.warn("Message.soapAction[" + soapAction + "]");
+            }
             if (soapAction != null)
                 Message.XML_MsgInput = CharStreams.toString(reader);
             else {
@@ -189,7 +192,11 @@ public class PostController {
                 Controller_log.error("----------------------------");
                  */
                 Message.XML_MsgConfirmation.append(CharStreams.toString(reader));
-                if (Message.XML_MsgConfirmation.substring(1, 2).equals("<?")) {
+                if ( isDebugged ) {
+                    Controller_log.warn("Message.XML_MsgConfirmation.substring(0, 2)[" + Message.XML_MsgConfirmation.substring(0, 2) + "] Message.XML_MsgConfirmation.indexOf(\"?>\") =" + Message.XML_MsgConfirmation.indexOf("?>"));
+
+                }
+                if (Message.XML_MsgConfirmation.substring(0, 2).equals("<?")) {
                     // в запросе <?xml version="1.0" encoding="UTF-8"?> Ищем '?>' что бы изъять !
                     xmlVersionEncoding_pos = Message.XML_MsgConfirmation.indexOf("?>") + 2;
                 }
@@ -199,8 +206,9 @@ public class PostController {
                         + Message.XML_MsgConfirmation.substring(xmlVersionEncoding_pos)// CharStreams.toString(reader)
                         + Body_noNS_End + Envelope_noNS_End
                 ;
-
-            }
+                if ( isDebugged )
+                    Controller_log.warn("Message.XML_MsgConfirmation.substring("+xmlVersionEncoding_pos + ") [" +  Message.XML_MsgConfirmation.substring(xmlVersionEncoding_pos) + "]");
+                 }
             if ( isDebugged )
             Controller_log.warn("InputStreamReader to Message.XML_MsgInput[" +  Message.XML_MsgInput + "]");
             inputStream.close();

@@ -565,7 +565,7 @@ public class PerfotmInputMessages {
                         {
                             // надо читать ответ из Confirmation порожденного OUT
                             if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                            MessegeReceive_Log.warn("AckAnswXSLT: " + Message.MessageTemplate4Perform.getAckAnswXSLT());
+                            MessegeReceive_Log.warn("[" + Queue_Id + "] AckAnswXSLT: " + Message.MessageTemplate4Perform.getAckAnswXSLT());
                             // ReadConfirmation очищает Message.XML_MsgConfirmation и помещает туда чстанный из БД Confirmation
                             int ConfirmationRowNum = MessageUtils.ReadConfirmation(theadDataAccess, Link_Queue_Id, Message, MessegeReceive_Log);
                             if (ConfirmationRowNum < 1) {
