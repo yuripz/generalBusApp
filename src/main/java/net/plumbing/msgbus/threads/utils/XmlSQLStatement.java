@@ -251,6 +251,13 @@ public class XmlSQLStatement {
                         } catch (SQLException e) {
                             messageDetails.MsgReason.append(", SQLException callableStatement.execute(`"+ messageQueueVO.getOutQueue_Id() + "`):=" + sStackTracе.strInterruptedException(e) );
                             MessegeSend_Log.error(messageDetails.MsgReason.toString());
+                            SQLWarning warning = callableStatement.getWarnings();
+
+                            while (warning != null) {
+                                // System.out.println(warning.getMessage());
+                                MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] callableStatement.SQLWarning: " + warning.getMessage());
+                                warning = warning.getNextWarning();
+                            }
                             callableStatement.close();
                             current_Connection_4_ExecuteSQL.rollback();
                             return -3;

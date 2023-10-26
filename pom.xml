@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>net.plumbing.msgbus</groupId>
 	<artifactId>Receiver</artifactId>
-    <version>0.2.23.10.18_xml-SNAPSHOT</version>
+    <version>0.2.23.10.19_xml-SNAPSHOT</version>
     <name>Receiver</name>
     <description>servlet project for Spring Boot</description>
 
