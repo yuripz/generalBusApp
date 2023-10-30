@@ -31,6 +31,8 @@ import java.sql.SQLException;
 import java.util.List;
 import com.github.underscore.U;
 
+
+
 public class CustomJavaMethods {
 
 	public static int GetRequest_Body4Message(MessageQueueVO messageQueueVO, MessageDetails messageDetails,
@@ -76,7 +78,16 @@ public class CustomJavaMethods {
 		int nn = MessageUtils.ReadConfirmation(theadDataAccess, Queue_Id, messageDetails, MessegeSend_Log);
 		messageDetails.XML_MsgResponse.setLength(0);
 		// -- без formatXml - в одну строку, некрасиво на Форнте
-		messageDetails.XML_MsgResponse.append( U.formatXml(messageDetails.XML_MsgConfirmation.toString()) );
+		if ( (nn > 0) && (messageDetails.XML_MsgConfirmation.length() > XMLchars.nanXSLT_Result.length() ))
+			try {
+				messageDetails.XML_MsgResponse.append(U.formatXml(messageDetails.XML_MsgConfirmation.toString()));
+			} catch ( Exception e) {
+				// неотфармотировался XML, отдаём обратно как есть
+				messageDetails.XML_MsgResponse.append(messageDetails.XML_MsgConfirmation);
+			}
+		else
+			messageDetails.XML_MsgResponse.append(XMLchars.nanXSLT_Result);
+
 		if (nn >= 0) {
 			return 0;
 		}
