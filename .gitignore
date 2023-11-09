@@ -5,4 +5,5 @@
 /target
 mvnw.cmd
 *.log
+./application.properties
 HE-6025.Receiver.log*
