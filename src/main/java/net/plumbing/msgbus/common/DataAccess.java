@@ -7,7 +7,7 @@ import java.sql.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.beans.factory.annotation.Autowired;
 
 public  class DataAccess {
 
@@ -16,7 +16,7 @@ public  class DataAccess {
     // public  static Timestamp InitDateTime; ( для проверки наличия методов при отладке )
     public static DateFormat dateFormat;
 
-    @Autowired
+    //@Autowired
     /*
     static JdbcTemplate jdbcTemplate;
     static DriverManagerDataSource dataSource;
@@ -66,8 +66,8 @@ public  class DataAccess {
             if ( !rdbmsVendor.equals("oracle") ) {
                 SQLCurrentTimeStringRead= "SELECT to_char( clock_timestamp(), 'YYYYMMDDHH24MISS') as InitTime";
                 SQLCurrentTimeDateRead= "SELECT clock_timestamp() as InitTime";
-                dataAccess_log.info("Try setup Connection: `set SESSION time zone 3`");
-                PreparedStatement stmt_SetTimeZone = Target_Connection.prepareStatement("set SESSION time zone 3");//.nativeSQL( "set SESSION time zone 3" );
+                dataAccess_log.info("Try setup Connection: `set SESSION time zone 3; set enable_bitmapscan to off;`");
+                PreparedStatement stmt_SetTimeZone = Target_Connection.prepareStatement("set SESSION time zone 3; set enable_bitmapscan to off;");//.nativeSQL( "set SESSION time zone 3" );
                 stmt_SetTimeZone.execute();
                 stmt_SetTimeZone.close();
             }

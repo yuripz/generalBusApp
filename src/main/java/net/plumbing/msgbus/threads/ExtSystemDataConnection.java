@@ -50,11 +50,10 @@ public class ExtSystemDataConnection {
 
         if (!rdbmsVendor.equals("oracle")) {
             try {
-                PreparedStatement stmt_SetTimeZone = Target_Connection.prepareStatement("set SESSION time zone 3");//.nativeSQL( "set SESSION time zone 3" );
+                PreparedStatement stmt_SetTimeZone = Target_Connection.prepareStatement("set SESSION time zone 3; set enable_bitmapscan to off;");//.nativeSQL( "set SESSION time zone 3" );
                 stmt_SetTimeZone.execute();
                 stmt_SetTimeZone.close();
-                if ( connectionUrl.indexOf("postgresql") > 0 ) {
-                    String set_config_Query;
+                String set_config_Query;
 
                     String current_setting_Set_Config;
                     if ( connectionUrl.indexOf("PuPoVozer_DevReceiver") > 0 ) {
@@ -90,7 +89,7 @@ public class ExtSystemDataConnection {
                     { ServletApplication.AppThead_log.error( "Target_Connection set_config fault `" + set_config_Query + "` :" +  e.getMessage());
 
                     }
-                }
+
                 dataAccess_log.info("[" + Queue_Id + "] ExtSystem `set SESSION time zone 3` done " );
             } catch (SQLException e) {
 

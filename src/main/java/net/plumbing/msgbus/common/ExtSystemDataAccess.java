@@ -121,6 +121,10 @@ public class ExtSystemDataAccess {
                     set_config_Statement.close();
                     ServletApplication.AppThead_log.info( "DataSourcePool ( at prepareStatement ): set_config: " + set_config_Query
                     );
+                    ServletApplication.AppThead_log.info("Try setup Connection: `set SESSION time zone 3; set enable_bitmapscan to off;`");
+                    PreparedStatement stmt_SetTimeZone = tryConn.prepareStatement("set SESSION time zone 3; set enable_bitmapscan to off;");//.nativeSQL( "set SESSION time zone 3" );
+                    stmt_SetTimeZone.execute();
+                    stmt_SetTimeZone.close();
                 }
                 catch (java.sql.SQLException e)
                 { ServletApplication.AppThead_log.error( "dataSource set_config fault `" + set_config_Query + "` :" +  e.getMessage());
