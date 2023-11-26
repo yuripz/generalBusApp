@@ -12,6 +12,7 @@ import net.plumbing.msgbus.common.json.XML;
 import net.plumbing.msgbus.model.MessageTemplate;
 import net.plumbing.msgbus.model.MessageTemplateVO;
 import net.plumbing.msgbus.threads.utils.MessageUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
@@ -355,7 +356,7 @@ public class ClientIpHelper {
     public static void add2XML_Request_Method_CustomTags(StringBuilder XML_Request_Method,  String ParamElement,  Logger Controller_log )
             throws  StringIndexOutOfBoundsException
     {
-        Controller_log.warn("add2XML_Request_Method_CustomTags:`" + ParamElement + "`"  );
+        Controller_log.warn("add2XML_Request_Method_CustomTags:`" + ParamElement + "` escapeXml10(stripNonValidXMLCharacters()) : `" +  StringEscapeUtils.escapeXml10(MessageUtils.stripNonValidXMLCharacters(ParamElement)) + "`"  );
     if (ParamElement.length() > 3 ) {
         if (( ParamElement.charAt(0) == '{') || ( ParamElement.charAt(0) == '[') ) {
             try {
@@ -371,7 +372,7 @@ public class ClientIpHelper {
             }
         }
         else // - это не Json, добавляем строку как есть
-        XML_Request_Method.append(  MessageUtils.stripNonValidXMLCharacters(ParamElement) );
+        XML_Request_Method.append(  StringEscapeUtils.escapeXml10(MessageUtils.stripNonValidXMLCharacters(ParamElement)) );
         // int ParamElementNameLength = ( ParamElementName.indexOf(']') > 0) ? ParamElementName.indexOf(']') : ParamElementName.length() ;
 
     }

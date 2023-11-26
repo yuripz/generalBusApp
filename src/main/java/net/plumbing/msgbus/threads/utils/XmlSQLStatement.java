@@ -305,8 +305,9 @@ public class XmlSQLStatement {
                                 callStatementResult = 12821;
                                 callStatement_Message = "`неожиданно пусто`";
                             }
-                            // Формируем псевдо XML_ClearBodyResponse из function
-                            MakeConfirmation4Function( callStatementResult, "Функция была успешно вызвана,callableStatement_MessageResult =" , callStatement_Message, messageDetails);
+                            // Формируем псевдо XML_ClearBodyResponse из function, с учетом non-XML символов
+                            MakeConfirmation4Function( callStatementResult, "Функция была успешно вызвана,callableStatement_MessageResult =" ,
+                                                         StringEscapeUtils.escapeXml10(stripNonValidXMLCharacters(callStatement_Message)), messageDetails);
                             // Устанавливаеи признак завершения работы прикладного обработчика  == "EXEIN" , для функции из внешей БД
                             int result = theadDataAccess.doUPDATE_MessageQueue_IN2ExeIN(messageQueueVO.getQueue_Id(),
                                     msg_Reason.toString(),  MessegeSend_Log);
