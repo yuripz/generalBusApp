@@ -705,10 +705,10 @@ public class MessageUtils {
         }
 
     public static String stripNonValidXMLCharacters(String in) {
-        StringBuffer out = new StringBuffer(); // Used to hold the output.
+        if (in == null || in.isEmpty() || ("".equals(in))) return ""; // vacancy test.
+        StringBuilder out = new StringBuilder( in.length() ); // Used to hold the output.
         char current; // Used to reference the current character.
 
-        if (in == null || ("".equals(in))) return ""; // vacancy test.
         for (int i = 0; i < in.length(); i++) {
             current = in.charAt(i); // NOTE: No IndexOutOfBoundsException caught here; it should not happen.
             if ((current == 0x9) ||

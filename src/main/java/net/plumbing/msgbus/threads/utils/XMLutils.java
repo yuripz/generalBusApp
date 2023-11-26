@@ -236,7 +236,24 @@ public class XMLutils {
             // Всё ок, записываем в  XML_MsgClear результат из  XML_MsgConfirmation
             messageDetails.XML_MsgClear.setLength(0);
             messageDetails.XML_MsgClear.trimToSize();
+
             messageDetails.XML_MsgClear.append(messageDetails.XML_MsgConfirmation.toString());
+            // removing invalid xml characters from input string
+            /* изъятие не-XML символов перенесли в получение параметров, что бы не падал парсер xml
+            messageDetails.XML_MsgClear =new  StringBuilder(messageDetails.XML_MsgConfirmation.length() );
+
+            char current; // Used to reference the current character.
+                for (int i = 0; i < messageDetails.XML_MsgConfirmation.length(); i++) {
+                    current = messageDetails.XML_MsgConfirmation.charAt(i); // NOTE: No IndexOutOfBoundsException caught here; it should not happen.
+                    if ((current == 0x9) ||
+                            (current == 0xA) ||
+                            (current == 0xD) ||
+                            ((current >= 0x20) && (current <= 0xD7FF)) ||
+                            ((current >= 0xE000) && (current <= 0xFFFD)) ||
+                            ((current >= 0x10000) && (current <= 0x10FFFF)))
+                        messageDetails.XML_MsgClear.append(current);
+                }
+           */
             // очищаем использованный XML_MsgConfirmation
             messageDetails.XML_MsgConfirmation.setLength(0);
             messageDetails.XML_MsgConfirmation.trimToSize();

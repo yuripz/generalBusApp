@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Properties;
 
+
 public class ClientIpHelper {
     public static String findUrl_Soap_Send( String url) {
         String [] Url_Soap_Send = url.split("/");
@@ -365,17 +366,17 @@ public class ClientIpHelper {
 
             } catch (Exception e) {
                 XML_Request_Method.append(ParamElement);
-                Controller_log.error("add2XML_Request_Method_CustomTags fault: " + sStackTracе.strInterruptedException(e));
+                Controller_log.error("add2XML_Request_Method_CustomTags on `" + XML_Request_Method + "` fault: " + sStackTracе.strInterruptedException(e));
                 return;
             }
         }
         else // - это не Json, добавляем строку как есть
-        XML_Request_Method.append(ParamElement);
+        XML_Request_Method.append(  MessageUtils.stripNonValidXMLCharacters(ParamElement) );
         // int ParamElementNameLength = ( ParamElementName.indexOf(']') > 0) ? ParamElementName.indexOf(']') : ParamElementName.length() ;
 
     }
     else // - это не может быть Json добавляем строку как есть
-        XML_Request_Method.append(ParamElement);
+        XML_Request_Method.append( MessageUtils.stripNonValidXMLCharacters( ParamElement) );
     }
 // Sort
 public static void add2XML_Request_Method_SortTags(StringBuilder XML_Request_Method, int queryParamIndex,  String queryParams[], String ParamElements[], Logger Controller_log )
