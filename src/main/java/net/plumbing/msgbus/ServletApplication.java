@@ -87,7 +87,18 @@ public class ServletApplication implements CommandLineRunner {
 		}*/
         AppThead_log.info("Hellow for ServletApplication ");
         NotifyByChannel.Telegram_setChatBotUrl( telegramProperties.getchatBotUrl() , AppThead_log );
-         NotifyByChannel.Telegram_sendMessage( "*Starting Receiver_BUS* on " + InetAddress.getLocalHost().getHostName()+ " (ip " +InetAddress.getLocalHost().getHostAddress() + " )", AppThead_log );
+        String propJDBC = connectionProperties.gethrmsPoint();
+        if ( propJDBC == null)  propJDBC = "jdbc UNKNOWN ! ";
+        else {
+            if ( propJDBC.indexOf("//") < 1  ) propJDBC = "jdbc INVALID! `" + propJDBC + "`";
+            else {
+                propJDBC = propJDBC.substring(propJDBC.indexOf("//") + 2);
+                if ( propJDBC.indexOf("/") < 1  ) propJDBC = "INVALID db in jdbc ! `" + propJDBC + "`";
+                else
+                    propJDBC = propJDBC.substring(0, propJDBC.indexOf("/"));
+            }
+        }
+         NotifyByChannel.Telegram_sendMessage( "*Starting Receiver_BUS* on " + InetAddress.getLocalHost().getHostName()+ " (ip " +InetAddress.getLocalHost().getHostAddress() + ", db " + propJDBC+ " ) ", AppThead_log );
 
         AppThead_log.warn(dbLoggingProperties.toString());
         AppThead_log.warn(connectionProperties.toString());
