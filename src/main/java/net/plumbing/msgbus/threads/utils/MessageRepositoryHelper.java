@@ -160,7 +160,7 @@ public class MessageRepositoryHelper {
                     return isNoConfirmation.equalsIgnoreCase("NoConfirmation");
                 }
                 else {
-                    messegeSend_log.info("isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation: found as NULL [" + isNoConfirmation + "] for " + pOperation_Id);
+                    messegeSend_log.info("isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation: found as NULL for Operation_Id=" + pOperation_Id);
                     return false;
                 }
             }

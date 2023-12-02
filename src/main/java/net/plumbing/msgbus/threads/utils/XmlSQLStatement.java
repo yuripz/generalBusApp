@@ -168,6 +168,7 @@ public class XmlSQLStatement {
                                         if ( NN > firstStatementParamNum ) {
                                             SQLparamValues.put(NN-firstStatementParamNum-1, SQLStatementParam.getTextTrim()); //
                                             //String sss = SQLStatementParam.getValue();
+                                            if (isDebugged)
                                             MessegeSend_Log.warn(" ExecuteSQLincludedXML-> put(" + (NN-firstStatementParamNum-1) +") [" +SQLStatementParam.getTextTrim() + " ]");
                                             //MessegeSend_Log.warn(" ExecuteSQLincludedXML-> sss-put(" + (NN-firstStatementParamNum-1) +") [" + sss + " ]");
                                         }
