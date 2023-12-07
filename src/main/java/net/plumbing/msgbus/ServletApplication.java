@@ -70,6 +70,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
+    public static String propJDBC;
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ServletApplication.class, args);
     }
@@ -87,7 +88,7 @@ public class ServletApplication implements CommandLineRunner {
 		}*/
         AppThead_log.info("Hellow for ServletApplication ");
         NotifyByChannel.Telegram_setChatBotUrl( telegramProperties.getchatBotUrl() , AppThead_log );
-        String propJDBC = connectionProperties.gethrmsPoint();
+         propJDBC = connectionProperties.gethrmsPoint();
         if ( propJDBC == null)  propJDBC = "jdbc UNKNOWN ! ";
         else {
             if ( propJDBC.indexOf("//") < 1  ) propJDBC = "jdbc INVALID! `" + propJDBC + "`";
@@ -394,10 +395,18 @@ public class ServletApplication implements CommandLineRunner {
                 }
 
             } catch (InterruptedException | SQLException e) {
-                if (DataAccess.Hermes_Connection != null)
-                    DataAccess.Hermes_Connection.close();
-                AppThead_log.error("надо taskExecutor.shutdown! " + e.getMessage());
+                AppThead_log.error("do taskExecutor.shutdown! " + e.getMessage());
                 e.printStackTrace();
+                NotifyByChannel.Telegram_sendMessage( "**Do Receiver** taskExecutor.shutdown -`" +  e.getMessage() +  "` :" + InetAddress.getLocalHost().getHostAddress()+ ", db " + propJDBC+ " ) , *exit!*", AppThead_log );
+                if (DataAccess.Hermes_Connection != null)
+                    try {
+                        DataAccess.Hermes_Connection.close();
+                    }
+                        catch ( SQLException SQLe) {
+                            AppThead_log.error(" С базой совсем всё плохо! " + SQLe.getMessage());
+                            NotifyByChannel.Telegram_sendMessage( "**Stopping Receiver**,  dbproblem `" +  SQLe.getMessage() +  "` :" + InetAddress.getLocalHost().getHostAddress()+ ", db " + propJDBC+ " ) , *exit!*", AppThead_log );
+                        }
+
                 count = 0; // надо taskExecutor.shutdown();
                 break;
             }
@@ -407,7 +416,7 @@ public class ServletApplication implements CommandLineRunner {
             }
         }
         ApplicationProperties.dataSource.close();
-        NotifyByChannel.Telegram_sendMessage( "*Stop Receiver BUS* " + InetAddress.getLocalHost().getHostAddress() + " , *exit!*", AppThead_log );
+        NotifyByChannel.Telegram_sendMessage( "*Stop Receiver BUS* (" + InetAddress.getLocalHost().getHostAddress()+ ", db " + propJDBC+ " ) , *exit!*", AppThead_log );
         System.exit(-22);
 
 

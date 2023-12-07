@@ -302,14 +302,14 @@ public class ClientIpHelper {
             XML_Request_Method.append(XMLchars.CloseTag);
             if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
 
-                //Controller_log.warn("FilterRecord2Fetch=" +  queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1));
+                Controller_log.warn("FilterRecord2Fetch=" +  queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1));
                  // FilterRecord2Fetch={"Msgdirection_Cod":"SIBIR"}
                 String FilterRecord2Fetch = queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1);
                 if ( ( FilterRecord2Fetch != null) && (FilterRecord2Fetch.length() > 4) )
                 {
 
                     JSONObject FilterRecordJSONObj = new  JSONObject( FilterRecord2Fetch );
-                    Iterator FilterRecordJSONs = FilterRecordJSONObj.keys();
+                    Iterator<String> FilterRecordJSONs = FilterRecordJSONObj.keys();
                     while(FilterRecordJSONs.hasNext()) {
                         XML_Request_Method.append(XMLchars.OpenTag);
                         XML_Request_Method.append( "RecordFilter"  ) ;

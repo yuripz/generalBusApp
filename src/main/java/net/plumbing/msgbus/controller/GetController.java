@@ -562,13 +562,13 @@ public class GetController  {
             for (int queryParamIndex = 0; queryParamIndex < queryParams.length; queryParamIndex++) { // Controller_log.warn( queryParams[i]);
 
                 String[] ParamElements = queryParams[queryParamIndex].split("=");
-                // Controller_log.warn(ParamElements[0]);
+                 Controller_log.warn(ParamElements[0]);
 
                 // String ParamElementName = ClientIpHelper.toCamelCase(ParamElements[0], "_");
                 //int ParamElementNameLength = (ParamElementName.indexOf(']') > 0) ? ParamElementName.indexOf(']') : ParamElementName.length();
                 try { // ?_end=5&_order=DESC&_sort=username&_start=0
-                    //Controller_log.warn("ParamElements[0]=" + ParamElements[0] + " indexOf(_Filter)=" + ParamElements[0].indexOf("_Filter") );
-                    if ( ParamElements[0].indexOf("Filter") >= 0 )
+                    Controller_log.warn("ParamElements[0]=" + ParamElements[0] + " indexOf(Filter)=" + ParamElements[0].indexOf("Filter") );
+                    if ( ParamElements[0].contains("Filter") )
                         try {
                             ClientIpHelper.add2XML_Request_Method_FilterTags(Message.XML_Request_Method, queryParamIndex, queryParams, ParamElements, Controller_log);
                         }
@@ -576,7 +576,7 @@ public class GetController  {
                           HttpResponse= Fault_Client_Rest_Begin +
                                   "Клиент передал  в запросе фильтр не в формате JSON, " + JSe.getMessage() +
                                   Fault_Rest_End ;
-                          Controller_log.warn("HttpResponse:" + HttpResponse);
+                          Controller_log.warn("HttpResponse: Filter=`" + ParamElements[0].indexOf("Filter")  + "` ==> " + HttpResponse);
                           getResponse.setContentType("text/json;Charset=UTF-8");
                           return HttpResponse;
                       }
