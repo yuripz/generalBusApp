@@ -367,7 +367,7 @@ public class ClientIpHelper {
 
             } catch (Exception e) {
                 XML_Request_Method.append(ParamElement);
-                Controller_log.error("add2XML_Request_Method_CustomTags on `" + XML_Request_Method + "` fault: " + sStackTracе.strInterruptedException(e));
+                Controller_log.error("add2XML_Request_Method_CustomTags on `" + XML_Request_Method + "` fault: " + sStackTrace.strInterruptedException(e));
                 return;
             }
         }

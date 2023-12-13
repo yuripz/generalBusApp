@@ -144,7 +144,7 @@ public  class DataAccess {
             rs.close();
             dataAccess_log.info( "Hermes MsgDirections ="+ CurrentTime );
         } catch (Exception e) {
-            dataAccess_log.error("getMsgDirections fault: " + sStackTracе.strInterruptedException(e));
+            dataAccess_log.error("getMsgDirections fault: " + sStackTrace.strInterruptedException(e));
 
         }
         return ( CurrentTime );
@@ -163,7 +163,7 @@ public  class DataAccess {
             rs.close();
             dataAccess_log.info( "Hermes MsgDirections ="+ CurrentTime );
         } catch (Exception e) {
-            dataAccess_log.error("getMsgDirections fault: " + sStackTracе.strInterruptedException(e));
+            dataAccess_log.error("getMsgDirections fault: " + sStackTrace.strInterruptedException(e));
 
         }
         return ( CurrentTime );
@@ -184,7 +184,7 @@ public  class DataAccess {
             stmtCurrentTimeStringRead.close();
             dataAccess_log.info( "Hermes CurrentTime: LocalDate ="+ CurrentTime );
         } catch (Exception e) {
-            dataAccess_log.error("getCurrentTimeString fault: " +  sStackTracе.strInterruptedException(e));
+            dataAccess_log.error("getCurrentTimeString fault: " +  sStackTrace.strInterruptedException(e));
 
         }
         return ( CurrentTime );
@@ -207,7 +207,7 @@ public  class DataAccess {
             return CurrentTime.getTime();
 
         } catch (Exception e) {
-            dataAccess_log.error("getCurrentTimeDate fault: "  + sStackTracе.strInterruptedException(e)); // + e.getMessage() );
+            dataAccess_log.error("getCurrentTimeDate fault: "  + sStackTrace.strInterruptedException(e)); // + e.getMessage() );
             return null;
         }
     }
@@ -221,7 +221,7 @@ public  class DataAccess {
              callableStatement = DataAccess.Hermes_Connection.prepareCall (pSQL_function);
 
         } catch (Exception e) {
-            dataAccess_log.error("prepareCall(" + pSQL_function + " fault: " + e.getMessage() ); // + sStackTracе.strInterruptedException(e));
+            dataAccess_log.error("prepareCall(" + pSQL_function + " fault: " + e.getMessage() ); // + sStackTrace.strInterruptedException(e));
             return null;
         }
         try {
@@ -246,7 +246,7 @@ public  class DataAccess {
             DataAccess.Hermes_Connection.commit();
 
         } catch (Exception e) {
-            dataAccess_log.error("executeCall(" + pSQL_function + " fault: " + sStackTracе.strInterruptedException(e));
+            dataAccess_log.error("executeCall(" + pSQL_function + " fault: " + sStackTrace.strInterruptedException(e));
             return null;
         }
 

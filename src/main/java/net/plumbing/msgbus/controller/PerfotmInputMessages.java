@@ -30,7 +30,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import net.plumbing.msgbus.common.ApplicationProperties;
 import net.plumbing.msgbus.common.XMLchars;
-import net.plumbing.msgbus.common.sStackTracе;
+import net.plumbing.msgbus.common.sStackTrace;
 import net.plumbing.msgbus.common.xlstErrorListener;
 import net.plumbing.msgbus.mq.PerformTextMessageJMSQueue;
 import net.plumbing.msgbus.mq.StoreMQpooledConnectionFactory;
@@ -51,7 +51,7 @@ import javax.xml.transform.TransformerException;
 
 
 //import XMLchars;
-//import static sStackTracе.strInterruptedException;
+//import static sStackTrace.strInterruptedException;
 //import static ru.hermes.msgbus.ws.client.core.SoapConstants.HTTPS;
 
 public class PerfotmInputMessages {
@@ -572,7 +572,7 @@ public class PerfotmInputMessages {
                                 // Ругаемся, что обработчик не сформировал Confirmation
                                 String Link_Queue_Direction = MessageUtils.get_Link_Queue_Finish(theadDataAccess, Link_Queue_Id, Message.XML_MsgConfirmation,
                                                                                     Message.MessageTemplate4Perform.getIsDebugged(),  MessegeReceive_Log);
-                                if (( Link_Queue_Direction != null ) && ( Message.XML_MsgConfirmation.length() > 0 ) )
+                                if (( Link_Queue_Direction != null ) && (!Message.XML_MsgConfirmation.isEmpty()) )
                                     switch ( Link_Queue_Direction )
                                     { case XMLchars.DirectERROUT:
                                         Message.MsgReason.append("[" + Queue_Id + "] при взаимодействии с внешней система на событие (" + Link_Queue_Id + ") произошёл сбой " + Message.XML_MsgConfirmation );
@@ -699,7 +699,7 @@ public class PerfotmInputMessages {
                                     // возмущаемся, но оставляем сообщение в ResOUT что бы обработчик в кроне мог доработать
                                     MessegeReceive_Log.error("[" + Queue_Id + "] Ошибка пост-обработки HttpGet(" + EndPointUrl + "):" + e.toString());
                                     theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id,
-                                            "Ошибка пост-обработки HttpGet(" + EndPointUrl + "):" + sStackTracе.strInterruptedException(e), 3255,
+                                            "Ошибка пост-обработки HttpGet(" + EndPointUrl + "):" + sStackTrace.strInterruptedException(e), 3255,
                                             MessegeReceive_Log);
                                     try {
                                         ApiRestHttpClient.close();
@@ -835,12 +835,12 @@ public class PerfotmInputMessages {
                                 if ( Message.MessageTemplate4Perform.getIsDebugged() )
                                     MessegeReceive_Log.info("["+ Queue_Id +"] Шаблон EnvelopeXSLTPost для пост-обработки(" + Message.MessageTemplate4Perform.getEnvelopeXSLTPost() + ")");
                                 if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                                    MessegeReceive_Log.info("["+ Queue_Id +"] Envelope4XSLTPost:" + MessageUtils.PrepareEnvelope4XSLTPost( messageQueueVO) );
+                                    MessegeReceive_Log.info("["+ Queue_Id +"] Envelope4XSLTPost:" + MessageUtils.PrepareEnvelope4XSLTPost( messageQueueVO, Message.XML_MsgConfirmation) );
 
                                 String Passed_Envelope4XSLTPost;
                                 try {
                                     Passed_Envelope4XSLTPost= XMLutils.ConvXMLuseXSLT( messageQueueVO.getQueue_Id(),
-                                            MessageUtils.PrepareEnvelope4XSLTPost( messageQueueVO),  // Искуственный Envelope/Head/Body=null
+                                            MessageUtils.PrepareEnvelope4XSLTPost( messageQueueVO, Message.XML_MsgConfirmation),  // Искуственный Envelope/Head/<Body>XML_MsgConfirmation</Body>
                                             Message.MessageTemplate4Perform.getEnvelopeXSLTPost(),  // через EnvelopeXSLTPost
                                             Message.MsgReason, // результат для MsgReason помещаем сюда
                                             ConvXMLuseXSLTerr,
@@ -858,7 +858,7 @@ public class PerfotmInputMessages {
                                 }
                                 if ( Passed_Envelope4XSLTPost.equals(XMLchars.EmptyXSLT_Result))
                                 {   MessegeReceive_Log.error("["+ Queue_Id +"] Шаблон для пост-обработки(" + Message.MessageTemplate4Perform.getEnvelopeXSLTPost() + ")");
-                                    MessegeReceive_Log.error("["+ Queue_Id +"] Envelope4XSLTPost:" + MessageUtils.PrepareEnvelope4XSLTPost(messageQueueVO) );
+                                    MessegeReceive_Log.error("["+ Queue_Id +"] Envelope4XSLTPost:" + MessageUtils.PrepareEnvelope4XSLTPost(messageQueueVO, Message.XML_MsgConfirmation) );
                                     MessegeReceive_Log.error("["+ Queue_Id +"] Ошибка преобразования XSLT для пост-обработки " + Message.MsgReason.toString() );
                                     theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(messageQueueVO.getQueue_Id(),
                                             "Ошибка преобразования XSLT для пост-обработки " + ConvXMLuseXSLTerr + " :" + Message.MsgReason.toString(), 1236,
@@ -866,11 +866,29 @@ public class PerfotmInputMessages {
                                     return -102L;
 
                                 }
-
+                                /*
                                 final int resultSQL = //XmlSQLStatement.ExecuteSQLincludedXML( theadDataAccess, Passed_Envelope4XSLTPost, messageQueueVO, Message, MessegeReceive_Log);
                                     XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, false, null, Passed_Envelope4XSLTPost, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
+                                */
+                            int resultSQL;
+                            if (Message.MessageTemplate4Perform.getIsExtSystemAccessPostExec()) {
+                                ExtSystemDataConnection extSystemDataConnection = new ExtSystemDataConnection(Queue_Id, MessegeReceive_Log);
+                                if ( extSystemDataConnection.ExtSystem_Connection == null ){
+                                    Message.MsgReason.append("Ошибка на приёме сообщения - нет соединения с внешней базой данных (extSystemDataConnection return NULL), обратитесь к системному администратору !");
+                                    return -33L;
+                                }
+                                resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, true, extSystemDataConnection.ExtSystem_Connection ,
+                                                                                  Passed_Envelope4XSLTPost, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
+                                try {  extSystemDataConnection.ExtSystem_Connection.close(); } catch (SQLException e) {
+                                    MessegeReceive_Log.error("[" + Queue_Id + "] ExtSystem_Connection.close() fault:" + e.getMessage());
+                                }
+                            }
+                            else
+                            resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, false, null, Passed_Envelope4XSLTPost, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
+
+
                                 if (resultSQL != 0) {
-                                    MessegeReceive_Log.error("["+ Queue_Id +"] Envelope4XSLTPost:" + MessageUtils.PrepareEnvelope4XSLTPost( messageQueueVO) );
+                                    MessegeReceive_Log.error("["+ Queue_Id +"] Envelope4XSLTPost:" + MessageUtils.PrepareEnvelope4XSLTPost( messageQueueVO, Message.XML_MsgConfirmation) );
                                     MessegeReceive_Log.error("["+ Queue_Id +"] Ошибка ExecuteSQLinXML:" + Message.MsgReason.toString() );
                                     theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(messageQueueVO.getQueue_Id(),
                                             "Ошибка ExecuteSQLinXML: " + Message.MsgReason.toString(), 1233,

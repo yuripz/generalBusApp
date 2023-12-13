@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
 
-import static net.plumbing.msgbus.common.sStackTracе.strInterruptedException;
+import static net.plumbing.msgbus.common.sStackTrace.strInterruptedException;
 
 public class xlstErrorListener implements ErrorListener
 {

@@ -2,7 +2,7 @@ package net.plumbing.msgbus.controller;
 
 
 import net.plumbing.msgbus.common.ApplicationProperties;
-import net.plumbing.msgbus.common.sStackTracе;
+import net.plumbing.msgbus.common.sStackTrace;
 import net.plumbing.msgbus.common.xlstErrorListener;
 import net.plumbing.msgbus.model.*;
 import net.plumbing.msgbus.threads.TheadDataAccess;
@@ -84,8 +84,8 @@ public class RestAPI_ReceiveTask {
         catch (Exception e) {
             System.err.println( "["+ Message.XML_MsgInput + "]  Exception" );
             e.printStackTrace();
-            RestAPI_Receive_Log.error(Queue_Direction + "fault: [" + Message.XML_MsgInput + "] XMLutils.makeClearRequest fault: " + sStackTracе.strInterruptedException(e));
-            Message.MsgReason.append("Ошибка на приёме сообщения: " + e.getMessage() ); //  sStackTracе.strInterruptedException(e));
+            RestAPI_Receive_Log.error(Queue_Direction + "fault: [" + Message.XML_MsgInput + "] XMLutils.makeClearRequest fault: " + sStackTrace.strInterruptedException(e));
+            Message.MsgReason.append("Ошибка на приёме сообщения: " + e.getMessage() ); //  sStackTrace.strInterruptedException(e));
             if ( (e instanceof JDOMParseException ) || (e instanceof XPathExpressionException)  ) // Клиент прислсл фуфло
                 return 1L;
             else
@@ -161,9 +161,9 @@ public class RestAPI_ReceiveTask {
         }
         catch (Exception e) {
             System.err.println( "Queue_Id["+ messageQueueVO.getQueue_Id() + "]  Exception" );
-            System.err.println( sStackTracе.strInterruptedException( e ) );
-            RestAPI_Receive_Log.error(Queue_Direction + " fault: [" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: " + sStackTracе.strInterruptedException(e));
-            Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, fault: " + sStackTracе.strInterruptedException(e));
+            System.err.println( sStackTrace.strInterruptedException( e ) );
+            RestAPI_Receive_Log.error(Queue_Direction + " fault: [" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: " + sStackTrace.strInterruptedException(e));
+            Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, fault: " + sStackTrace.strInterruptedException(e));
 
             MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                     "Ошибка при получении необходимых значений из заголовка : " + Message.XML_MsgClear.toString(),
@@ -223,8 +223,8 @@ public class RestAPI_ReceiveTask {
                 catch (Exception e) {
                     System.err.println( "Queue_Id["+ messageQueueVO.getQueue_Id() + "]  Exception" );
                     e.printStackTrace();
-                    RestAPI_Receive_Log.error(Queue_Direction + "fault: [" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: " + sStackTracе.strInterruptedException(e));
-                    Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения: " + Message.XML_MsgClear.toString() + ", fault: " + sStackTracе.strInterruptedException(e));
+                    RestAPI_Receive_Log.error(Queue_Direction + "fault: [" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: " + sStackTrace.strInterruptedException(e));
+                    Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения: " + Message.XML_MsgClear.toString() + ", fault: " + sStackTrace.strInterruptedException(e));
 
                     MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                             "Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения: " + Message.XML_MsgClear.toString(),
@@ -242,8 +242,8 @@ public class RestAPI_ReceiveTask {
                     } catch (Exception e) {
                         System.err.println("Queue_Id [" + messageQueueVO.getQueue_Id() + "]  Exception");
                         e.printStackTrace();
-                        RestAPI_Receive_Log.error("[" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: (" +  Message.XML_MsgClear.toString() + ") fault " + sStackTracе.strInterruptedException(e));
-                        Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, полученного в сообщении: " + Queue_Direction + ", fault: " + sStackTracе.strInterruptedException(e));
+                        RestAPI_Receive_Log.error("[" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: (" +  Message.XML_MsgClear.toString() + ") fault " + sStackTrace.strInterruptedException(e));
+                        Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, полученного в сообщении: " + Queue_Direction + ", fault: " + sStackTrace.strInterruptedException(e));
 
                         MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                                 "Ошибка при получении необходимых значений из заголовка, полученного в сообщении: " + Message.XML_MsgClear.toString(),

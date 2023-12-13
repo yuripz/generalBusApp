@@ -2,7 +2,7 @@ package net.plumbing.msgbus.threads.utils;
 
 // import com.google.common.xml.XmlEscapers;
 import net.plumbing.msgbus.common.XMLchars;
-import net.plumbing.msgbus.common.sStackTracе;
+import net.plumbing.msgbus.common.sStackTrace;
 import net.plumbing.msgbus.common.xlstErrorListener;
 import net.plumbing.msgbus.model.MessageDetails;
 import net.plumbing.msgbus.model.MessageDirections;
@@ -608,7 +608,7 @@ public class XMLutils {
 
         }
         catch ( Exception exp ) {
-            ConvXMLuseXSLTerr.append(  sStackTracе.strInterruptedException(exp) );
+            ConvXMLuseXSLTerr.append(  sStackTrace.strInterruptedException(exp) );
             exp.printStackTrace();
             System.err.println( "["+ QueueId  + "] ConvXMLuseXSLT.ByteArrayInputStream Exception" );
             MessegeSend_Log.error("["+ QueueId  + "] Exception: " + ConvXMLuseXSLTerr );
@@ -622,7 +622,7 @@ public class XMLutils {
             srcxslt = new StreamSource(new ByteArrayInputStream(XSLTdata.getBytes("UTF-8")));
         }
         catch ( Exception exp ) {
-            ConvXMLuseXSLTerr.append(  sStackTracе.strInterruptedException(exp) );
+            ConvXMLuseXSLTerr.append(  sStackTrace.strInterruptedException(exp) );
             exp.printStackTrace();
             System.err.println( "["+ QueueId  + "] ConvXMLuseXSLT.ByteArrayInputStream Exception" );
             MessegeSend_Log.error("["+ QueueId  + "] Exception: " + ConvXMLuseXSLTerr );
@@ -663,7 +663,7 @@ public class XMLutils {
             }
         }
         catch ( TransformerException exp ) {
-            ConvXMLuseXSLTerr.append(  sStackTracе.strInterruptedException(exp) );
+            ConvXMLuseXSLTerr.append(  sStackTrace.strInterruptedException(exp) );
             System.err.println( "["+ QueueId  + "] ConvXMLuseXSLT.Transformer Exception" );
             exp.printStackTrace();
 
@@ -698,7 +698,7 @@ public class XMLutils {
         catch ( Exception exp ) {
             MessegeSend_Log.error("Exception: " + exp.getMessage());
             MsgResult.setLength(0);
-            MsgResult.append( "["+ Queue_Id  + "] TestXMLByXSD:"  + exp.getMessage() ); //sStackTracе.strInterruptedException(exp) );
+            MsgResult.append( "["+ Queue_Id  + "] TestXMLByXSD:"  + exp.getMessage() ); //sStackTrace.strInterruptedException(exp) );
             return false;}
         //MessegeSend_Log.info("validateXMLSchema message\n" + XMLdata_4_Validate + "\n is VALID for XSD\n" + xsddata );
         return true;

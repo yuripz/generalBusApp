@@ -29,7 +29,7 @@ import java.util.Properties;
 
 import static net.plumbing.msgbus.common.XMLchars.*;
 import static net.plumbing.msgbus.common.ApplicationProperties.DataSourcePoolMetadata;
-import static net.plumbing.msgbus.common.sStackTracе.strInterruptedException;
+import static net.plumbing.msgbus.common.sStackTrace.strInterruptedException;
 import static net.plumbing.msgbus.model.MessageTemplateVO.PropDebug;
 
 @RestController

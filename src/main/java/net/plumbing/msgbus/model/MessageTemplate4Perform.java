@@ -70,6 +70,7 @@ public class MessageTemplate4Perform {
     private Integer PropTimeout_Conn;
     private Integer PropTimeout_Read;
     private boolean isExtSystemAccess =false;
+    private boolean isExtSystemAccessPostExec=false;
 
     private Integer ShortRetryCount;
     private Integer ShortRetryInterval;
@@ -271,7 +272,7 @@ public class MessageTemplate4Perform {
                 }
             }
             if (( PropHost != null ) && ( PropUrl != null )) {
-                if ( PropHost.length() > 0 )
+                if (!PropHost.isEmpty())
                     EndPointUrl = PropHost + PropUrl;
             }
             else EndPointUrl = "http://no.endpoint.error";
@@ -302,6 +303,17 @@ public class MessageTemplate4Perform {
                         if ( key.equals(PropNameShortRetryInterval)) this.ShortRetryIntervalPostExec = Integer.valueOf(properties.getProperty(key) );
                         if ( key.equals(PropNameLongRetryCount)) this.LongRetryCountPostExec = Integer.valueOf(properties.getProperty(key) );
                         if ( key.equals(PropNameLongRetryInterval)) this.LongRetryIntervalPostExec = Integer.valueOf(properties.getProperty(key) );
+                        if ( key.equals(PropExtSystemAccess) ) {
+                            if (( properties.getProperty(key).equalsIgnoreCase("on") ) ||
+                                    ( properties.getProperty(key).equalsIgnoreCase("true") ) ||
+                                    ( properties.getProperty(key).equalsIgnoreCase("ON") ) ||
+                                    ( properties.getProperty(key).equalsIgnoreCase("TRUE") )
+                            )
+                            {
+                                MessageTemplate_Log.info( "[" + Queue_Id + "]" + "PropExtSystemAccess 4 PostExec Property[" + key +"]=[" + properties.getProperty(key) + "]" );
+                                this.isExtSystemAccessPostExec=true;
+                            }
+                        }
 
                        // if ( key.equals(PropNameConnTimeOut)) PropTimeout_ConnPostExec = Integer.valueOf(properties.getProperty(key));
                       //  if ( key.equals(PropNameReadTimeOut)) PropTimeout_ReadPostExec = Integer.valueOf(properties.getProperty(key));
@@ -336,6 +348,12 @@ public String getPropJavaMethodName() { return  this.PropJavaMethodName; }
         // TODO: this.isExtSystemAccess=true; -- для Документирования
         //return true;
         return this.isExtSystemAccess;
+    }
+    // isExtSystemAccessPostExec
+    public boolean getIsExtSystemAccessPostExec() {
+        // TODO: this.isExtSystemAccessPostExec=true; -- для Документирования
+        //return true;
+        return this.isExtSystemAccessPostExec;
     }
     public  Integer getPropTimeout_Conn() { return  this.PropTimeout_Conn;}
     public  Integer getPropTimeout_Read() { return  this.PropTimeout_Read;}

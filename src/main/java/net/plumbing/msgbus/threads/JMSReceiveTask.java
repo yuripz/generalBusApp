@@ -5,6 +5,7 @@ import net.plumbing.msgbus.common.ApplicationProperties;
 import net.plumbing.msgbus.common.json.JSONException;
 import net.plumbing.msgbus.common.json.JSONObject;
 import net.plumbing.msgbus.common.json.XML;
+import net.plumbing.msgbus.common.sStackTrace;
 import net.plumbing.msgbus.common.xlstErrorListener;
 import net.plumbing.msgbus.controller.PerfotmInputMessages;
 import net.plumbing.msgbus.model.MessageDetails;
@@ -17,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXParseException;
 import net.plumbing.msgbus.common.XMLchars;
-import net.plumbing.msgbus.common.sStackTracе;
 import net.plumbing.msgbus.model.MessageQueueVO;
 import net.plumbing.msgbus.model.MessageTemplate;
 import net.plumbing.msgbus.threads.utils.MessageRepositoryHelper;
@@ -438,8 +438,8 @@ public void run()   {
         catch (Exception e) {
             // System.err.println( "["+ Message.XML_MsgInput + "]  Exception" );
             // e.printStackTrace();
-            MessegeReceive_Log.error(Queue_Direction + "fault: [" + Message.XML_MsgInput + "] XMLutils.makeClearRequest fault: " + sStackTracе.strInterruptedException(e));
-            Message.MsgReason.append("Ошибка на приёме сообщения: " + e.getMessage() ); //  sStackTracе.strInterruptedException(e));
+            MessegeReceive_Log.error(Queue_Direction + "fault: [" + Message.XML_MsgInput + "] XMLutils.makeClearRequest fault: " + sStackTrace.strInterruptedException(e));
+            Message.MsgReason.append("Ошибка на приёме сообщения: " + e.getMessage() ); //  sStackTrace.strInterruptedException(e));
             if ( (e instanceof JDOMParseException) || (e instanceof XPathExpressionException)  ||( e instanceof SAXParseException ) ) // Клиент прислсл фуфло
                 return 1L;
             else
@@ -512,8 +512,8 @@ public void run()   {
                 catch (Exception e) {
                     System.err.println( "Queue_Id["+ messageQueueVO.getQueue_Id() + "]  Exception" );
                     e.printStackTrace();
-                    MessegeReceive_Log.error(Queue_Direction + "fault: [" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: " + sStackTracе.strInterruptedException(e));
-                    Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения: " + Message.XML_MsgClear.toString() + ", fault: " + sStackTracе.strInterruptedException(e));
+                    MessegeReceive_Log.error(Queue_Direction + "fault: [" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: " + sStackTrace.strInterruptedException(e));
+                    Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения: " + Message.XML_MsgClear.toString() + ", fault: " + sStackTrace.strInterruptedException(e));
 
                     MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                             "Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения: " + Message.XML_MsgClear.toString(),
@@ -530,8 +530,8 @@ public void run()   {
                     } catch (Exception e) {
                         System.err.println("Queue_Id [" + messageQueueVO.getQueue_Id() + "]  Exception");
                         e.printStackTrace();
-                        MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: (" +  Message.XML_MsgClear.toString() + ") fault " + sStackTracе.strInterruptedException(e));
-                        Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, полученного в сообщении: " + Queue_Direction + ", fault: " + sStackTracе.strInterruptedException(e));
+                        MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: (" +  Message.XML_MsgClear.toString() + ") fault " + sStackTrace.strInterruptedException(e));
+                        Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, полученного в сообщении: " + Queue_Direction + ", fault: " + sStackTrace.strInterruptedException(e));
 
                         MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                                 "Ошибка при получении необходимых значений из заголовка, полученного в сообщении: " + Message.XML_MsgClear.toString(),
@@ -562,10 +562,10 @@ public void run()   {
                 } catch (Exception e) {
                     System.err.println("Queue_Id [" + messageQueueVO.getQueue_Id() + "]  Exception");
                     e.printStackTrace();
-                    MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: (" +  Message.XML_MsgClear.toString() + ") fault " + sStackTracе.strInterruptedException(e));
+                    MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: (" +  Message.XML_MsgClear.toString() + ") fault " + sStackTrace.strInterruptedException(e));
                     Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, полученного в сообщении: ");
                     Message.MsgReason.append(Queue_Direction);
-                    Message.MsgReason.append(", fault: ");Message.MsgReason.append( sStackTracе.strInterruptedException(e));
+                    Message.MsgReason.append(", fault: ");Message.MsgReason.append( sStackTrace.strInterruptedException(e));
 
                     MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                             "Ошибка при получении необходимых значений из заголовка, полученного в сообщении: " + Message.XML_MsgClear.toString(),

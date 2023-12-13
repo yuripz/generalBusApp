@@ -1,7 +1,7 @@
 package net.plumbing.msgbus.init;
 
 import net.plumbing.msgbus.common.DataAccess;
-import net.plumbing.msgbus.common.sStackTracе;
+import net.plumbing.msgbus.common.sStackTrace;
 import org.slf4j.Logger;
 import net.plumbing.msgbus.model.MessageDirectionsVO;
 import net.plumbing.msgbus.model.MessageDirections;
@@ -99,12 +99,12 @@ public class InitMessageRepository {
             DataAccess.Hermes_Connection.commit();
             //stmtMsgType.close();
         } catch (Exception e) {
-            AppThead_log.error("ReReadMsgTypes (" + selectMsgTypeReRead + ") fault: " + sStackTracе.strInterruptedException(e));
+            AppThead_log.error("ReReadMsgTypes (" + selectMsgTypeReRead + ") fault: " + sStackTrace.strInterruptedException(e));
             try {
                 if ( stmtMsgTypeReRead != null) stmtMsgTypeReRead.close();
                 DataAccess.Hermes_Connection.rollback();
             } catch ( SQLException SQLe) {
-                AppThead_log.error("rollback (" + selectMsgTypeReRead + ") fault: " + sStackTracе.strInterruptedException(SQLe));
+                AppThead_log.error("rollback (" + selectMsgTypeReRead + ") fault: " + sStackTrace.strInterruptedException(SQLe));
                 SQLe.printStackTrace();
             }
             // e.printStackTrace();
@@ -219,11 +219,11 @@ public class InitMessageRepository {
             DataAccess.Hermes_Connection.commit();
             // stmtMsgTemplate.close();
         } catch (Exception e) {
-            AppThead_log.error("ReReadMsgTemplates: (" + selectMsgTemplateReRead + ") fault: " + sStackTracе.strInterruptedException(e));
+            AppThead_log.error("ReReadMsgTemplates: (" + selectMsgTemplateReRead + ") fault: " + sStackTrace.strInterruptedException(e));
             try {
                 DataAccess.Hermes_Connection.rollback();
             } catch ( SQLException SQLe) {
-                AppThead_log.error("ReReadMsgTemplates: rollback() fault: " + sStackTracе.strInterruptedException(SQLe));
+                AppThead_log.error("ReReadMsgTemplates: rollback() fault: " + sStackTrace.strInterruptedException(SQLe));
                 SQLe.printStackTrace();
             }
             return -2;
