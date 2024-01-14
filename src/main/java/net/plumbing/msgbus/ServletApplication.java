@@ -99,7 +99,7 @@ public class ServletApplication implements CommandLineRunner {
                     propJDBC = propJDBC.substring(0, propJDBC.indexOf("/"));
             }
         }
-         NotifyByChannel.Telegram_sendMessage( "*Starting Receiver_BUS* on " + InetAddress.getLocalHost().getHostName()+ " (ip " +InetAddress.getLocalHost().getHostAddress() + ", db " + propJDBC+ " ) ", AppThead_log );
+         NotifyByChannel.Telegram_sendMessage( "Starting **Receiver_BUS** v.0.2.23.12.30 on " + InetAddress.getLocalHost().getHostName()+ " (ip " +InetAddress.getLocalHost().getHostAddress() + ", db " + propJDBC+ " ) ", AppThead_log );
 
         AppThead_log.warn(dbLoggingProperties.toString());
         AppThead_log.warn(connectionProperties.toString());
@@ -397,7 +397,7 @@ public class ServletApplication implements CommandLineRunner {
             } catch (InterruptedException | SQLException e) {
                 AppThead_log.error("do taskExecutor.shutdown! " + e.getMessage());
                 e.printStackTrace();
-                NotifyByChannel.Telegram_sendMessage( "**Do Receiver** taskExecutor.shutdown -`" +  e.getMessage() +  "` :" + InetAddress.getLocalHost().getHostAddress()+ ", db " + propJDBC+ " ) , *exit!*", AppThead_log );
+                NotifyByChannel.Telegram_sendMessage( "**Do Receiver** v.0.2.23.12.30 taskExecutor.shutdown -`" +  e.getMessage() +  "` :" + InetAddress.getLocalHost().getHostAddress()+ ", db " + propJDBC+ " ) , *exit!*", AppThead_log );
                 if (DataAccess.Hermes_Connection != null)
                     try {
                         DataAccess.Hermes_Connection.close();
@@ -416,7 +416,7 @@ public class ServletApplication implements CommandLineRunner {
             }
         }
         ApplicationProperties.dataSource.close();
-        NotifyByChannel.Telegram_sendMessage( "*Stop Receiver BUS* (" + InetAddress.getLocalHost().getHostAddress()+ ", db " + propJDBC+ " ) , *exit!*", AppThead_log );
+        NotifyByChannel.Telegram_sendMessage( "Stop **Receiver_BUS** v.0.2.23.12.30 (" + InetAddress.getLocalHost().getHostAddress()+ ", db " + propJDBC+ " ) , *exit!*", AppThead_log );
         System.exit(-22);
 
 

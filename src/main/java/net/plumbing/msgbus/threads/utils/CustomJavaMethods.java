@@ -1,5 +1,6 @@
 package net.plumbing.msgbus.threads.utils;
 //import oracle.jdbc.OracleCallableStatement;
+import net.plumbing.msgbus.common.sStackTrace;
 import net.plumbing.msgbus.model.MessageDetails;
 import net.plumbing.msgbus.model.MessageQueueVO;
 import net.plumbing.msgbus.model.MessageTemplateVO;
@@ -36,7 +37,7 @@ import com.github.underscore.U;
 public class CustomJavaMethods {
 
 	public static int GetRequest_Body4Message(MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-                                              TheadDataAccess theadDataAccess, Logger MessegeSend_Log) {
+                                              TheadDataAccess theadDataAccess, Logger MessageSend_Log) {
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
@@ -51,20 +52,33 @@ public class CustomJavaMethods {
 				"</SaveGeoObjectResponse>" );
 		*/
 		boolean IsDebugged = true;
-		int nn = MessageUtils.ReadMessage( theadDataAccess,  Queue_Id,  messageDetails, IsDebugged, MessegeSend_Log);
+		int nn = MessageUtils.ReadMessage( theadDataAccess,  Queue_Id,  messageDetails, IsDebugged, MessageSend_Log);
 		if (nn >= 0) {
 			// -- без formatXml - в одну строку, некрасиво на Форнте
-				messageDetails.XML_MsgClear.append(U.formatXml(messageDetails.XML_MsgResponse.toString()));
-				messageDetails.XML_MsgResponse.setLength(0);
-				messageDetails.XML_MsgResponse.append( messageDetails.XML_MsgClear );
+			messageDetails.XML_MsgResponse.setLength(0);
+
+			if ((messageDetails.XML_MsgClear.length() > XMLchars.nanXSLT_Result.length()))
+				try {
+					messageDetails.XML_MsgResponse.append(U.formatXml(messageDetails.XML_MsgClear.toString()));
+				} catch (Exception e) {
+					// неотфармотировался XML, отдаём обратно как есть
+					messageDetails.XML_MsgResponse.append(messageDetails.XML_MsgClear);
+				}
+			else
+				messageDetails.XML_MsgResponse.append(XMLchars.nanXSLT_Result);
+
 			return 0;
 		}
-		else
+		else {
+			messageDetails.XML_MsgResponse.setLength(0);
+			messageDetails.XML_MsgResponse.append(XMLchars.nanXSLT_Result);
 			return nn;
+		}
+
 	}
 
 	public static int GetRequest_Confirmation4Message( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-											   TheadDataAccess theadDataAccess,Logger MessegeSend_Log) {
+											   TheadDataAccess theadDataAccess,Logger MessageSend_Log) {
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
@@ -75,7 +89,7 @@ public class CustomJavaMethods {
 		String Queue_Id_Value= elmtTemplate_Id.getText();
 		long Queue_Id= Long.parseLong(Queue_Id_Value);
 
-		int nn = MessageUtils.ReadConfirmation(theadDataAccess, Queue_Id, messageDetails, MessegeSend_Log);
+		int nn = MessageUtils.ReadConfirmation(theadDataAccess, Queue_Id, messageDetails, MessageSend_Log);
 		messageDetails.XML_MsgResponse.setLength(0);
 		// -- без formatXml - в одну строку, некрасиво на Форнте
 		if ( (nn > 0) && (messageDetails.XML_MsgConfirmation.length() > XMLchars.nanXSLT_Result.length() ))
@@ -96,7 +110,7 @@ public class CustomJavaMethods {
 	}
 
 	public static int GetRequest4MessageQueueLog( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-													   TheadDataAccess theadDataAccess, String dbSchema, Logger MessegeSend_Log) {
+													   TheadDataAccess theadDataAccess, String dbSchema, Logger MessageSend_Log) {
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
@@ -120,7 +134,7 @@ public class CustomJavaMethods {
 				messageDetails.XML_MsgClear.append( rs.getString("Request"));
 				//MessageQueueLogResponse = rs.getString("Request");
 				if ( isDebugged )
-					MessegeSend_Log.info( "["+ messageQueueVO.getQueue_Id() +"] select Request from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "'");
+					MessageSend_Log.info( "["+ messageQueueVO.getQueue_Id() +"] select Request from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "'");
 			}
 			rs.close();
 			stmt_SELECT_QUEUElog_Response.close();
@@ -132,14 +146,23 @@ public class CustomJavaMethods {
 				try { stmt_SELECT_QUEUElog_Response.close(); } catch (SQLException ex) { ex.printStackTrace(); }
 			return -1;
 		}
-
 		messageDetails.XML_MsgResponse.setLength(0);
-		messageDetails.XML_MsgResponse.append(U.formatXml(messageDetails.XML_MsgClear.toString()));
+
+		if (  (messageDetails.XML_MsgClear.length() > XMLchars.nanXSLT_Result.length() ))
+			try {
+				messageDetails.XML_MsgResponse.append(U.formatXml(messageDetails.XML_MsgClear.toString()));
+			} catch ( Exception e) {
+				// неотфармотировался XML, отдаём обратно как есть
+				messageDetails.XML_MsgResponse.append(messageDetails.XML_MsgClear);
+			}
+		else
+			messageDetails.XML_MsgResponse.append(XMLchars.nanXSLT_Result);
+
 		return 0;
 	}
 
 	public static int GetResponse4MessageQueueLog( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-												  TheadDataAccess theadDataAccess, String dbSchema, Logger MessegeSend_Log) {
+												  TheadDataAccess theadDataAccess, String dbSchema, Logger MessageSend_Log) {
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
@@ -163,7 +186,7 @@ public class CustomJavaMethods {
 				messageDetails.XML_MsgResponse.append(rs.getString("Response"));
 				//MessageQueueLogResponse = rs.getString("Response");
 				if ( isDebugged )
-					MessegeSend_Log.info( "["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "'");
+					MessageSend_Log.info( "["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "'");
 
 			}
 			rs.close();
@@ -171,7 +194,7 @@ public class CustomJavaMethods {
 			stmt_SELECT_QUEUElog_Response = null;
 
 		}catch (SQLException e) {
-			MessegeSend_Log.error( "["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "' fault: " + e.getMessage());
+			MessageSend_Log.error( "["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "' fault: " + e.getMessage());
 			System.err.println( "["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "' fault: " + e.getMessage());
 			messageDetails.XML_MsgResponse.append("["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "' fault: " + e.getMessage() );
 			e.printStackTrace();
@@ -184,7 +207,7 @@ public class CustomJavaMethods {
 	}
 	// сохранить конкретную секцию Шаблона MessageTemplates_SaveConfig
 	public static int MessageTemplates_SaveConfig( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-											   TheadDataAccess theadDataAccess, String dbSchema , Logger MessegeSend_Log) {
+											   TheadDataAccess theadDataAccess, String dbSchema , Logger MessageSend_Log) {
 		int nn = 0;
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
@@ -244,7 +267,7 @@ public class CustomJavaMethods {
 						rs.getString("LastDate")
 				);
 				//Config_Text = rs.getString("Conf_Text");
-				ConfigMsgTemplates.performConfig(messageTemplateVO, MessegeSend_Log);
+				ConfigMsgTemplates.performConfig(messageTemplateVO, MessageSend_Log);
 				Config_Text.append(XMLchars.OpenTag).append(configEntry).append(XMLchars.CloseTag).append("<![CDATA[");
 				switch ( configEntry) {
 					case "EnvelopeInXSLT":
@@ -383,7 +406,7 @@ public class CustomJavaMethods {
 	}
 	// получить конкретную секцию Шаблона для показа в UI
     public static int GetConfig_Text_Template( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-                                                TheadDataAccess theadDataAccess, String dbSchema , Logger MessegeSend_Log) {
+                                                TheadDataAccess theadDataAccess, String dbSchema , Logger MessageSend_Log) {
         int nn = 0;
         messageDetails.Message.clear();
         messageDetails.MessageRowNum = 0;
@@ -449,7 +472,7 @@ public class CustomJavaMethods {
 						rs.getString("LastDate")
 				);
 				//Config_Text = rs.getString("Conf_Text");
-				ConfigMsgTemplates.performConfig(messageTemplateVO, MessegeSend_Log);
+				ConfigMsgTemplates.performConfig(messageTemplateVO, MessageSend_Log);
 				Config_Text.append(XMLchars.OpenTag).append(configEntry).append(XMLchars.CloseTag).append("<![CDATA[");
 				switch ( configEntry) {
 					case "EnvelopeInXSLT":
@@ -588,7 +611,7 @@ public class CustomJavaMethods {
     }
 	// получить список непустых секций для конкретного Шаблона
 	public static int GetConfig_Entrys_Template( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-											   TheadDataAccess theadDataAccess,String dbSchema, Logger MessegeSend_Log) {
+											   TheadDataAccess theadDataAccess,String dbSchema, Logger MessageSend_Log) {
 		int nn = 0;
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
@@ -642,9 +665,11 @@ public class CustomJavaMethods {
 					}
 					Config_Text.append("</data>");
 				} catch ( JDOMException |  IOException ex) {
-					ex.printStackTrace(System.out);
+					ex.printStackTrace(System.err);
 				}
 			}
+			rs.close();
+			stmtMsgTemplate.close();
 		} catch (SQLException e) {
 			messageDetails.MsgReason.setLength(0);
 			messageDetails.MsgReason.append(e.getMessage());

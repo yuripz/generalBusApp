@@ -333,8 +333,11 @@ public class PerfotmInputMessages {
                             ApiRestHttpClient = getCloseableHttpClient(  messageQueueVO,  Message ,  theadDataAccess,
                             syncConnectionManager,
                             MessegeReceive_Log);
-                    if ( ApiRestHttpClient == null)
+                    if ( ApiRestHttpClient == null) {
+                        // syncConnectionManager.shutdown() и syncConnectionManager.close();
+                        // производится внутри getCloseableHttpClient() при неудаче
                         return -36L;
+                    }
 
                     try {
 
