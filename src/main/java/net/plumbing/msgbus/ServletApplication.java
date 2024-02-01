@@ -99,7 +99,7 @@ public class ServletApplication implements CommandLineRunner {
                     propJDBC = propJDBC.substring(0, propJDBC.indexOf("/"));
             }
         }
-         NotifyByChannel.Telegram_sendMessage( "Starting *Receiver_BUS* v.0.2.23.12.32 on " + InetAddress.getLocalHost().getHostName()+ " (ip `" +InetAddress.getLocalHost().getHostAddress() + "`, db `" + propJDBC+ "` ) ", AppThead_log );
+         NotifyByChannel.Telegram_sendMessage( "Starting *Receiver_BUS* v.0.2.23.12.36 on " + InetAddress.getLocalHost().getHostName()+ " (ip `" +InetAddress.getLocalHost().getHostAddress() + "`, db `" + propJDBC+ "` ) ", AppThead_log );
 
         AppThead_log.warn(dbLoggingProperties.toString());
         AppThead_log.warn(connectionProperties.toString());
