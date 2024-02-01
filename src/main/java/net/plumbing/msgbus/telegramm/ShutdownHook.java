@@ -28,7 +28,7 @@ public class ShutdownHook {
         else local_propJDBC = propJDBC;
         try {
             NotifyByChannel.Telegram_sendMessage( "Stop " + ApplicationName + " on " + InetAddress.getLocalHost().getHostName()+ " (ip " +InetAddress.getLocalHost().getHostAddress() + ", db " + local_propJDBC + " ) , *exit!*", ShutdownHook_log );
-            ShutdownHook_log.warn("Как бы типа => Stop "  + ApplicationName + " on " + InetAddress.getLocalHost().getHostName()+ " (ip " +InetAddress.getLocalHost().getHostAddress() + ", db " + local_propJDBC + " ) , *exit!*" );
+            ShutdownHook_log.warn("Как бы типа => Stop "  + ApplicationName + " on " + InetAddress.getLocalHost().getHostName()+ " (ip " +InetAddress.getLocalHost().getHostAddress() + ", db `" + local_propJDBC + "` ), *exit!*" );
             // Thread.sleep(1 * 1000); InterruptedException |
         } catch ( UnknownHostException e) {
             ShutdownHook_log.error(" хрякнулось InetAddress.getLocalHost().getHostAddress()", e);;
