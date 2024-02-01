@@ -27,7 +27,7 @@ public class ShutdownHook {
         if ( propJDBC == null)  local_propJDBC = "jdbc UNKNOWN ! ";
         else local_propJDBC = propJDBC;
         try {
-            NotifyByChannel.Telegram_sendMessage( "Stop " + ApplicationName + " on " + InetAddress.getLocalHost().getHostName()+ " (ip " +InetAddress.getLocalHost().getHostAddress() + ", db " + local_propJDBC + " ) , *exit!*", ShutdownHook_log );
+            NotifyByChannel.Telegram_sendMessage( "Stop " + ApplicationName + " on " + InetAddress.getLocalHost().getHostName()+ " (ip " +InetAddress.getLocalHost().getHostAddress() + ", db `" + local_propJDBC + "` ), *exit!*", ShutdownHook_log );
             ShutdownHook_log.warn("Как бы типа => Stop "  + ApplicationName + " on " + InetAddress.getLocalHost().getHostName()+ " (ip " +InetAddress.getLocalHost().getHostAddress() + ", db `" + local_propJDBC + "` ), *exit!*" );
             // Thread.sleep(1 * 1000); InterruptedException |
         } catch ( UnknownHostException e) {
