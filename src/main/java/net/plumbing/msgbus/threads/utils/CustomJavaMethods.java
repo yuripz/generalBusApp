@@ -51,19 +51,25 @@ public class CustomJavaMethods {
 				"\t<ResponseCode>10</ResponseCode><ResponseMessage>106891449</ResponseMessage>\n" +
 				"</SaveGeoObjectResponse>" );
 		*/
-		boolean IsDebugged = true;
+		boolean IsDebugged = false; //true;
 		int nn = MessageUtils.ReadMessage( theadDataAccess,  Queue_Id,  messageDetails, IsDebugged, MessageSend_Log);
 		if (nn >= 0) {
 			// -- без formatXml - в одну строку, некрасиво на Форнте
-			messageDetails.XML_MsgResponse.setLength(0);
 
-			if ((messageDetails.XML_MsgClear.length() > XMLchars.nanXSLT_Result.length()))
+			if ((messageDetails.XML_MsgResponse.length() > XMLchars.nanXSLT_Result.length())) {
+				// копируем XML_MsgResponse в XML_MsgClear для форматирования
+						messageDetails.XML_MsgClear.setLength(0);
+						messageDetails.XML_MsgClear.append(messageDetails.XML_MsgResponse);
 				try {
+					// форматируем из копии XML_MsgClear в XML_MsgResponse для отправки
+
+					messageDetails.XML_MsgResponse.setLength(0);
 					messageDetails.XML_MsgResponse.append(U.formatXml(messageDetails.XML_MsgClear.toString()));
 				} catch (Exception e) {
 					// неотфармотировался XML, отдаём обратно как есть
 					messageDetails.XML_MsgResponse.append(messageDetails.XML_MsgClear);
 				}
+			}
 			else
 				messageDetails.XML_MsgResponse.append(XMLchars.nanXSLT_Result);
 

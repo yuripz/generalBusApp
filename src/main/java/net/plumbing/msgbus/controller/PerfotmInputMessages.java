@@ -217,7 +217,7 @@ public class PerfotmInputMessages {
                         }
                         else
                         {if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                            MessegeReceive_Log.info("["+ Queue_Id +"] Исполнение CustomJavaMethods." + JavaMethodName + ":" + Message.MsgReason.toString() );
+                            MessegeReceive_Log.info("["+ Queue_Id +"] Исполнение CustomJavaMethods." + JavaMethodName + " => " + resultSQL + " : Message.MsgReason (`" + Message.MsgReason.toString() +"`)" );
                         }
                         // Устанавливаеи признак завершения работы,  Message.XML_MsgResponse - результат отаботки
                         theadDataAccess.doUPDATE_MessageQueue_ExeIn2DelIN(Queue_Id, MessegeReceive_Log );

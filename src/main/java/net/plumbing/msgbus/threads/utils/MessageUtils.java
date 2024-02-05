@@ -384,7 +384,7 @@ public class MessageUtils {
 
         MessegeSend_Log.info( "["+ Queue_Id +"] получили из БД тело XML, " + messageDetails.XML_MsgResponse.length() + " символов" );
         if (IsDebugged ) {
-            MessegeSend_Log.info(messageDetails.XML_MsgResponse.toString());
+            MessegeSend_Log.info("["+ Queue_Id +"] полученное из БД тело XML `" + messageDetails.XML_MsgResponse.toString() + "`");
         }
         return messageDetails.MessageRowNum;
     }
