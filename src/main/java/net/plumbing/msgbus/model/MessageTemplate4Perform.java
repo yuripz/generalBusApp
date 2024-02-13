@@ -235,19 +235,19 @@ public class MessageTemplate4Perform {
                             MessageTemplate_Log.info( "[" + Queue_Id + "]" + "PropNameSOAPAction Property[" + key +"]=[" + properties.getProperty(key) + "]" );
                         }
                         if ( key.equals(PropDebug) ) {
-                            MessageTemplate_Log.info( "[" + Queue_Id + "]" + "PropDebug Property[" + key +"]=[" + properties.getProperty(key) + "]" );
+                           //   MessageTemplate_Log.info( "[" + Queue_Id + "]" + "PropDebug Property[" + key +"]=[" + properties.getProperty(key) + "]" );
                             if (( properties.getProperty(key).equalsIgnoreCase("on") ) ||
                                     ( properties.getProperty(key).equalsIgnoreCase("full") )
                             )
                             {
-                                MessageTemplate_Log.info( "[" + Queue_Id + "]" + "PropDebug Property[" + key +"]=lover[" + properties.getProperty(key) + "]" );
+                             //   MessageTemplate_Log.info( "[" + Queue_Id + "]" + "PropDebug Property[" + key +"]=lover[" + properties.getProperty(key) + "]" );
                                 this.isDebugged=true;
                             }
                             if (( properties.getProperty(key).equalsIgnoreCase("ON") ) ||
                                     ( properties.getProperty(key).equalsIgnoreCase("FULL") )
                             )
                             {
-                                MessageTemplate_Log.info( "[" + Queue_Id + "]" + "PropDebug Property[" + key +"]=UPPER[" + properties.getProperty(key) + "]" );
+                             //   MessageTemplate_Log.info( "[" + Queue_Id + "]" + "PropDebug Property[" + key +"]=UPPER[" + properties.getProperty(key) + "]" );
                                 this.isDebugged=true;
                             }
                         }

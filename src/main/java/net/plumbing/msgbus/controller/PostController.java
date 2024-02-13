@@ -116,7 +116,7 @@ public class PostController {
         if (MessageTemplateVOkey >= 0)
         {
             String ConfigExecute = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getConfigExecute();
-            Controller_log.info("ConfigExecute:" + ConfigExecute);
+            // Controller_log.info("ConfigExecute:" + ConfigExecute);
             if (ConfigExecute != null) {
                 Properties properties = new Properties();
                 InputStream propertiesStream = new ByteArrayInputStream(ConfigExecute.getBytes(StandardCharsets.UTF_8));
@@ -132,9 +132,9 @@ public class PostController {
                         if (key.equals(PropCustomFaultEnd)) {
                             PropCustomFault_Server_End = properties.getProperty(key);
                         }
-                        Controller_log.info("Property[" + key + "]=[" + properties.getProperty(key) + "]");
+                        // Controller_log.info("Property[" + key + "]=[" + properties.getProperty(key) + "]");
                         if (key.equals(PropDebug)) {
-                            Controller_log.info("PropDebug Property[" + key + "]=[" + properties.getProperty(key) + "]");
+                            // Controller_log.info("PropDebug Property[" + key + "]=[" + properties.getProperty(key) + "]");
                             if ((properties.getProperty(key).equalsIgnoreCase("on")) ||
                                     (properties.getProperty(key).equalsIgnoreCase("full"))
                             ) {

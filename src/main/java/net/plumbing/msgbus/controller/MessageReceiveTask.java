@@ -103,7 +103,7 @@ public class MessageReceiveTask
             Message.MsgReason.append("Ошибка на приёме сообщения, не удалось сохранить заголовок сообщения в БД - MakeNewMessage_Queue return: " + Queue_Id );
             return -3L;
         }
-        MessegeReceive_Log.info(" isDebugged ?:(" + isDebugged + ") theadDataAccess.doINSERT_QUEUElog(" + Queue_Id.toString() + ") ");
+        // MessegeReceive_Log.info(" isDebugged ?:(" + isDebugged + ") theadDataAccess.doINSERT_QUEUElog(" + Queue_Id.toString() + ") ");
         Message.ROWID_QUEUElog=null; Message.Queue_Id = Queue_Id;
         if ( isDebugged )
             Message.ROWID_QUEUElog = theadDataAccess.doINSERT_QUEUElog( Queue_Id , Message.XML_MsgInput, MessegeReceive_Log );
@@ -158,8 +158,8 @@ public class MessageReceiveTask
 
                 }
                 catch (Exception e) {
-                    System.err.println( "Queue_Id["+ messageQueueVO.getQueue_Id() + "]  Exception" );
-                    e.printStackTrace();
+                    System.err.println( "Queue_Id["+ messageQueueVO.getQueue_Id() + "]  Exception: " + e.getMessage());
+                    // e.printStackTrace();
                     MessegeReceive_Log.error(Queue_Direction + "fault: [" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: " + sStackTrace.strInterruptedException(e));
                     Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения: " + Message.XML_MsgClear.toString() + ", fault: " + sStackTrace.strInterruptedException(e));
 

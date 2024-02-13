@@ -6,5 +6,7 @@
 mvnw.cmd
 *.log
 ./application.properties
-application.properties
+application.properties.*
 HE-6025.Receiver.log*
+/application.properties.*
+/application.properties
