@@ -65,7 +65,7 @@ public class XmlSQLStatement {
 */
     private static final String  OperTypeSel     = "select";
 //    public static final String  OperTypeIns     = "insert";
-     public static final String  OperTypeUpdt    = "update";
+//     public static final String  OperTypeUpdt    = "update";
 //    public static final String  OperTypeDel     = "delete";
 
     private static final String  OperTypeRef    = "refcursor";
@@ -662,7 +662,7 @@ public class XmlSQLStatement {
         return messageDetails.ConfirmationRowNum;
     }
 
-    private static void MakeConfirmation4Function(Integer callableStatementResult, String p_Run_String, String p_Message_String, MessageDetails messageDetails) {
+    public static void MakeConfirmation4Function(Integer callableStatementResult, String p_Run_String, String p_Message_String, MessageDetails messageDetails) {
         // Формируем псевдо XML_ClearBodyResponse из function
         String s_Message_String;
         if ( p_Message_String !=null ) s_Message_String = p_Message_String;

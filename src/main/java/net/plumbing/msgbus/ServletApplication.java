@@ -1,6 +1,5 @@
 package net.plumbing.msgbus;
 
-
 //import net.plumbing.msgbus.mq.JMS_MessageDirection_MQConnectionFactory;
 import net.plumbing.msgbus.telegramm.NotifyByChannel;
 import org.slf4j.Logger;
@@ -9,9 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-
 import org.springframework.boot.CommandLineRunner;
-
 import javax.jms.JMSException;
 
 //import org.springframework.context.ApplicationContext;
@@ -26,7 +23,6 @@ import net.plumbing.msgbus.common.HikariDataAccess;
 import net.plumbing.msgbus.common.ExtSystemDataAccess;
 import net.plumbing.msgbus.config.ConnectionProperties;
 import net.plumbing.msgbus.config.DBLoggingProperties;
-
 
 import net.plumbing.msgbus.config.Receiver_AppConfig;
 import net.plumbing.msgbus.config.TelegramProperties;
@@ -45,12 +41,10 @@ import java.sql.SQLException;
 // import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-// --- !import de.codecentric.boot.admin.server.config.EnableAdminServer;
-
+//import de.codecentric.boot.admin.server.config.EnableAdminServer;
 //import de.codecentric.boot.admin.client.registration.ApplicationRegistrator;
 //import de.codecentric.boot.admin.client.registration.Application;
 //import de.codecentric.boot.admin.client.registration.DefaultApplicationFactory;
-
 
 @SpringBootApplication
 //@SpringBootApplication(exclude = { SecurityAutoConfiguration.class, SecurityFilterAutoConfiguration.class })
@@ -70,7 +64,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.4.02.22";
+    public static final String ApplicationName="*Receiver_BUS* v.4.03.10";
     public static String propJDBC;
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ServletApplication.class, args);

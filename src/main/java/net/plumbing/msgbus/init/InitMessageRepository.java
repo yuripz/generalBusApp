@@ -16,9 +16,9 @@ import net.plumbing.msgbus.threads.utils.MessageRepositoryHelper;
 import java.sql.*;
 
 public class InitMessageRepository {
-    private static PreparedStatement stmtMsgTypeReRead;
-    private static PreparedStatement stmtMsgDirectionReRead;
-    private static PreparedStatement stmtMsgTemplateReRead;
+   // private static PreparedStatement stmtMsgTypeReRead;
+   // private static PreparedStatement stmtMsgDirectionReRead;
+   // private static PreparedStatement stmtMsgTemplateReRead;
 
 /* Перечитывать перечень систем бессмысленно, потоки и их конфигурация уже сформированы
     public static  int ReReadMsgDirections( String HrmsSchema, Long intervalReInit, Long CurrentTime,
@@ -95,16 +95,22 @@ public class InitMessageRepository {
                 }
             }
             rs.close();
+            rs = null;
             stmtMsgTypeReRead.close();
+            stmtMsgTypeReRead = null;
             DataAccess.Hermes_Connection.commit();
             //stmtMsgType.close();
         } catch (Exception e) {
             AppThead_log.error("ReReadMsgTypes (" + selectMsgTypeReRead + ") fault: " + sStackTrace.strInterruptedException(e));
+            System.err.println("ReReadMsgTypes fault: " + selectMsgTypeReRead);
+            e.printStackTrace();
             try {
+                if ( rs != null ) rs.close();
                 if ( stmtMsgTypeReRead != null) stmtMsgTypeReRead.close();
                 DataAccess.Hermes_Connection.rollback();
             } catch ( SQLException SQLe) {
                 AppThead_log.error("rollback (" + selectMsgTypeReRead + ") fault: " + sStackTrace.strInterruptedException(SQLe));
+                System.err.println("rollback fault: " + selectMsgTypeReRead);
                 SQLe.printStackTrace();
             }
             // e.printStackTrace();
@@ -117,17 +123,17 @@ public class InitMessageRepository {
         int parseResult;
         int MessageTemplateVOkey;
 
-        ResultSet rs;
+        ResultSet rs=null;
         Logger log = AppThead_log;
 
         if ( DataAccess.Hermes_Connection == null )
         {  AppThead_log.error("ReReadMsgTypes: DataAccess.Hermes_Connection == null");
             return -3;
         }
-        PreparedStatement stmtMsgTemplateReRead;
+        PreparedStatement stmtMsgTemplateReRead = null;
         String selectMsgTemplateReRead;
         if ( DataAccess.rdbmsVendor.equalsIgnoreCase("oracle"))
-            // todo Oracle
+            //  Oracle
             selectMsgTemplateReRead = "select t.template_id, t.interface_id, t.operation_id, t.msg_type, t.msg_type_own, " +
                 "t.template_name, t.template_dir, t.source_id, t.destin_id, t.conf_text, t.src_subcod, " +
                 "t.dst_subcod, t.lastmaker, t.lastdate " +
@@ -137,7 +143,7 @@ public class InitMessageRepository {
                  // "and t.LastDate > ( to_date('" + DataAccess.dateFormat.format( DataAccess.InitDate ) +"', 'YYYY-MM-DD HH24:MI:SS') - (" + intervalReInit + "+ 180)/(60*60*24)) " +
                 "and t.template_dir like '%IN%' " +
                 "order by t.interface_id, t.operation_id, t.destin_id, t.dst_subcod";
-        else // todo PostGree
+        else //  PostGree
             selectMsgTemplateReRead = "select t.template_id, t.interface_id, t.operation_id, t.msg_type, t.msg_type_own, " +
                     "t.template_name, t.template_dir, t.source_id, t.destin_id, t.conf_text, t.src_subcod, " +
                     "t.dst_subcod, t.lastmaker, t.lastdate " +
@@ -215,15 +221,22 @@ public class InitMessageRepository {
 
             }
             rs.close();
+            rs = null;
             stmtMsgTemplateReRead.close();
+            stmtMsgTemplateReRead = null;
             DataAccess.Hermes_Connection.commit();
             // stmtMsgTemplate.close();
         } catch (Exception e) {
             AppThead_log.error("ReReadMsgTemplates: (" + selectMsgTemplateReRead + ") fault: " + sStackTrace.strInterruptedException(e));
+            System.err.println("ReReadMsgTypes fault: " + selectMsgTemplateReRead);
+            e.printStackTrace();
             try {
+                if ( rs != null ) rs.close();
+                if ( stmtMsgTemplateReRead != null) stmtMsgTemplateReRead.close();
                 DataAccess.Hermes_Connection.rollback();
             } catch ( SQLException SQLe) {
                 AppThead_log.error("ReReadMsgTemplates: rollback() fault: " + sStackTrace.strInterruptedException(SQLe));
+                System.err.println("ReReadMsgTemplates: rollback() fault: ");
                 SQLe.printStackTrace();
             }
             return -2;
