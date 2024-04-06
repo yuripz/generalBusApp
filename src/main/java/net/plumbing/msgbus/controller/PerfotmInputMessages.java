@@ -135,9 +135,16 @@ public class PerfotmInputMessages {
                     }
                 }
 
+                boolean is_NoConfirmation = // Признак на типе сообщения, что Confirmation формируется в памяти, messageDetails.XML_MsgConfirmation
+                        MessageRepositoryHelper.isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation(messageQueueVO.getOperation_Id(), MessegeReceive_Log);
+                // для запросов, на интерфейсе , не предполагающих формирование блока Confirmation в БД параметры зароса берутся из памяти,
+                // их сохранение имеет смысл только для отладки в режиме Debug=on
+                if ( ( !is_NoConfirmation ) ||  Message.MessageTemplate4Perform.getIsDebugged() )
                 // сохраняем входящее - распарсенный по-строчно <Tag><VALUE>
                 Function_Result = MessageUtils.SaveMessage4Input(
                          theadDataAccess,  Queue_Id,  Message,  messageQueueVO , MessegeReceive_Log) ;
+                else Function_Result =0;
+
                 if( Function_Result < 0 ) {
                     MessageUtils.ProcessingIn2ErrorIN(  messageQueueVO, Message,  theadDataAccess,
                             "Не удалось сохранить содержимое сообщения в твблицу очереди:"  + " " + Message.XML_MsgClear.toString()  ,
@@ -426,7 +433,7 @@ public class PerfotmInputMessages {
                     if (MessageUtils.isMessageQueue_Direction_EXEIN(theadDataAccess, Queue_Id, messageQueueVO, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log )) {
                         // Если статус EXEIN , сообщение выполнено, либо нормально либо с ошибкой смотрим на Confirmation
                         // если на интерфейсе в типе сообщения URL_SOAP_ACK = REST- это значит, что Confirmation в БД не пишем
-                        boolean is_NoConfirmation = // Признак на типе сообщения, что Confirmation формируется в памяти, messageDetails.XML_MsgConfirmation
+                        is_NoConfirmation = // Признак на типе сообщения, что Confirmation формируется в памяти, messageDetails.XML_MsgConfirmation
                                 MessageRepositoryHelper.isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation(messageQueueVO.getOperation_Id(), MessegeReceive_Log);
                        if ( !is_NoConfirmation ) { // Если признака "NoConfirmation" на типе сообщения нет, значит положено читать из БД
                            // ReadConfirmation очищает Message.XML_MsgConfirmation и помещает туда чстанный из БД Confirmation

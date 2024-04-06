@@ -64,7 +64,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.4.03.10";
+    public static final String ApplicationName="*Receiver_BUS* v.4.04.05";
     public static String propJDBC;
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ServletApplication.class, args);
@@ -86,7 +86,7 @@ public class ServletApplication implements CommandLineRunner {
          propJDBC = connectionProperties.gethrmsPoint();
         if ( propJDBC == null)  propJDBC = "jdbc UNKNOWN ! ";
         else {
-            if ( propJDBC.indexOf("//") < 1  ) propJDBC = "jdbc INVALID! `" + propJDBC + "`";
+            if ( propJDBC.indexOf("//") < 1  ) ; //propJDBC = "jdbc INVALID! `" + propJDBC + "`";
             else {
                 propJDBC = propJDBC.substring(propJDBC.indexOf("//") + 2);
                 if ( propJDBC.indexOf("/") < 1  ) propJDBC = "INVALID db in jdbc ! `" + propJDBC + "`";
