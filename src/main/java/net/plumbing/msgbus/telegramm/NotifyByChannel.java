@@ -83,6 +83,8 @@ public class NotifyByChannel {
                 sendMessage_log.error( "URI_Sring:[" + URI_Sring + "] fault" + e.toString() );
                 return ;
         }
+        sendMessage_log.warn( "Telegram_SendMessage: httpClient.isTerminated()=" + httpClient.isTerminated() );
+
         return ;
     }
 

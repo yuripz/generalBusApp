@@ -1,6 +1,6 @@
 package net.plumbing.msgbus.common;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 //import javax.validation.constraints.NotNull;
 
 //import org.apache.commons.io.Charsets;

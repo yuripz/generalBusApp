@@ -5,9 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 //import org.springframework.web.context.request.async.DeferredResult;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 

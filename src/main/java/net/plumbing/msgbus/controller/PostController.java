@@ -22,10 +22,11 @@ import net.plumbing.msgbus.model.MessageTemplate;
 //import TheadDataAccess;
 import net.plumbing.msgbus.threads.utils.MessageRepositoryHelper;
 
-import javax.servlet.ServletRequest;
+
 import java.io.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;

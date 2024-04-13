@@ -1,6 +1,7 @@
 package net.plumbing.msgbus.threads.utils;
 
 // import org.apache.commons.lang3.StringEscapeUtils;
+import jakarta.validation.constraints.NotNull;
 import net.plumbing.msgbus.common.XMLchars;
 import net.plumbing.msgbus.common.sStackTrace;
 import net.plumbing.msgbus.model.MessageDetailVO;
@@ -13,7 +14,7 @@ import org.jdom2.*;
 //import org.jdom2.input.SAXBuilder;
 //import org.jdom2.xpath.XPathExpression;
 //import org.jdom2.xpath.XPathFactory;
-import org.jetbrains.annotations.NotNull;
+//import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 //import MessageDirections;
 

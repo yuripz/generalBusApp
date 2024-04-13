@@ -8,9 +8,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 //import org.springframework.web.context.request.async.DeferredResult;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 //import javax.swing.text.html.parser.Entity;
 
 import net.plumbing.msgbus.common.ClientIpHelper;
@@ -380,6 +380,7 @@ public class GetController  {
         String OperationId = httpRequest.getHeader("BusOperationId");
         String BusOperationMesssageType = null;
         String queryString;
+        String ResponseStatus;
         try {
             queryString = URLDecoder.decode(httpRequest.getQueryString(), StandardCharsets.UTF_8);
         } catch (NullPointerException e) {
@@ -635,7 +636,7 @@ public class GetController  {
                 Long Queue_ID = messageReceiveTask.ProcessRestAPIMessage(Interface_id, Message, MessageOperationId, isDebugged);
 
                 if (Queue_ID == 0L) {
-                    getResponse.setStatus(200);
+                    getResponse.setStatus(200); ResponseStatus="200";
                     if (MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_Rest_2_Interface(Url_Soap_Send, Controller_log))
                     {  if (isDebugged) Controller_log.info( "в URL_SOAP_Ack интерфейса записан REST, значит без <Body></Body>" );
                         if (MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_RestExel_2_Interface(Url_Soap_Send, Controller_log)) {
@@ -654,14 +655,14 @@ public class GetController  {
                                         Message.XML_MsgResponse.toString() +
                                         Body_noNS_End;
                 } else {
-                    getResponse.setStatus(422);
+                    getResponse.setStatus(422);  ResponseStatus="422";
                     if (Queue_ID > 0L) {
-                        getResponse.setStatus(500);
+                        getResponse.setStatus(500);  ResponseStatus="500";
                         HttpResponse = Fault_Client_noNS_Begin_4_Rest +
                                 XML.escape(Message.MsgReason.toString()) +
                                 Fault_noNS_End_4_Rest;
                     } else {
-                        getResponse.setStatus(500);
+                        getResponse.setStatus(500); ResponseStatus="500";
                         HttpResponse = Fault_Server_noNS_Begin_4_Rest +
                                 Message.MsgReason.toString() +
                                 Fault_noNS_End_4_Rest;
@@ -732,7 +733,8 @@ public class GetController  {
                             Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
                             SQLe.printStackTrace();
                         }
-                        Controller_log.info("Response.Status=" + getResponse.getStatus() + "; DataSourcePool=" + DataSourcePoolMetadata.getActive());
+                        Controller_log.info("Response.Status=" +  //getResponse.getStatus() +
+                                         "; DataSourcePool=" + DataSourcePoolMetadata.getActive());
 
                         getResponse.setHeader("Access-Control-Allow-Origin", "*");
 //                    getResponse.setHeader("Access-Control-Expose-Headers", "X-Total-Count");
@@ -769,7 +771,7 @@ public class GetController  {
                         System.err.println(e.toString());
                         HttpResponse = Fault_Server_Rest_Begin +
                                 org.apache.commons.text.StringEscapeUtils.escapeJson("Не смогли преобразовать HttpResponse в JSON: " + e.getMessage()) + Fault_Rest_End;
-                        getResponse.setStatus(500);
+                        getResponse.setStatus(500); ResponseStatus="500";
                     }
 
                 }
@@ -791,7 +793,7 @@ public class GetController  {
                 getResponse.setHeader("Access-Control-Expose-Headers", "Content-Range");
 
                 if (isDebugged) Controller_log.info("return HttpResponse:" + HttpResponse);
-                Controller_log.info("Response.Status=" + getResponse.getStatus() + "DataSourcePool=" + DataSourcePoolMetadata.getActive());
+                Controller_log.info("Response.Status=" + ResponseStatus + "DataSourcePool=" + DataSourcePoolMetadata.getActive());
 
                 return HttpResponse;
             } finally {

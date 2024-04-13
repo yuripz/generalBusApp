@@ -15,6 +15,8 @@ import javax.jms.JMSException;
 //import org.springframework.context.annotation.Bean;
 //import org.springframework.context.annotation.Configuration;
 //import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+//import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+//import org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -64,7 +66,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.4.04.05";
+    public static final String ApplicationName="*Receiver_BUS* v.4.04.11";
     public static String propJDBC;
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ServletApplication.class, args);
