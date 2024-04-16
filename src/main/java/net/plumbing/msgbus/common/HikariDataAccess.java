@@ -45,9 +45,12 @@ public class HikariDataAccess {
         hikariConfig.setIdleTimeout(TimeUnit.MINUTES.toMillis(5));
         hikariConfig.setMaxLifetime(TimeUnit.MINUTES.toMillis(10));
 
-        hikariConfig.setMaximumPoolSize(30);
+        hikariConfig.setMaximumPoolSize(100);
         hikariConfig.setMinimumIdle(10);
+          if ( connectionUrl.indexOf("oracle") > 0 )
         hikariConfig.setConnectionTestQuery("SELECT 1 from dual");
+          else
+        hikariConfig.setConnectionTestQuery("SELECT 1 ");
         hikariConfig.setPoolName("MessageCP");
 
         hikariConfig.addDataSourceProperty("dataSource.cachePrepStmts", "true");
@@ -74,7 +77,11 @@ public class HikariDataAccess {
         try {
 
             Connection tryConn = dataSource.getConnection();
-            PreparedStatement prepareStatement = tryConn.prepareStatement( "SELECT 1 from dual");
+            PreparedStatement prepareStatement;
+            if ( connectionUrl.indexOf("oracle") > 0 )
+                prepareStatement = tryConn.prepareStatement( "SELECT 1 from dual");
+            else
+                prepareStatement = tryConn.prepareStatement( "SELECT 1 ");
             prepareStatement.executeQuery();
             prepareStatement.close();
             ServletApplication.AppThead_log.info( "DataSourcePool ( at prepareStatement ): getMax: " + DataSourcePoolMetadata.getMax()

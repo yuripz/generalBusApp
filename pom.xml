@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>net.plumbing.msgbus</groupId>
 	<artifactId>Receiver</artifactId>
-    <version>0.3.24.04.11d-SNAPSHOT</version>
+    <version>0.3.24.04.15-SNAPSHOT</version>
     <name>Receiver</name>
     <description>servlet project for Spring Boot</description>
     	<properties>
@@ -275,12 +275,6 @@
             <version>21.6.0.0.1</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/io.prestosql/presto-jdbc -->
-        <dependency>
-            <groupId>io.prestosql</groupId>
-            <artifactId>presto-jdbc</artifactId>
-            <version>350</version>
-        </dependency>
 
     </dependencies>
 <!--
