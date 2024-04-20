@@ -1,7 +1,6 @@
 package net.plumbing.msgbus.threads.utils;
 
 // import org.apache.commons.lang3.StringEscapeUtils;
-import jakarta.validation.constraints.NotNull;
 import net.plumbing.msgbus.common.XMLchars;
 import net.plumbing.msgbus.common.sStackTrace;
 import net.plumbing.msgbus.model.MessageDetailVO;
@@ -23,6 +22,7 @@ import org.slf4j.Logger;
 //import java.io.IOException;
 //import java.io.InputStream;
 //import java.nio.charset.StandardCharsets;
+import javax.validation.constraints.NotNull;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
