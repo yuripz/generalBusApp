@@ -230,7 +230,11 @@ public class XMLutils {
                 MessegeSend_Log.info("ProcessInputMessage(makeClearRequest): после XSLT={" + messageDetails.XML_MsgConfirmation.toString() + "}");
 
             if (messageDetails.XML_MsgConfirmation.toString().equals(XMLchars.nanXSLT_Result)) {
-                messageDetails.MsgReason.append("В результате XSLT преобразования получен пустой XML для заголовка сообщения");
+                if (isDebugged)
+                    MessegeSend_Log.error("В результате XSLT преобразования (`"+messageDetails.XML_MsgClear.toString()+"`)получен пустой XML для заголовка сообщения");
+                messageDetails.MsgReason.append("В результате XSLT преобразования очищенного от 'ns:' (`")
+                                        .append(messageDetails.XML_MsgClear.substring(1,260))
+                                        .append("...`)получен пустой XML для заголовка сообщения");
                 throw new TransformerException(messageDetails.MsgReason.toString());
             }
             // Всё ок, записываем в  XML_MsgClear результат из  XML_MsgConfirmation
@@ -469,14 +473,21 @@ public class XMLutils {
         Attribute XMLattribute;
         StringBuilder ElementEntry= new StringBuilder();
         //StringBuilder ElementContent = new StringBuilder();
-        byte[] ElementContent;
+        //byte[] ElementContent;
 
         // Перебор всех элементов TemplConfig
         for (int i = 0; i < Elements.size(); i++) {
              XMLelement =  Elements.get(i);
             ElementEntry.setLength(0); ElementEntry.trimToSize();
             ElementEntry.append( XMLelement.getName() );
-            ElementContent = XMLchars.cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE ( StringEscapeUtils.escapeXml10(XMLelement.getTextTrim()) );
+
+            //ElementContent = XMLchars.cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE ( StringEscapeUtils.escapeXml10(XMLelement.getTextTrim()) );
+            String ElementContent = StringEscapeUtils.escapeXml10(XMLchars.cutUTF8String2MAX_TAG_VALUE_BYTE_SIZE (XMLelement.getTextTrim(), MessegeSend_Log ));
+            //byte[] Text_BYTE_SIZE = XMLchars.cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE ( TextTrim);
+            // String TextTrimCattet_2_SIZE = new  String(Text_BYTE_SIZE, StandardCharsets.UTF_8 );
+
+            //ElementContent.setLength(0);ElementContent.trimToSize();
+            //ElementContent.append(StringEscapeUtils.escapeXml10( TextTrimCattet_2_SIZE ));
             //ElementContent.setLength(0); ElementContent.trimToSize();
             //ElementContent.append( StringEscapeUtils.escapeXml10(XMLelement.getTextTrim()) ); // XmlEscapers.xmlAttributeEscaper().escape( XMLelement.getText()); //.getText(); заменил на getValue() из-за "<>"
 
@@ -497,16 +508,16 @@ public class XMLutils {
             }
             messageDetails.XML_Request_Method.append(XMLchars.CloseTag);
            // if ( ElementContent.length > 1000 ) MessegeSend_Log.info("XML_BodyElemets2StringB ElementContent.length =" + ElementContent.length + ";");
-            if ( ElementContent.length > 0 ) {
-                String ElementContentS = new String( ElementContent, StandardCharsets.UTF_8 );
+            if ( ! ElementContent.isEmpty() ) {
+                //String ElementContentS = new String( ElementContent, StandardCharsets.UTF_8 );
                // if ( ElementContent.length > 1000 ) MessegeSend_Log.info("XML_BodyElemets2StringB ElementContentS.length() =" + ElementContentS.length() + ";");
-                messageDetails.XML_Request_Method.append(ElementContentS); //, StandardCharsets.UTF_8) ); // ElementContent.toString());
+                messageDetails.XML_Request_Method.append(ElementContent); //, StandardCharsets.UTF_8) ); // ElementContent.toString());
                 //MessegeSend_Log.info("XML_BodyElemets2StringB-ElementContent[" + ElementContent + "]");
             }
 
             XML_RequestElemets2StringB(messageDetails, XMLelement,
                     MessegeSend_Log);
-            messageDetails.XML_Request_Method.append(XMLchars.OpenTag + XMLchars.EndTag + ElementEntry + XMLchars.CloseTag);
+            messageDetails.XML_Request_Method.append(XMLchars.OpenTag).append( XMLchars.EndTag).append(ElementEntry).append(XMLchars.CloseTag);
             //MessegeSend_Log.info("XML_MsgClear.appendEND(" + XMLchars.OpenTag + XMLchars.EndTag + ElementEntry + XMLchars.CloseTag + ")" );
             //MessegeSend_Log.info("XML_MsgClear.length=" +  messageDetails.XML_MsgClear.length() );
             //MessegeSend_Log.info("XML_MsgClear.String=" +  messageDetails.XML_MsgClear.toString() );
@@ -528,7 +539,7 @@ public class XMLutils {
         Attribute XMLattribute;
         StringBuilder ElementEntry= new StringBuilder();
         //StringBuilder ElementContent = new StringBuilder(); cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE
-        byte[] ElementContent;
+        //byte[] ElementContent;
         List<Element> Elements = EntryElement.getChildren();
         // Перебор всех элементов TemplConfig
         for (int i = 0; i < Elements.size(); i++) {
@@ -540,10 +551,10 @@ public class XMLutils {
             //String ElementContent = XMLelement.getTextTrim() ; // XmlEscapers.xmlAttributeEscaper().escape( XMLelement.getText()); //.getText(); заменил на getValue() из-за "<>"
             //ElementContent.setLength(0); ElementContent.trimToSize();
             //ElementContent.append( StringEscapeUtils.escapeXml10(XMLelement.getTextTrim()) ); // XmlEscapers.xmlAttributeEscaper().escape( XMLelement.getText()); //.getText(); заменил на getValue() из-за "<>"
-            ElementContent = XMLchars.cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE ( StringEscapeUtils.escapeXml10(XMLelement.getTextTrim()) );
+            //ElementContent = XMLchars.cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE ( StringEscapeUtils.escapeXml10(XMLelement.getTextTrim()), MessegeSend_Log );
+            String ElementContent = StringEscapeUtils.escapeXml10(XMLchars.cutUTF8String2MAX_TAG_VALUE_BYTE_SIZE (XMLelement.getTextTrim(), MessegeSend_Log )) ;
 
-
-            messageDetails.XML_MsgClear.append(XMLchars.OpenTag + ElementEntry);
+            messageDetails.XML_MsgClear.append(XMLchars.OpenTag).append(ElementEntry);
             //MessegeSend_Log.info("XML_MsgClear.appendBEGIB(" + XMLchars.OpenTag + ElementEntry + ")");
             //MessegeSend_Log.info("XML_BodyElemets2StringB {<" + ElementEntry + ">}");
             // MessegeSend_Log.info("XML_Body-XMLelement.getText {<" + XMLelement.getText() + ">}" + " <ElementContent>" + ElementContent + " </ElementContent>" );
@@ -568,19 +579,19 @@ public class XMLutils {
 
             //MessegeSend_Log.info("XML_BodyElemets2StringB ElementContent.length =" + ElementContent.length() + ";");
             // if ( ElementContent.length > 1000 ) MessegeSend_Log.info("XML_BodyElemets2StringB ElementContent.length =" + ElementContent.length + ";");
-            if ( ElementContent.length > 0 ) {
-                String ElementContentS = new String( ElementContent, StandardCharsets.UTF_8 );
+            if ( !ElementContent.isEmpty()  ) {
+                //String ElementContentS = new String( ElementContent, StandardCharsets.UTF_8 );
                 // if ( ElementContent.length > 1000 ) MessegeSend_Log.info("XML_BodyElemets2StringB ElementContentS.length() =" + ElementContentS.length() + ";");
-                messageDetails.XML_Request_Method.append(ElementContentS); //, StandardCharsets.UTF_8) ); // ElementContent.toString());
+                messageDetails.XML_Request_Method.append(ElementContent); //, StandardCharsets.UTF_8) ); // ElementContent.toString());
 
-                messageDetails.XML_MsgClear.append(ElementContentS);
+                messageDetails.XML_MsgClear.append(ElementContent);
                 //MessegeSend_Log.info("XML_BodyElemets2StringB-ElementContent[" + ElementContent + "]");
             }
 
 
             XML_BodyElemets2StringB(messageDetails, XMLelement,
                     MessegeSend_Log);
-            messageDetails.XML_MsgClear.append(XMLchars.OpenTag + XMLchars.EndTag + ElementEntry + XMLchars.CloseTag);
+            messageDetails.XML_MsgClear.append( (XMLchars.OpenTag + XMLchars.EndTag + ElementEntry + XMLchars.CloseTag) );
             //MessegeSend_Log.info("XML_MsgClear.appendEND(" + XMLchars.OpenTag + XMLchars.EndTag + ElementEntry + XMLchars.CloseTag + ")" );
             //MessegeSend_Log.info("XML_MsgClear.length=" +  messageDetails.XML_MsgClear.length() );
             //MessegeSend_Log.info("XML_MsgClear.String=" +  messageDetails.XML_MsgClear.toString() );

@@ -77,6 +77,7 @@ public class PostController {
                 MessageRepositoryHelper.look4MessageTypeVO_2_Interface(Url_Soap_Send, Controller_log);
 
         if (Interface_id < 0) {
+            Controller_log.error("look4MessageTypeVO_2_Interface('" + Url_Soap_Send + "') fault:  Интерфейс для обработки в системе не сконфигурирован");
             postResponse.setStatus(404);
             String OutResponse;
             if (soapAction != null)

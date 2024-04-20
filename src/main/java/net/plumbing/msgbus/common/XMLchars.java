@@ -2,7 +2,9 @@ package net.plumbing.msgbus.common;
 
 //import javax.validation.constraints.NotNull;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import org.slf4j.Logger;
 
 public class XMLchars {
     public static final String WSDLhi="WSDL";
@@ -132,8 +134,14 @@ public class XMLchars {
     public static final String Fault_Server_noNS_Begin_4_Rest="<Fault><faultcode>Server</faultcode><faultstring>";
     public static final String Fault_noNS_End_4_Rest="</faultstring></Fault>";
 
-    public static final String Fault_Client_Rest_Begin="{\"Fault\": {\n" + "  \"faultcode\": \"Client\",\n" + "  \"faultstring\": \"";
-    public static final String Fault_Server_Rest_Begin="{\"Fault\": {\n" + "  \"faultcode\": \"Server\",\n" + "  \"faultstring\": \"";
+    public static final String Fault_Client_Rest_Begin= """
+            {"Fault": {
+              "faultcode": "Client",
+              "faultstring": \"""";
+    public static final String Fault_Server_Rest_Begin= """
+            {"Fault": {
+              "faultcode": "Server",
+              "faultstring": \"""";
     public static final String Fault_Rest_End="\"\n" + "}}";
 
     //public static final String Fault_Client_Rest_Begin="{\"ClientFault\": \"";
@@ -144,17 +152,14 @@ public class XMLchars {
 
     final public static int MAX_TAG_VALUE_BYTE_SIZE=3966;
 
-    public static byte[] cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE(String s)  {
-        byte[] utf8;
-        try {
-            utf8 = s.getBytes("UTF-8");
-        }
-        catch ( UnsupportedEncodingException e) {
-            utf8 = s.getBytes();
-        }
+    public static byte[] cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE(String s,
+                                                          Logger ext_Logger)  {
+        byte[] utf8 = s.getBytes(StandardCharsets.UTF_8);
+
         if (utf8.length <= MAX_TAG_VALUE_BYTE_SIZE) {
             return utf8;
         }
+        // ext_Logger.warn("cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE: `"+ s +"`");
         if ((utf8[MAX_TAG_VALUE_BYTE_SIZE] & 0x80) == 0) {
             // the limit doesn't cut an UTF-8 sequence
             return Arrays.copyOf(utf8, MAX_TAG_VALUE_BYTE_SIZE);
@@ -172,5 +177,30 @@ public class XMLchars {
         }
     }
 
+    public static String cutUTF8String2MAX_TAG_VALUE_BYTE_SIZE(String s,
+                                                               Logger ext_Logger )  {
+        byte[] utf8 = s.getBytes(StandardCharsets.UTF_8);
+
+        if (utf8.length <= MAX_TAG_VALUE_BYTE_SIZE) {
+            return s;
+        }
+        // ext_Logger.warn("cutUTF8String2MAX_TAG_VALUE_BYTE_SIZE: `"+ s +"`");
+        if ((utf8[MAX_TAG_VALUE_BYTE_SIZE] & 0x80) == 0) {
+            // the limit doesn't cut an UTF-8 sequence
+            return new String( Arrays.copyOf(utf8, MAX_TAG_VALUE_BYTE_SIZE), StandardCharsets.UTF_8);
+            //return Arrays.copyOf(utf8, MAX_TAG_VALUE_BYTE_SIZE);
+        }
+        int i = 0;
+        while ((utf8[MAX_TAG_VALUE_BYTE_SIZE-i-1] & 0x80) > 0 && (utf8[MAX_TAG_VALUE_BYTE_SIZE-i-1] & 0x40) == 0) {
+            ++i;
+        }
+        if ((utf8[MAX_TAG_VALUE_BYTE_SIZE-i-1] & 0x80) > 0) {
+            // we have to skip the starter UTF-8 byte
+            return new String(Arrays.copyOf(utf8, MAX_TAG_VALUE_BYTE_SIZE-i-1), StandardCharsets.UTF_8);
+        } else {
+            // we passed all UTF-8 bytes
+            return new String(Arrays.copyOf(utf8, MAX_TAG_VALUE_BYTE_SIZE-i), StandardCharsets.UTF_8);
+        }
+    }
 
 }

@@ -15,8 +15,8 @@ public class xlstErrorListener implements ErrorListener
     @Override
     public void warning(TransformerException exception) throws TransformerException {
         XSLTerr = strInterruptedException(exception);
-        xlstError_Log.error( "ErrorListener.warning: " + XSLTerr);
-        exception.printStackTrace();
+        xlstError_Log.warn( "ErrorListener.warning: " + XSLTerr);
+        //exception.printStackTrace();
         throw (exception);
     }
 
@@ -35,6 +35,7 @@ public class xlstErrorListener implements ErrorListener
         exception.printStackTrace();
         throw (exception);
     }
+
     public void setXlstError_Log( Logger p_Error_Log ){
         this.xlstError_Log = p_Error_Log;
         this.XSLTerr= null;

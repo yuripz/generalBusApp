@@ -220,12 +220,18 @@ public class TheadDataAccess {
         }
         dataAccess_log.info( "Try(thead) Hermes getConnection: " + connectionUrl + " as " + db_userid + " rdbmsVendor=" + rdbmsVendor);
 
-
+        if ( Hermes_Connection == null)
         try {
         Hermes_Connection = dataSource.getConnection();
         Hermes_Connection.setAutoCommit(false);
         } catch (SQLException e) {
-            dataAccess_log.error( e.getMessage() );
+            dataAccess_log.error( "make_Hikari_Connection: `" + connectionUrl + "` fault:" + e.getMessage() );
+            if ( Hermes_Connection != null)
+                try {
+                    Hermes_Connection.close();
+                } catch ( SQLException SQLe) {
+                    dataAccess_log.error( "make_Hikari_Connection close() for : `" + connectionUrl + "` fault:" + e.getMessage() );
+                }
             e.printStackTrace();
             return (  null );
         }
@@ -238,14 +244,26 @@ public class TheadDataAccess {
             stmt_SetTimeZone.execute();
             stmt_SetTimeZone.close();
         }catch (SQLException e) {
-              dataAccess_log.error(e.getMessage());
+              dataAccess_log.error("make_Hikari_Connection stmt_SetTimeZone PreparedStatement for: `" + connectionUrl + "` fault:" + e.getMessage() );
               e.printStackTrace();
+              if ( Hermes_Connection != null)
+                  try {
+                      Hermes_Connection.close();
+                  } catch ( SQLException SQLe) {
+                      dataAccess_log.error( "make_Hikari_Connection close() for : `" + connectionUrl + "` fault:" + e.getMessage() );
+                  }
               return ( null);
           }
     }
 
         if (make_SelectNew_Queue(  dataAccess_log) == null ) {
             dataAccess_log.error( "make_SelectNew_Queue() fault");
+            if ( Hermes_Connection != null)
+                try {
+                    Hermes_Connection.close();
+                } catch ( SQLException SQLe) {
+                    dataAccess_log.error( "make_Hikari_Connection close() for : `" + connectionUrl + "` fault:" + SQLe.getMessage() );
+                }
             return null;
         }
 

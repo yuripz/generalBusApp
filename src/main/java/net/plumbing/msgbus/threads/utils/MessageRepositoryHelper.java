@@ -109,12 +109,13 @@ public class MessageRepositoryHelper {
         return null;
     }
     public static  int look4MessageTypeVO_2_Interface(String pUrl_Soap_Send,  Logger messegeSend_log) {
-        // messegeSend_log.info("look4MessageTypeVO_2_Interface[0-" + MessageType.AllMessageType.size() + "]:" + pUrl_Soap_Send);
+       //  messegeSend_log.info("look4MessageTypeVO_2_Interface[0-" + MessageType.AllMessageType.size() + "]:`" + pUrl_Soap_Send+"`");
         for (int i = 0; i < MessageType.AllMessageType.size(); i++) {
             MessageTypeVO messageTypeVO = MessageType.AllMessageType.get(i);
+            // messegeSend_log.info("look4MessageTypeVO[" + i + "]:" + messageTypeVO.getURL_SOAP_Send() + " , " +messageTypeVO.getMsg_TypeDesc());
             if (messageTypeVO.getOperation_Id() == 0 ){ // Это ИНТПРФЕЙС, тип, у которого № ОПЕРАЦИЯ == 0
                 String URL_SOAP_Send = messageTypeVO.getURL_SOAP_Send();
-                // messegeSend_log.info("look4MessageTypeVO[" + i + "]:" + URL_SOAP_Send + " , " +messageTypeVO.getMsg_TypeDesc());
+             //    messegeSend_log.info("look4MessageTypeVO[" + i + "]:" + URL_SOAP_Send + " , " +messageTypeVO.getMsg_TypeDesc());
                 if ( URL_SOAP_Send != null ) {
                     if ( URL_SOAP_Send.equals(pUrl_Soap_Send) ) {    //  нашли операцию,
                         return messageTypeVO.getInterface_Id(); // i;

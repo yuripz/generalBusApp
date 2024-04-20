@@ -41,6 +41,7 @@ public class MessageReceiveTask
                                      boolean isDebugged) {
 
         XSLTErrorListener = new xlstErrorListener();
+
         StringBuilder ConvXMLuseXSLTerr = new StringBuilder(); ConvXMLuseXSLTerr.setLength(0); ConvXMLuseXSLTerr.trimToSize();
         XSLTErrorListener.setXlstError_Log( MessegeReceive_Log );
         final  String Queue_Direction="ProcessInputMessage";
