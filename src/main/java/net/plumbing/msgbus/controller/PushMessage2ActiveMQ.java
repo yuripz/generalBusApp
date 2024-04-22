@@ -24,8 +24,6 @@ public class PushMessage2ActiveMQ {
         Long Function_Result = 0L;
         boolean isDebugged = true;
 
-
-
         // TheadDataAccess
         this.theadDataAccess = new TheadDataAccess();
         // Установаливем " соединение" , что бы зачитывать очередь
@@ -55,13 +53,13 @@ public class PushMessage2ActiveMQ {
             while (rLock.next()) {
                 Queue_Direction = rLock.getString("Queue_Direction");
                 theadNum = rLock.getInt("msg_InfostreamId");
-                MessegeReceive_Log.info( "push_QeueId2ActiveMQqueue: Queue_Id="+ pQueue_ID+ " :" +
+                MessegeReceive_Log.info( "[" + pQueue_ID +"] push_QeueId2ActiveMQqueue: Queue_Id="+ pQueue_ID+ " :" +
                         " record readed. msg_InfostreamId=" + theadNum + " Queue_Direction=[" + Queue_Direction + "]");
                 Queue_Id = pQueue_ID;
             }
         } catch (Exception e) {
             e.printStackTrace();
-            MessegeReceive_Log.error(e.getMessage());
+            MessegeReceive_Log.error("[" + pQueue_ID +"] Ошибка на приёме сообщения: 'select Q.ROWID, q.Queue_Direction, q.msg_InfostreamId from ARTX_PROJ.MESSAGE_QUEUE q where q.Queue_Id ="+ pQueue_ID + "' fault:" + e.getMessage() );
             MsgReason.append("Ошибка на приёме сообщения: 'select Q.ROWID, q.Queue_Direction, q.msg_InfostreamId from ARTX_PROJ.MESSAGE_QUEUE q where q.Queue_Id ="+ pQueue_ID + "' fault:" + e.getMessage()  );
             return -3L;
         }
@@ -69,7 +67,7 @@ public class PushMessage2ActiveMQ {
         if ( theadNum != null )
          MessageDirectionsCode = MessageRepositoryHelper.look4MessageDirectionsCode_4_Num_Thread( theadNum  , MessegeReceive_Log );
         else  {
-            MessegeReceive_Log.error("push_QeueId2ActiveMQqueue:НЕ удалось Найти  № потока по Queue_Id ="+ pQueue_ID + " он нужен для роиска очереди сообщений ActiveMQ");
+            MessegeReceive_Log.error("[" + pQueue_ID +"] push_QeueId2ActiveMQqueue:НЕ удалось Найти  № потока по Queue_Id ="+ pQueue_ID + " он нужен для роиска очереди сообщений ActiveMQ");
             MsgReason.append("НЕ удалось Найти  № потока по Queue_Id ="+ pQueue_ID + " он нужен для роиска очереди сообщений ActiveMQ");
             return Queue_Id;
         }
@@ -78,7 +76,7 @@ public class PushMessage2ActiveMQ {
         {
             try {
                 theadDataAccess.Hermes_Connection.close();
-            } catch (SQLException e) { MessegeReceive_Log.error(e.getMessage());
+            } catch (SQLException e) { MessegeReceive_Log.error("[" + pQueue_ID +"] push_QeueId2ActiveMQqueue: Hermes_Connection.close() fault ="+ e.getMessage());
                 e.printStackTrace();
             }
             MessegeReceive_Log.error("НЕ удалось Найти подходящйю систему для № потока "+ theadNum + " она нужна для очереди сообщений ActiveMQ");
@@ -88,14 +86,14 @@ public class PushMessage2ActiveMQ {
         PerformTextMessageJMSQueue performTextMessageJMSQueue = new PerformTextMessageJMSQueue();
         javax.jms.Connection Qconnection = null;
         try {
-            MessegeReceive_Log.info("Пробуем отправить сообщение QUEUE_ID: "+ Queue_Id + " в очередь сообщений ActiveMQ \'Q." + MessageDirectionsCode + ".IN'");
+            MessegeReceive_Log.info("[" + pQueue_ID +"] Пробуем отправить сообщение QUEUE_ID: "+ Queue_Id + " в очередь сообщений ActiveMQ \'Q." + MessageDirectionsCode + ".IN'");
              Qconnection = performTextMessageJMSQueue.SendTextMessageJMSQueue(
                     "{ \"QUEUE_ID\": \"" + Queue_Id.toString() + "\" }",
                     "Q." + MessageDirectionsCode + ".IN",
                     StoreMQpooledConnectionFactory.MQpooledConnectionFactory
             );
         } catch (JMSException e) {
-            MessegeReceive_Log.error("НЕ удалось отправить сообщение QUEUE_ID: "+ Queue_Id + " в очередь сообщений ActiveMQ \'Q." + MessageDirectionsCode + ".IN', fault:" + e.getMessage());
+            MessegeReceive_Log.error("[" + pQueue_ID +"] НЕ удалось отправить сообщение QUEUE_ID: "+ Queue_Id + " в очередь сообщений ActiveMQ \'Q." + MessageDirectionsCode + ".IN', fault:" + e.getMessage());
             MsgReason.append("НЕ удалось отправить сообщение QUEUE_ID: "+ Queue_Id + " в очередь сообщений ActiveMQ \'Q." + MessageDirectionsCode + ".IN':" + e.getMessage());
             return Queue_Id;
 

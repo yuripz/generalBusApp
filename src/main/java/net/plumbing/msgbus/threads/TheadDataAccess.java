@@ -1224,7 +1224,7 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
     }
 
     public int doUPDATE_MessageQueue_In2ErrorIN(Long Queue_Id, String pMsg_Reason, Integer pMsg_Status, Logger dataAccess_log) {
-        // dataAccess_log.info( "doUPDATE_MessageQueue_Out2ErrorOUT:" + pMsg_Reason );
+         // dataAccess_log.warn( "["+ Queue_Id + "] doUPDATE_MessageQueue_Out2ErrorOUT:" + pMsg_Reason );
         try {
             stmtUPDATE_MessageQueue_In2ErrorIN.setString( 1, pMsg_Reason.length() > maxReasonLen ? pMsg_Reason.substring(0, maxReasonLen) : pMsg_Reason );
             stmtUPDATE_MessageQueue_In2ErrorIN.setInt( 2, pMsg_Status );
@@ -1235,7 +1235,7 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
             // dataAccess.do_Commit();
         } catch (Exception e) {
             dataAccess_log.error( "[" + Queue_Id + "] UPDATE(" + UPDATE_MessageQueue_In2ErrorIN + ") fault: " + e.getMessage() );
-            System.err.println( "[" + Queue_Id + "] UPDATE(" + UPDATE_MessageQueue_In2ErrorIN + ") fault: " );
+            System.err.println( "[" + Queue_Id + "] UPDATE(" + UPDATE_MessageQueue_In2ErrorIN + ") fault: " + e.getMessage() );
             try {
                 Hermes_Connection.rollback(); } catch (SQLException SQLe) {
                 dataAccess_log.error( "[" + Queue_Id + "] rollback(" + UPDATE_MessageQueue_In2ErrorIN + ") fault: " + SQLe.getMessage() );

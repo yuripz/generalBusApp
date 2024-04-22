@@ -1,6 +1,6 @@
 package net.plumbing.msgbus.controller;
 
-import com.google.common.collect.ImmutableMap;
+//import com.google.common.collect.ImmutableMap;
 import net.plumbing.msgbus.common.json.JSONException;
 import net.plumbing.msgbus.common.json.JSONObject;
 import net.plumbing.msgbus.common.json.XML;
@@ -25,9 +25,9 @@ import java.net.Authenticator;
 import java.net.http.HttpClient;
 import java.sql.SQLException;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
-import java.io.IOException;
+//import java.util.HashMap;
+//import java.util.concurrent.TimeUnit;
+//import java.io.IOException;
 import javax.jms.JMSException;
 import javax.net.ssl.SSLContext;
 import javax.xml.transform.TransformerException;
@@ -89,7 +89,9 @@ public class PerfotmInputMessages {
                 MessegeReceive_Log
         );
         if ( Message.MessageTemplate4Perform.getIsDebugged() )
-        MessegeReceive_Log.info("[" + Queue_Id + "] MessageTemplate4Perform[" + Message.MessageTemplate4Perform.printMessageTemplate4Perform() );
+            MessegeReceive_Log.info("[" + Queue_Id + "] MessageTemplate4Perform[" + Message.MessageTemplate4Perform.printMessageTemplate4Perform() );
+        boolean is_NoConfirmation = // Признак на типе сообщения, что Confirmation формируется в памяти, messageDetails.XML_MsgConfirmation
+                MessageRepositoryHelper.isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation(messageQueueVO.getOperation_Id(), MessegeReceive_Log);
 
         switch (Queue_Direction){
             case XMLchars.DirectNEWIN:
@@ -116,8 +118,7 @@ public class PerfotmInputMessages {
                     }
                 }
 
-                boolean is_NoConfirmation = // Признак на типе сообщения, что Confirmation формируется в памяти, messageDetails.XML_MsgConfirmation
-                        MessageRepositoryHelper.isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation(messageQueueVO.getOperation_Id(), MessegeReceive_Log);
+
                 // для запросов, на интерфейсе , не предполагающих формирование блока Confirmation в БД параметры зароса берутся из памяти,
                 // их сохранение имеет смысл только для отладки в режиме Debug=on
                 if ( ( !is_NoConfirmation ) ||  Message.MessageTemplate4Perform.getIsDebugged() )
@@ -214,7 +215,7 @@ public class PerfotmInputMessages {
                     }
                     //----------------------------------------------------
                     if (( Message.MessageTemplate4Perform.getEnvelopeXSLTExt() != null ) &&
-                        ( Message.MessageTemplate4Perform.getEnvelopeXSLTExt().length() > 0 ) &&
+                        (!Message.MessageTemplate4Perform.getEnvelopeXSLTExt().isEmpty()) &&
                         ( Message.MessageTemplate4Perform.getPropJavaMethodName() == null))
                     { // 2) EnvelopeXSLTExt !! => JDBC-обработчик
 
@@ -236,15 +237,15 @@ public class PerfotmInputMessages {
                                     MessegeReceive_Log, Message.MessageTemplate4Perform.getIsDebugged());
                         } catch (TransformerException exception) {
                             MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLTExt-преобразователь запроса:{" + Message.MessageTemplate4Perform.getEnvelopeXSLTExt() + "}");
-                            theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для XSLTExt-обработки " + ConvXMLuseXSLTerr.toString() + " :" + Message.MessageTemplate4Perform.getEnvelopeXSLTExt(), 3229,
+                            theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для XSLTExt-обработки " + ConvXMLuseXSLTerr + " :" + Message.MessageTemplate4Perform.getEnvelopeXSLTExt(), 3229,
                                     MessegeReceive_Log);
                             return -31L;
                         }
                         if (Passed_Envelope4XSLTExt.equals(XMLchars.EmptyXSLT_Result)) {
                             MessegeReceive_Log.error("[" + Queue_Id + "] Шаблон для XSLTExt-обработки(" + Message.MessageTemplate4Perform.getEnvelopeXSLTExt() + ")");
-                            MessegeReceive_Log.error("[" + Queue_Id + "] Envelope4XSLTExt:" + ConvXMLuseXSLTerr.toString());
+                            MessegeReceive_Log.error("[" + Queue_Id + "] Envelope4XSLTExt:" + ConvXMLuseXSLTerr);
                             MessegeReceive_Log.error("[" + Queue_Id + "] Ошибка преобразования XSLT для XSLTExt-обработки " + Message.MsgReason.toString());
-                            theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для XSLTExt-обработки " + ConvXMLuseXSLTerr.toString() + " :" + Message.MsgReason.toString(), 3231,
+                            theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для XSLTExt-обработки " + ConvXMLuseXSLTerr + " :" + Message.MsgReason.toString(), 3231,
                                     MessegeReceive_Log);
                             return -32L;
 
@@ -271,7 +272,7 @@ public class PerfotmInputMessages {
                             else
                             resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, false, null, Passed_Envelope4XSLTExt, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
                             if (resultSQL != 0) {
-                                MessegeReceive_Log.error("[" + Queue_Id + "] Envelope4XSLTExt:" + ConvXMLuseXSLTerr.toString());
+                                MessegeReceive_Log.error("[" + Queue_Id + "] Envelope4XSLTExt:" + ConvXMLuseXSLTerr);
                                 MessegeReceive_Log.error("[" + Queue_Id + "] Ошибка ExecuteSQLinXML:" + Message.MsgReason.toString());
                                 theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка ExecuteSQLinXML: " + Message.MsgReason.toString(), 3231,
                                         MessegeReceive_Log);
@@ -315,8 +316,8 @@ public class PerfotmInputMessages {
                     }
                     String EndPointUrl;
                     /* перейти на Java 11 HTTP Client*/
-                    HttpClient ApiRestHttpClient = getCloseableHttpClient(  messageQueueVO,  Message ,  theadDataAccess,
-                                                                            MessegeReceive_Log);
+                    HttpClient ApiRestHttpClient = getCloseableHttpClient(  messageQueueVO,  Message ,  false,
+                                                                            theadDataAccess, MessegeReceive_Log);
                     if ( ApiRestHttpClient == null) {
                         return -36L;
                     }
@@ -345,7 +346,7 @@ public class PerfotmInputMessages {
                                     MessegeReceive_Log.warn("[" + Queue_Id + "] JSON-HttpForvard готов:" + jsonPrettyPrintString);
                              }
                              catch (JSONException e) {
-                            System.err.println("[" + Queue_Id + "] Не смогли преобразовать XML_Request_Method `" + Message.XML_Request_Method + "` в JSON: " + e.toString());
+                            System.err.println("[" + Queue_Id + "] Не смогли преобразовать XML_Request_Method `" + Message.XML_Request_Method + "` в JSON: " + e);
                                  MessegeReceive_Log.error( "[" + Queue_Id + "] Не смогли преобразовать XML_Request_Method `" + Message.XML_Request_Method + "` в JSON: " + e.getMessage());
                                  theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id,"Ошибка синхронного вызова обработчика: не смогли преобразовать XML в JSON:" + e.toString(), 3244,
                                          MessegeReceive_Log);
@@ -356,14 +357,14 @@ public class PerfotmInputMessages {
 
                         }
                         if (Message.MessageTemplate4Perform.getIsDebugged())
-                            MessegeReceive_Log.info("[" + Queue_Id + "]" + " MetodExec." + Message.MessageTemplate4Perform.getPropExeMetodExecute() + ": `" + EndPointUrl + "?queue_id=" + String.valueOf(Queue_Id)+ "` RestResponse=(" + RestResponse + ")");
+                            MessegeReceive_Log.info("[" + Queue_Id + "] MetodExec." + Message.MessageTemplate4Perform.getPropExeMetodExecute() + ": `" + EndPointUrl + "?queue_id=" + String.valueOf(Queue_Id)+ "` RestResponse=(" + RestResponse + ")");
 
                     } catch ( Exception e) {
-                        System.err.println("[" + Queue_Id + "] Ошибка синхронного вызова обработчика HttpGet(" + EndPointUrl + ")" + e.getMessage() ); //e.printStackTrace();
+                        System.err.println("[" + Queue_Id + "] Ошибка синхронного вызова обработчика "+ Message.MessageTemplate4Perform.getPropExeMetodExecute()+ "(" + EndPointUrl + ")" + e.getMessage() ); //e.printStackTrace();
                         // возмущаемся,
-                        Message.MsgReason.append("[" + Queue_Id + "] Ошибка синхронного вызова обработчика HttpGet("); Message.MsgReason.append( EndPointUrl); Message.MsgReason.append( "):" ); Message.MsgReason.append( e.toString() );
-                        MessegeReceive_Log.error("["+ Queue_Id +"] Ошибка синхронного вызова обработчика HttpGet(" + EndPointUrl + "):" + e.toString() );
-                        theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id,"Ошибка синхронного вызова обработчика HttpGet(" + EndPointUrl + "):" + e.toString(), 3244,
+                        Message.MsgReason.append('[').append(Queue_Id ).append( "] Ошибка синхронного вызова REST обработчика (").append( EndPointUrl).append( "):" ).append( e );
+                        MessegeReceive_Log.error("["+ Queue_Id +"] Ошибка синхронного вызова REST обработчика "+ Message.MessageTemplate4Perform.getPropExeMetodExecute()+ "(" + EndPointUrl + "):" + e.toString() );
+                        theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id,"Ошибка синхронного вызова обработчика  "+ Message.MessageTemplate4Perform.getPropExeMetodExecute()+ "(" + EndPointUrl + "):" + e.toString(), 3244,
                                 MessegeReceive_Log);
                         try {
                             ApiRestHttpClient.close();
@@ -396,7 +397,7 @@ public class PerfotmInputMessages {
                         if (ConfirmationRowNum < 1) {
                             // Ругаемся, что обработчик не сформировал Confirmation
                             Message.MsgReason.append("[" + Queue_Id + "] обработчик не сформировал Confirmation, нарушено соглашение о взаимодействии с Шиной");
-                            MessegeReceive_Log.error("[" + Queue_Id + "] " + Message.MsgReason.toString());
+                            MessegeReceive_Log.error("[" + Queue_Id + "] " + Message.MsgReason);
                             theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, Message.MsgReason.toString(), 3245,
                                     MessegeReceive_Log);
                             return -38L;
@@ -405,7 +406,7 @@ public class PerfotmInputMessages {
                     } else {
                         // Ругаемся, что обработчик не выставил признак статус EXEIN
                         Message.MsgReason.append("[" + Queue_Id + "] обработчик не выставил признак статус EXEIN , нарушено соглашение о взаимодействии с Шиной");
-                        MessegeReceive_Log.error("[" + Queue_Id + "] " + Message.MsgReason.toString());
+                        MessegeReceive_Log.error("[" + Queue_Id + "] " + Message.MsgReason);
                         theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, Message.MsgReason.toString(), 3247,
                                 MessegeReceive_Log);
                         return -39L;
@@ -430,7 +431,7 @@ public class PerfotmInputMessages {
                 if ( Link_Queue_Id != null) // Обрабатываем порожденное сообщение
                 { // Проверяем в цикле периодически - спорадически готово ли OUT
                     if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                    MessegeReceive_Log.warn("Проверяем в цикле периодически - готово ли OUT Link_Queue_Id=" + Link_Queue_Id );
+                    MessegeReceive_Log.warn("[" + Queue_Id + "] Проверяем в цикле периодически - готово ли OUT Link_Queue_Id=" + Link_Queue_Id );
                     theadDataAccess.doUPDATE_MessageQueue_ExeIN2PostIN(  Queue_Id, "Ожидаем завершения обработки Q=" + Link_Queue_Id.toString() , MessegeReceive_Log);
 
                     int theadNum  = MessageUtils.get_SelectLink_msg_InfostreamId(theadDataAccess, Link_Queue_Id, Message.MessageTemplate4Perform.getIsDebugged(),  MessegeReceive_Log);
@@ -445,21 +446,23 @@ public class PerfotmInputMessages {
                         //PerformTextMessageJMSQueue.JMSQueueContext QueueContext;
                         try {
                             if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                            MessegeReceive_Log.info("Пробуем отправить сообщение QUEUE_ID: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN'");
+                            MessegeReceive_Log.info("[" + Queue_Id + "] Пробуем отправить сообщение QUEUE_ID: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN'");
 
                             Qconnection = performTextMessageJMSQueue.SendTextMessageJMSQueue(
                                         "{ \"QUEUE_ID\": \"" + Link_Queue_Id.toString() + "\" }",
-                                    "Q." + MessageDirectionsCode + ".IN",
-                                    StoreMQpooledConnectionFactory.MQpooledConnectionFactory
+                                            "Q." + MessageDirectionsCode + ".IN",
+                                                        StoreMQpooledConnectionFactory.MQpooledConnectionFactory
                             );
                         } catch (JMSException e) {
-                            MessegeReceive_Log.warn("[" + Queue_Id + "] НЕ удалось отправить сообщение QUEUE_ID: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN', fault:" + e.getMessage());
-                            Message.MsgReason.append(" НЕ удалось отправить сообщение QUEUE_ID: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN':" + e.getMessage());
+                            MessegeReceive_Log.warn("[" + Queue_Id + "] НЕ удалось отправить сообщение Link_Queue_Id: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN', fault:" + e.getMessage());
+                            Message.MsgReason.append(" НЕ удалось отправить сообщение Link_Queue_Id: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN':" + e.getMessage());
                            // return Queue_Id;
                             Qconnection = null;
                         }
-                        if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                            MessegeReceive_Log.info("Отправили сообщение QUEUE_ID: " + Link_Queue_Id.toString() + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN'");
+                        if (Qconnection != null)
+                        {if ( Message.MessageTemplate4Perform.getIsDebugged() )
+                            MessegeReceive_Log.info("[" + Queue_Id + "] Отправили сообщение Link_Queue_Id: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN'");
+                            }
                     }
 
                     boolean isLink_Queue_Finish=false;
@@ -545,14 +548,12 @@ public class PerfotmInputMessages {
                                         case XMLchars.DirectATTNOUT:
                                         case XMLchars.DirectDELOUT:
                                             Message.MsgReason.append("[" + Queue_Id + "] обработчик Исходящего события (" + Link_Queue_Id + ") не сформировал Confirmation, выствлен статус события ("+ Link_Queue_Direction +"), нарушено соглашение о взаимодействии с Шиной");
-                                     ;
-
                                     }
                                 else {
                                     Message.MsgReason.append("[" + Queue_Id + "] обработчик Исходящего события (" + Link_Queue_Id + ") не сформировал Confirmation, статус события неопределён, нарушено соглашение о взаимодействии с Шиной");
 
                                 }
-                                MessegeReceive_Log.error(Message.MsgReason.toString());
+                                MessegeReceive_Log.error("[" + Queue_Id + "]" + Message.MsgReason.toString());
                                 theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, Message.MsgReason.toString(), 3245,
                                         MessegeReceive_Log);
                                 return -40L;
@@ -570,13 +571,13 @@ public class PerfotmInputMessages {
                                 );
                             } catch (TransformerException exception) {
                                 MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLTExt-преобразователь Confirmation:{" + Message.MessageTemplate4Perform.getAckAnswXSLT() + "}");
-                                theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для обработки Confirmation " + ConvXMLuseXSLTerr.toString() + " :" + Message.MessageTemplate4Perform.getAckAnswXSLT(), 3249,
+                                theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для обработки Confirmation " + ConvXMLuseXSLTerr + " :" + Message.MessageTemplate4Perform.getAckAnswXSLT(), 3249,
                                         MessegeReceive_Log);
                                 return -42L;
                             }
                             if (Passed_Confirmation4AckAnswXSLT.equals(XMLchars.EmptyXSLT_Result)) {
                                 MessegeReceive_Log.error("[" + Queue_Id + "] Шаблон для XSLT-обработки Confirmation(" + Message.MessageTemplate4Perform.getAckAnswXSLT() + ")");
-                                MessegeReceive_Log.error("[" + Queue_Id + "] Passed_Confirmation4AckAnswXSLT:" + ConvXMLuseXSLTerr.toString());
+                                MessegeReceive_Log.error("[" + Queue_Id + "] Passed_Confirmation4AckAnswXSLT:" + ConvXMLuseXSLTerr);
                                 MessegeReceive_Log.error("[" + Queue_Id + "] Ошибка преобразования XSLT для обработки Confirmation" + Message.MsgReason.toString());
                                 theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для обработки Confirmation " + ConvXMLuseXSLTerr.toString() + " :" + Message.MsgReason.toString(), 3251,
                                         MessegeReceive_Log);
@@ -613,6 +614,7 @@ public class PerfotmInputMessages {
                                 // Готовим Rest-call
                                 String EndPointUrl = null;
                                 HttpClient ApiRestHttpClient=null;
+                                int restResponseStatus = 0;
                                 // HashMap<String, String > HttpGetParams = new HashMap<String, String >();
                                 try {
 
@@ -623,7 +625,7 @@ public class PerfotmInputMessages {
                                         EndPointUrl = "http://" + Message.MessageTemplate4Perform.getPropHostPostExec() +
                                                                   Message.MessageTemplate4Perform.getPropUrlPostExec();
                                     // Ставим своенго клиента !
-                                    ApiRestHttpClient = getCloseableHttpClient(  messageQueueVO,  Message, theadDataAccess, MessegeReceive_Log);
+                                    ApiRestHttpClient = getCloseableHttpClient( messageQueueVO,  Message, true, theadDataAccess, MessegeReceive_Log);
                                     // SSLUtil.turnOffSslChecking();
                                     if ( ApiRestHttpClient == null) // ErrIN выставлен, выходим
                                         return -36L;
@@ -639,19 +641,21 @@ public class PerfotmInputMessages {
                                                                                         Message.MessageTemplate4Perform.getPropQueryPostExec(), Link_Queue_Id.toString(),
                                                                                         HttpGetParams,
                                                                                         Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log );*/
-                                    String RestResponse =  MessageHttpSend.WebRestExePostExec(ApiRestHttpClient, queryEndPointUrl, Queue_Id,
+                                        restResponseStatus =  MessageHttpSend.WebRestExePostExec(ApiRestHttpClient, queryEndPointUrl, Queue_Id,
                                                                                               Message.MessageTemplate4Perform, ApplicationProperties.ApiRestWaitTime, MessegeReceive_Log );
 
                                     try {
                                             ApiRestHttpClient.close();
 
                                     } catch ( Exception IOe) {
-                                        MessegeReceive_Log.error( "И ещё проблема с ApiRestHttpClient.close()..."+ IOe.getMessage());
+                                        MessegeReceive_Log.error( "[" + Queue_Id + "] И ещё проблема с ApiRestHttpClient.close()..."+ IOe.getMessage());
                                         System.err.println("[" + Queue_Id + "] И ещё проблема с ApiRestHttpClient.close()...\" пост-обработки" + IOe.getMessage() ); // IOe.printStackTrace();
                                     }
 
                                 } catch (Exception e ) { //  | java.security.KeyManagementException | java.security.NoSuchAlgorithmException  e) {
-                                    // возмущаемся, но оставляем сообщение в ResOUT что бы обработчик в кроне мог доработать
+                                    // ???? возмущаемся, но оставляем сообщение в ResOUT что бы обработчик в кроне мог доработать - что то не видно про "ResOUT"
+
+                                    Message.MsgReason.append("[" + Queue_Id + "] Ошибка вызова пост-обработки HttpGet(" + EndPointUrl + "), статус[" +restResponseStatus + "]:" +e.getMessage() );
                                     MessegeReceive_Log.error("[" + Queue_Id + "] Ошибка пост-обработки HttpGet(" + EndPointUrl + "):" + e.toString());
                                     theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id,
                                             "Ошибка пост-обработки HttpGet(" + EndPointUrl + "):" + sStackTrace.strInterruptedException(e), 3255,
@@ -661,7 +665,7 @@ public class PerfotmInputMessages {
                                             ApiRestHttpClient.close();
 
                                     } catch ( Exception IOe) {
-                                        MessegeReceive_Log.error( "И ещё проблема с ApiRestHttpClient.close()..."+ IOe.getMessage());
+                                        MessegeReceive_Log.error( "[" + Queue_Id + "] И ещё проблема с ApiRestHttpClient.close()..."+ IOe.getMessage());
                                         System.err.println("[" + Queue_Id + "] И ещё проблема с ApiRestHttpClient.close()...\" пост-обработки" + IOe.getMessage() ); //IOe.printStackTrace();
                                     }
                                     return -47L;
@@ -670,7 +674,8 @@ public class PerfotmInputMessages {
                                 if (! MessageUtils.isMessageQueue_Direction_EXEIN(theadDataAccess, Queue_Id, messageQueueVO, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log ))
                                 {
                                     // Ругаемся, что обработчик не выставил признак статус EXEIN
-                                    Message.MsgReason.append("[" + Queue_Id + "] Post-обработчик не выставил признак статус EXEIN , нарушено соглашение о взаимодействии с Шиной");
+                                    Message.MsgReason.setLength(0); Message.MsgReason.trimToSize();
+                                    Message.MsgReason.append("[" + Queue_Id + "] При вызове Post-обработчика HttpGet(" + EndPointUrl + ")статус[" +restResponseStatus + "]:не выставлен признак статус EXEIN, нарушено соглашение о взаимодействии с Шиной");
                                     MessegeReceive_Log.error( Message.MsgReason.toString());
                                     theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, Message.MsgReason.toString(), 3248,
                                             MessegeReceive_Log);
@@ -708,7 +713,7 @@ public class PerfotmInputMessages {
                                 }
                                 if (Passed_Confirmation4MsgAnswXSLT.equals(XMLchars.EmptyXSLT_Result)) {
                                     MessegeReceive_Log.error("[" + Queue_Id + "] Шаблон для XSLT-обработки Confirmation(" + Message.MessageTemplate4Perform.getMsgAnswXSLT() + ")");
-                                    MessegeReceive_Log.error("[" + Queue_Id + "] Passed_Confirmation4AckAnswXSLT:" + ConvXMLuseXSLTerr.toString());
+                                    MessegeReceive_Log.error("[" + Queue_Id + "] Passed_Confirmation4AckAnswXSLT:" + ConvXMLuseXSLTerr);
                                     MessegeReceive_Log.error("[" + Queue_Id + "] Ошибка преобразования XSLT для обработки Confirmation" + Message.MsgReason.toString());
                                     theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для обработки Confirmation " + ConvXMLuseXSLTerr.toString() + " :" + Message.MsgReason.toString(), 3251,
                                             MessegeReceive_Log);
@@ -729,7 +734,7 @@ public class PerfotmInputMessages {
                     else {
                         // Ругаемся, что исходяее сообщение не отработало за отведенное на это время
                         Message.MsgReason.append("[" + Queue_Id + "] - исходящее сообщение (" + Link_Queue_Id +") не отработало за отведенное на это время (" + time4wait + ") с. [Msg_Status=3244]");
-                        MessegeReceive_Log.error("[" + Queue_Id + "] " + Message.MsgReason.toString());
+                        MessegeReceive_Log.error("[" + Queue_Id + "] " + Message.MsgReason);
                         theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, Message.MsgReason.toString(), 3244,
                                 MessegeReceive_Log);
                         return -51L;
@@ -760,7 +765,7 @@ public class PerfotmInputMessages {
                     }
                     if ( Passed_Confirmation4AckXSLT.equals(XMLchars.EmptyXSLT_Result))
                     {   MessegeReceive_Log.error("["+ Queue_Id +"] Шаблон для XSLT-обработки Confirmation(" + Message.MessageTemplate4Perform.getAckXSLT() + ")");
-                        MessegeReceive_Log.error("["+ Queue_Id +"] Passed_Confirmation4AckXSLT:" + ConvXMLuseXSLTerr.toString());
+                        MessegeReceive_Log.error("["+ Queue_Id +"] Passed_Confirmation4AckXSLT:" + ConvXMLuseXSLTerr);
                         MessegeReceive_Log.error("["+ Queue_Id +"] Ошибка преобразования XSLT для обработки Confirmation" + Message.MsgReason.toString() );
                         theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для обработки Confirmation " + ConvXMLuseXSLTerr.toString() + " :" + Message.MsgReason.toString(), 3251,
                                 MessegeReceive_Log);
@@ -878,56 +883,10 @@ public class PerfotmInputMessages {
 
                 break;
         }
-
-
             return  0L;
     }
-/*
-                    int ReadTimeoutInMillis = ApplicationProperties.ApiRestWaitTime * 1000;
-                    int ConnectTimeoutInMillis = 5 * 1000;
-                    SSLContext sslContext = MessageHttpSend.getSSLContext( Message.MsgReason );
-                    if ( sslContext == null ) {
-                        MessegeReceive_Log.error("["+ Queue_Id +"] " + "SSLContextBuilder fault: (" +  Message.MsgReason.toString() + ")");
-                        Message.MsgReason.append("Внутренняя Ошибка SSLContextBuilder fault: (" +  Message.MsgReason.toString() + ")" ) ;
 
-                        MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
-                                "Внутренняя Ошибка SSLContextBuilder fault: (" +  Message.MsgReason.toString() + ")",
-                                null, MessegeReceive_Log);
-                        return -7L;
-                    }
-                    PoolingHttpClientConnectionManager syncConnectionManager = new PoolingHttpClientConnectionManager();
-                    syncConnectionManager.setMaxTotal((Integer) 4);
-                    syncConnectionManager.setDefaultMaxPerRoute((Integer) 2);
-                    RequestConfig rc;
-
-                    rc = RequestConfig.custom()
-                            .setConnectionRequestTimeout(ConnectTimeoutInMillis)
-                            .setConnectTimeout(ConnectTimeoutInMillis)
-                            .setSocketTimeout( ReadTimeoutInMillis)
-                            .build();
-
-                    HttpClientBuilder httpClientBuilder = HttpClientBuilder.create()
-                            .disableDefaultUserAgent()
-                            .disableRedirectHandling()
-                            .disableAutomaticRetries()
-                            .setUserAgent("Mozilla/5.0")
-                            .setSSLContext(sslContext)
-                            .disableAuthCaching()
-                            .disableConnectionState()
-                            .disableCookieManagement()
-                            // .useSystemProperties() // HE-5663  https://stackoverflow.com/questions/5165126/without-changing-code-how-to-force-httpclient-to-use-proxy-by-environment-varia
-                            .setConnectionManager(syncConnectionManager)
-                            .setSSLHostnameVerifier(new NoopHostnameVerifier())
-                            .setConnectionTimeToLive( ApplicationProperties.ApiRestWaitTime + 5, TimeUnit.SECONDS)
-                            .evictIdleConnections((long) (ApplicationProperties.ApiRestWaitTime + 5)*2, TimeUnit.SECONDS);
-                    httpClientBuilder.setDefaultRequestConfig(rc);
-
-                    CloseableHttpClient
-                            ApiRestHttpClient = httpClientBuilder.build();
-
-*/
-
-    public HttpClient getCloseableHttpClient( MessageQueueVO messageQueueVO, MessageDetails Message , TheadDataAccess theadDataAccess,
+    public HttpClient getCloseableHttpClient( MessageQueueVO messageQueueVO, MessageDetails Message , boolean isPostExec,TheadDataAccess theadDataAccess,
                                                        Logger MessegeReceive_Log) {
         // int ReadTimeoutInMillis = ApplicationProperties.ApiRestWaitTime * 1000;
         int ConnectTimeout = 5 ;
@@ -944,8 +903,16 @@ public class PerfotmInputMessages {
         boolean IsDebugged = Message.MessageTemplate4Perform.getIsDebugged();
         HttpClient ApiRestHttpClient;
 
-        String PropUser = Message.MessageTemplate4Perform.getPropUser();
-        String PropPswd = Message.MessageTemplate4Perform.getPropPswd();
+        String PropUser;
+        String PropPswd;
+        if ( isPostExec ) {
+            PropUser= Message.MessageTemplate4Perform.getPropUserPostExec();
+            PropPswd = Message.MessageTemplate4Perform.getPropPswdPostExec();
+        }
+        else {
+            PropUser = Message.MessageTemplate4Perform.getPropUser();
+            PropPswd = Message.MessageTemplate4Perform.getPropPswd();
+        }
    try {
         if ( (PropUser!= null)
                // && (!Message.MessageTemplate4Perform.getIsPreemptive())  // adding the header to the HttpRequest and removing Authenticator

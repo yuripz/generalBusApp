@@ -107,8 +107,11 @@ public class MessageHttpSend {
     {
         String RestResponse = null;
         int restResponseStatus=0;
-        String webEndPointUrl = EndPointUrl + "?queue_id=" + String.valueOf(Queue_Id);
-
+        String webEndPointUrl;
+        if (EndPointUrl.contains("?"))
+            webEndPointUrl = EndPointUrl + "&queue_id=" + String.valueOf(Queue_Id);
+        else
+            webEndPointUrl = EndPointUrl + "?queue_id=" + String.valueOf(Queue_Id);
             java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
                     .GET()
                     .uri( URI.create(webEndPointUrl))
@@ -133,7 +136,11 @@ public class MessageHttpSend {
     {
         String RestResponse = null;
         int restResponseStatus=0;
-        String webEndPointUrl = EndPointUrl + "?queue_id=" + String.valueOf(Queue_Id);
+        String webEndPointUrl;
+        if (EndPointUrl.contains("?"))
+            webEndPointUrl = EndPointUrl + "&queue_id=" + String.valueOf(Queue_Id);
+            else
+            webEndPointUrl = EndPointUrl + "?queue_id=" + String.valueOf(Queue_Id);
 
         java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
                 .POST(HttpRequest.BodyPublishers.ofString(json_4_Post))
@@ -154,7 +161,7 @@ public class MessageHttpSend {
         return RestResponse;
     }
 
-    public static String WebRestExePostExec(HttpClient ApiRestHttpClient, String webEndPointUrl, long Queue_Id, MessageTemplate4Perform messageTemplate4Perform,
+    public static int WebRestExePostExec(HttpClient ApiRestHttpClient, String webEndPointUrl, long Queue_Id, MessageTemplate4Perform messageTemplate4Perform,
                                             int ApiRestWaitTime, Logger MessageSend_Log )
             throws IOException, InterruptedException
     {
@@ -177,7 +184,7 @@ public class MessageHttpSend {
 
             if ( messageTemplate4Perform.getIsDebugged() )
                 MessageSend_Log.info("[" + Queue_Id + "] WebRestExePostExec.GET(" + webEndPointUrl + ") httpStatus=[" + restResponseStatus + "] RestResponse=(`" + RestResponse + "`)");
-            return RestResponse;
+            return restResponseStatus;
 
     }
 

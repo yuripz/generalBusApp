@@ -362,7 +362,7 @@ public class PostController {
                     Controller_log.info("Post DataSourcePool " + DataSourcePoolMetadata.getActive());
                     return OutResponse.getBytes();
                 }
-            } else {  // это ЛИРА : может быть использовано PropCustomFault_Server_Begin
+            } else {  // это ЛИРА или СИП или O2O : может быть использовано PropCustomFault_Server_Begin
                 String OutResponse;
                 if ((PropCustomFault_Server_Begin != null ) && (PropCustomFault_Server_End !=null )) {
                     OutResponse = PropCustomFault_Server_Begin + XML.escape(Message.MsgReason.toString()) + PropCustomFault_Server_End;
@@ -692,6 +692,7 @@ public class PostController {
                             XML.escape(Message.MsgReason.toString()) +
                             Fault_noNS_End;
                 } else {
+                    if (isDebugged) Controller_log.info( "["+ Message.Queue_Id + "] MsgReason for HttpResponse:" + Message.MsgReason );
                     postResponse.setStatus(500);
                     HttpResponse = Fault_Server_noNS_Begin +
                             Message.MsgReason.toString() +
@@ -785,7 +786,6 @@ public class PostController {
         }
     }
 
- //  {"/HermesService/PostHttpRequest/*", "/HermesService/SoapRequest/*"}
     @GetMapping(path = {"/MsgBusService/SoapRequest/*", "/HermesService/SoapRequest/*", "/HermesSOAPService/SOAPServlet/*"} , produces = MediaType.ALL_VALUE, consumes = MediaType.ALL_VALUE)
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
@@ -799,8 +799,8 @@ public class PostController {
         String queryString;
         String myHostAddress;
         try {
-            queryString = URLDecoder.decode(httpRequest.getQueryString(), "UTF-8");
-        } catch (UnsupportedEncodingException | NullPointerException e) {
+            queryString = URLDecoder.decode(httpRequest.getQueryString(), StandardCharsets.UTF_8);
+        } catch (NullPointerException e) {
             if ( e instanceof java.lang.NullPointerException ) {
                 queryString="";
             }
