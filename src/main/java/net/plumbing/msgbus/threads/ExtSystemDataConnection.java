@@ -28,10 +28,13 @@ public class ExtSystemDataConnection {
         //String db_userid = "HERMES";
         //String db_password = "uthvtc";
         //this.dbSchema = HrmsSchema;
-        if (connectionUrl.indexOf("oracle") > 0) {
+        if (connectionUrl.contains("oracle") ) {
             rdbmsVendor = "oracle";
         } else {
+            if ( connectionUrl.contains("postgresql") )
             rdbmsVendor = "postgresql";
+            else
+                rdbmsVendor = "presto";
         }
         dataAccess_log.info("[" + Queue_Id + "] Try(thead) ExtSystem getConnection: " + connectionUrl + " as " + ApplicationProperties.ExtSysDbLogin + " rdbmsVendor=" + rdbmsVendor);
 
@@ -48,7 +51,7 @@ public class ExtSystemDataConnection {
         // dataAccess_log.info( "Hermes(thead) getConnection: " + connectionUrl + " as " + db_userid + " done" );
 
 
-        if (!rdbmsVendor.equals("oracle")) {
+        if ( rdbmsVendor.equals("postgresql")) {
             try {
                 PreparedStatement stmt_SetTimeZone = Target_Connection.prepareStatement("set SESSION time zone 3; set enable_bitmapscan to off;");//.nativeSQL( "set SESSION time zone 3" );
                 stmt_SetTimeZone.execute();
