@@ -883,19 +883,26 @@ public class PostController {
                         getResponse.setStatus(200);
                         return OutResponse;
                     }
-                    Boolean isDebugged = false;
+                    boolean isDebugged =false;
+                    Controller_log.warn("isDebugged before ClientIpHelper.getIsDebuged(): false" + isDebugged );
                     String getIsDebugedResponse = ClientIpHelper.getIsDebuged( MessageTemplateVOkey, isDebugged, Controller_log);
-                    if ( ! getIsDebugedResponse.equalsIgnoreCase("Ok") )
+                    if ( ( ! getIsDebugedResponse.equalsIgnoreCase("true") ) && ( ! getIsDebugedResponse.equalsIgnoreCase("false") ))
                     {
                         getResponse.setContentType("text/xml; charset=utf-8");
                         getResponse.setStatus(500);
                         return getIsDebugedResponse;
                     }
+                    else {
+                        isDebugged = getIsDebugedResponse.equalsIgnoreCase("true");
+                    }
+                    Controller_log.warn("isDebugged after ClientIpHelper.getIsDebuged(): " + isDebugged );
                         switch (UpperParamElement) {
                             case WSDLhi:
 
                                     TextStringBuilder WsdlInterface = new TextStringBuilder( MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getWsdlInterface());
-                                    WsdlInterface.replaceAll("http://10.32.245.8:7001/", "http://" + myHostAddress + ":8008/" );
+                                    // Убираем невнятный костыль для локального SOAP-UI , использованного ддля отладеи и тестирования получения ЦЫВД
+                                    // WsdlInterface.replaceAll("http://10.32.245.8:7001/", "http://" + myHostAddress + ":8008/" );
+
                                     if ( isDebugged)
                                     Controller_log.info("WsdlInterface:" + WsdlInterface);
                                     if (WsdlInterface != null) {

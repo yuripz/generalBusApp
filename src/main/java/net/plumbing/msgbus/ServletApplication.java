@@ -66,7 +66,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.4.04.16f";
+    public static final String ApplicationName="*Receiver_BUS* v.4.04.17j";
     public static String propJDBC;
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ServletApplication.class, args);
@@ -162,11 +162,12 @@ public class ServletApplication implements CommandLineRunner {
         try {
             ApplicationProperties.extSystemDataSource = ExtSystemDataAccess.HiDataSource (connectionProperties.getextsysPoint(),
                     connectionProperties.getextsysDbLogin(),
-                    connectionProperties.getextsysDbPasswd()
+                    connectionProperties.getextsysDbPasswd(),
+                    connectionProperties.getextSysDataSourceClassName()
             );
             ApplicationProperties.extSystemDataSourcePoolMetadata = ExtSystemDataAccess.DataSourcePoolMetadata;
         } catch (Exception e) {
-            AppThead_log.error("НЕ удалось подключится к базе данных внешней системы:" + e.getMessage());
+            AppThead_log.error("НЕ удалось подключится к базе данных внешней системы: ("+ " )" + e.getMessage());
             System.exit(-20);
         }
 
@@ -176,13 +177,14 @@ public class ServletApplication implements CommandLineRunner {
             AppThead_log.info("extSystem DataSource = " + ApplicationProperties.extSystemDataSource
                     + " JdbcUrl:" + ApplicationProperties.extSystemDataSource.getJdbcUrl()
                     + " isRunning:" + ApplicationProperties.extSystemDataSource.isRunning()
-                    + " 4 dbSchema:" + ApplicationProperties.ExtSysSchema);
+                    + " 4 dbSchema:" + ApplicationProperties.ExtSysSchema
+                    + " by driver:" + connectionProperties.getextSysDataSourceClassName());
         }
 
         ActiveMQService activeMQService= new ActiveMQService();
         try {
         activeMQService.MakeActiveMQConnectionFactory( ApplicationProperties.ConnectMsgBus );
-        activeMQService.StartJMSQueueConnection("178");
+        activeMQService.StartJMSQueueConnection("ServletApplication.java: string no.185");
         //activeMQService.StartJMSQueueConnection("333");
         //activeMQService.StartJMSQueueConnection("4444");
         } catch (JMSException e) {
@@ -204,7 +206,6 @@ public class ServletApplication implements CommandLineRunner {
 
         // Зачитываем MessageDirection
         InitMessageRepository.SelectMsgDirections(ShortRetryCount, ShortRetryInterval, LongRetryCount, LongRetryInterval,AppThead_log );
-
 
         Integer count = 0;
         /* // -- оставлено так, для отладки и вдруг пригодиться что то делать в приёмнике для каждой из системб например .
@@ -228,7 +229,7 @@ public class ServletApplication implements CommandLineRunner {
         AppThead_log.info("Read MessageTemplates: " + MessageTemplate.AllMessageTemplate.size() + " done" );
 
 
-        // 1й проход, получаем количество потоков, которые задкствованы в EJB( JMS ) систем.
+        // 1й проход, получаем количество потоков, которые задействованы в  JMS  систем.
         int TotalNumTasks=0; int TotalNumJMS_System=0;
         int MessageDirections_BrokerId=0;
         for (i=0; i< MessageDirections.AllMessageDirections.size(); i++)
@@ -262,7 +263,7 @@ public class ServletApplication implements CommandLineRunner {
         Thread.State JMSReceiveThreadState = Thread.State.NEW;
         Thread[] JMSReceiveThread = new Thread[ TotalNumTasks ];
 
-        // 2-й проход, инициализируем коннекты для каждой из систем, в которой задействованы в EJB( JMS ) систем.
+        // 2-й проход, инициализируем коннекты для каждой из систем, в которой задействованы в  JMS  систем.
 
         int CurrentTasksIndex=0;
         int NumTasksInsystem;
@@ -366,7 +367,7 @@ public class ServletApplication implements CommandLineRunner {
                 if ( StoreMQpooledConnectionFactory.MQpooledConnectionFactory == null )
                     try {
                         activeMQService.MakeActiveMQConnectionFactory( ApplicationProperties.ConnectMsgBus );
-                        activeMQService.StartJMSQueueConnection("123-362");
+                        activeMQService.StartJMSQueueConnection("ServletApplication.java: string no.123-362");
                         AppThead_log.warn("Удалось пере-подключится к встренному брокеру сообщений ActiveMQ :" + ApplicationProperties.ConnectMsgBus );
                     } catch (JMSException e) {
                         AppThead_log.error("НЕ удалось подключится встренному  к брокеру сообщений ActiveMQ [" + ApplicationProperties.ConnectMsgBus + "] :" + e.getMessage());

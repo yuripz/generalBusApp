@@ -183,7 +183,7 @@ public class MessageHttpSend {
             restResponseStatus = RestResponseGet.statusCode(); //500; //RestResponseGet.statusCode();
 
             if ( messageTemplate4Perform.getIsDebugged() )
-                MessageSend_Log.info("[" + Queue_Id + "] WebRestExePostExec.GET(" + webEndPointUrl + ") httpStatus=[" + restResponseStatus + "] RestResponse=(`" + RestResponse + "`)");
+                MessageSend_Log.info("[" + Queue_Id + "] WebRestExePostExec.POST(" + webEndPointUrl + ") httpStatus=[" + restResponseStatus + "] RestResponse=(`" + RestResponse + "`)");
             return restResponseStatus;
 
     }

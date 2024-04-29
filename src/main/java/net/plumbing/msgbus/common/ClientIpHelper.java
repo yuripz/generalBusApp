@@ -109,10 +109,11 @@ public class ClientIpHelper {
         }
         return clientIp;
     }
-    public static String getIsDebuged(int MessageTemplateVOkey, Boolean isDebugged, Logger Controller_log ) {
+    public static String getIsDebuged(int MessageTemplateVOkey, boolean isDebugged, Logger Controller_log ) {
         String ConfigExecute = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getConfigExecute();
-        Controller_log.info("ConfigExecute:" + ConfigExecute);
+        if (isDebugged) Controller_log.info("ConfigExecute:" + ConfigExecute);
         if (ConfigExecute != null) {
+            String isDebuggedStr= "false";
             Properties properties = new Properties();
             InputStream propertiesStream = new ByteArrayInputStream(ConfigExecute.getBytes(StandardCharsets.UTF_8));
             try {
@@ -123,12 +124,12 @@ public class ClientIpHelper {
                         if ((properties.getProperty(key).equalsIgnoreCase("on")) ||
                                 (properties.getProperty(key).equalsIgnoreCase("full"))
                         ) {
-                            isDebugged = true;
+                            isDebuggedStr = "true";
                         }
                         if ((properties.getProperty(key).equalsIgnoreCase("ON")) ||
                                 (properties.getProperty(key).equalsIgnoreCase("FULL"))
                         ) {
-                            isDebugged = true;
+                            isDebuggedStr = "true";
                         }
                     }
                 }
@@ -141,8 +142,10 @@ public class ClientIpHelper {
                         XMLchars.Fault_End + XMLchars.Body_End + XMLchars.Envelope_End;
                 return OutResponse;
             }
+            return isDebuggedStr;
         }
-        return "Ok";
+        else return "false";
+
     }
 
     public static String toCamelCase(final String init, final String separator) {

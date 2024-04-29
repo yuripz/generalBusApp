@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class ExtSystemDataAccess {
     public static HikariDataSourcePoolMetadata DataSourcePoolMetadata = null;
     @Bean (destroyMethod = "close")
-    public static  HikariDataSource HiDataSource(String JdbcUrl, String Username, String Password ){
+    public static  HikariDataSource HiDataSource(String JdbcUrl, String Username, String Password, String extSysDataSourceClassName ){
         HikariConfig hikariConfig = new HikariConfig();
         String connectionUrl ;
         if ( JdbcUrl==null) {
@@ -26,9 +26,19 @@ public class ExtSystemDataAccess {
             connectionUrl = JdbcUrl;
         }
         String ClassforName;
-        if ( connectionUrl.indexOf("oracle") > 0 )
+        if ( connectionUrl.contains("oracle") )
             ClassforName = "oracle.jdbc.driver.OracleDriver";
-        else ClassforName = "org.postgresql.Driver";
+        else {
+            if ( connectionUrl.contains("postgresql") )
+            ClassforName = "org.postgresql.Driver";
+            else
+                if (extSysDataSourceClassName !=null)
+                    ClassforName = extSysDataSourceClassName;
+                else {
+                    ServletApplication.AppThead_log.error("ExtSystemDataAccess() for " + connectionUrl + "fault, extSysDataSourceClassName is null" );
+                    return null;
+                }
+        }
 
         // when  connectionUrl contains  'PuPoVozer_DevReceiver' - then  Set_config('md.surname.crypt', 'true', false);
 
@@ -39,6 +49,7 @@ public class ExtSystemDataAccess {
         hikariConfig.setJdbcUrl(  connectionUrl ); //("jdbc:oracle:thin:@//10.242.36.8:1521/hermes12");
 
         hikariConfig.setUsername( Username ); //("ARTX_PROJ");
+        if ((Password !=null ) && (! Password.isEmpty()))
         hikariConfig.setPassword( Password ); // ("rIYmcN38St5P");
 
         hikariConfig.setLeakDetectionThreshold(TimeUnit.MINUTES.toMillis(5));
@@ -49,16 +60,20 @@ public class ExtSystemDataAccess {
 
         hikariConfig.setMaximumPoolSize(30);
         hikariConfig.setMinimumIdle(10);
-        if ( connectionUrl.indexOf("oracle") > 0 )
-        hikariConfig.setConnectionTestQuery("SELECT 1 from dual");
-        else hikariConfig.setConnectionTestQuery("SELECT 1 ");
-        hikariConfig.setPoolName("ExtSystemCP");
 
-        hikariConfig.addDataSourceProperty("dataSource.cachePrepStmts", "true");
-        hikariConfig.addDataSourceProperty("dataSource.prepStmtCacheSize", "500");
-        hikariConfig.addDataSourceProperty("dataSource.prepStmtCacheSqlLimit", "4096");
-        hikariConfig.addDataSourceProperty("dataSource.useServerPrepStmts", "true");
-        hikariConfig.addDataSourceProperty("dataSource.autoCommit", "false");
+        hikariConfig.setPoolName("ExtSystemCP");
+        if (( connectionUrl.contains("oracle") ) || ( connectionUrl.contains("postgresql") )) {
+            if ( connectionUrl.indexOf("oracle") > 0 )
+                hikariConfig.setConnectionTestQuery("SELECT 1 from dual");
+            else hikariConfig.setConnectionTestQuery("SELECT 1 ");
+
+            hikariConfig.addDataSourceProperty("dataSource.cachePrepStmts", "true");
+            hikariConfig.addDataSourceProperty("dataSource.prepStmtCacheSize", "500");
+            hikariConfig.addDataSourceProperty("dataSource.prepStmtCacheSqlLimit", "4096");
+            hikariConfig.addDataSourceProperty("dataSource.useServerPrepStmts", "true");
+            hikariConfig.addDataSourceProperty("dataSource.autoCommit", "false");
+        }
+
         ServletApplication.AppThead_log.info( "ExtSystemDataAccess: try make DataSourcePool: " + connectionUrl + " as " + Username + " , Class.forName:" + ClassforName);
         HikariDataSource dataSource;
         try {

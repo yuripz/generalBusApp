@@ -43,6 +43,12 @@ public class ConnectionProperties {
         this.extsysPoint = extsysPoint;
     }
 
+    private String extsysDataSourceClassName;
+    public String getextSysDataSourceClassName() {
+        return this.extsysDataSourceClassName;
+    }
+    public void setextSysDataSourceClassName(String extsysDataSourceClassName) { this.extsysDataSourceClassName = extsysDataSourceClassName; }
+
 
     private String hrmsDbSchema;
     public String gethrmsDbSchema() {
