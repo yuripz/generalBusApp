@@ -10,14 +10,14 @@
 	</parent>
 	<groupId>net.plumbing.msgbus</groupId>
 	<artifactId>Receiver</artifactId>
-    <version>0.3.24.04.17e-SNAPSHOT</version>
+    <version>0.3.24.04.23-SNAPSHOT</version>
     <name>Receiver</name>
     <description>servlet project for Spring Boot</description>
     	<properties>
-		    <java.version>21</java.version>
+	    <java.version>21</java.version>
             <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	    </properties>
-	<dependencies>
+	</properties>
+    <dependencies>
 
         <!--
         <dependency>
@@ -184,27 +184,6 @@
             <version>1.2.0</version>
         </dependency>
 
-        <!--
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.5.14</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>-->
-
-        <!-- https://mvnrepository.com/artifact/com.konghq/unirest-java
-        <dependency>
-            <groupId>com.konghq</groupId>
-            <artifactId>unirest-java</artifactId>
-            <version>3.13.13</version>
-        </dependency>-->
-
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -299,7 +278,6 @@
             <artifactId>presto-jdbc</artifactId>
             <version>350</version>
         </dependency>
-
 
     </dependencies>
 <!--

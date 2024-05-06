@@ -17,7 +17,6 @@ public class ExtSystemDataConnection {
         Connection Target_Connection;
 
         String rdbmsVendor;
-        ;
         if ( ApplicationProperties.extSystemDataSource == null ) {
             dataAccess_log.error("[" + Queue_Id + "] ExtSystem getConnection() fault: ApplicationProperties.extSystemDataSource is null" );
             return ;
