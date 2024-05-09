@@ -66,7 +66,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.4.04.23";
+    public static final String ApplicationName="*Receiver_BUS* v.4.04.29";
     public static String propJDBC;
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ServletApplication.class, args);

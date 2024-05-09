@@ -643,8 +643,14 @@ public class MessageUtils {
                 return messageDetails.ConfirmationRowNum;
             }
             if ( Tag_Num < 1 ) {
-                MessegeReceive_Log.error("Queue_Id=[" + Queue_Id + "] ReadConfirmation: tag 'Confirmation' не найден в MESSAGE_QUEUEDET" );
-                return -1;
+                MessegeReceive_Log.warn("Queue_Id=[" + Queue_Id + "] ReadConfirmation: tag 'Confirmation' is not found in MESSAGE_QUEUEDET" );
+                messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag)
+                        .append(XMLchars.TagConfirmation).append(XMLchars.CloseTag)
+                        .append(XMLchars.nanXSLT_Result)
+                        .append(XMLchars.OpenTag)
+                        .append(XMLchars.TagConfirmation).append(XMLchars.EndTag).append(XMLchars.CloseTag);
+                messageDetails.ConfirmationRowNum = 0;
+                return 0;
             }
             try {
                 theadDataAccess.stmtMsgQueueConfirmationDet.setLong(1, Queue_Id);
