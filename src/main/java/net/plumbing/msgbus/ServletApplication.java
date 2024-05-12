@@ -25,6 +25,7 @@ import net.plumbing.msgbus.common.HikariDataAccess;
 import net.plumbing.msgbus.common.ExtSystemDataAccess;
 import net.plumbing.msgbus.config.ConnectionProperties;
 import net.plumbing.msgbus.config.DBLoggingProperties;
+import net.plumbing.msgbus.common.sStackTrace;
 
 import net.plumbing.msgbus.config.Receiver_AppConfig;
 import net.plumbing.msgbus.config.TelegramProperties;
@@ -66,7 +67,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.4.04.29";
+    public static final String ApplicationName="*Receiver_BUS* v.4.05.11";
     public static String propJDBC;
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ServletApplication.class, args);
@@ -74,6 +75,7 @@ public class ServletApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         int i;
+        boolean jmsReceiveTaskEnabled;
 
         ApplicationContext context = new AnnotationConfigApplicationContext(Receiver_AppConfig.class);
         //Application myApplication = Application.create("SpringApplication").healthUrl("http://localhost:8005/actuator/health").serviceUrl("http://localhost:8005/instances").build();
@@ -131,6 +133,10 @@ public class ServletApplication implements CommandLineRunner {
         ApplicationProperties.ConnectMsgBus = connectionProperties.getconnectMsgBus();
         ApplicationProperties.ExtSysSchema = connectionProperties.getextsysDbSchema();
         if ( ApplicationProperties.ConnectMsgBus == null) ApplicationProperties.ConnectMsgBus = "tcp://localhost:61216";
+        if (connectionProperties.getjmsReceiveTaskEnabled().equalsIgnoreCase("true") )
+            jmsReceiveTaskEnabled = true;
+        else  jmsReceiveTaskEnabled = false;
+        AppThead_log.info("jmsReceiveTaskEnabled = " + jmsReceiveTaskEnabled );
 
         int FirstInfoStreamId = 101;
         if ( connectionProperties.getfirstInfoStreamId() != null)
@@ -184,11 +190,11 @@ public class ServletApplication implements CommandLineRunner {
         ActiveMQService activeMQService= new ActiveMQService();
         try {
         activeMQService.MakeActiveMQConnectionFactory( ApplicationProperties.ConnectMsgBus );
-        activeMQService.StartJMSQueueConnection("ServletApplication.java: string no.185");
+        activeMQService.StartJMSQueueConnection("ServletApplication.java: string no.191");
         //activeMQService.StartJMSQueueConnection("333");
         //activeMQService.StartJMSQueueConnection("4444");
         } catch (JMSException e) {
-            AppThead_log.error("НЕ удалось подключится к брокеру сообщений ActiveMQ:" + e.getMessage());
+            AppThead_log.error("НЕ удалось подключится к брокеру сообщений ActiveMQ:" + e.getMessage() + "\n" + sStackTrace.strInterruptedException(e));
             System.err.println("НЕ удалось подключится к брокеру сообщений ActiveMQ:");
             e.printStackTrace();
 
@@ -232,17 +238,17 @@ public class ServletApplication implements CommandLineRunner {
         // 1й проход, получаем количество потоков, которые задействованы в  JMS  систем.
         int TotalNumTasks=0; int TotalNumJMS_System=0;
         int MessageDirections_BrokerId=0;
-        for (i=0; i< MessageDirections.AllMessageDirections.size(); i++)
-        {
-            if ( MessageDirections.AllMessageDirections.get(i).getType_Connect() == 6 ) {
-                TotalNumTasks += + MessageDirections.AllMessageDirections.get(i).getNum_Thread();
+        if (jmsReceiveTaskEnabled) { // Если признак hermes.jms-receive-task-enabled=tru , то тогда и только тогда реально всё запускается
+        for (i = 0; i < MessageDirections.AllMessageDirections.size(); i++) {
+            if (MessageDirections.AllMessageDirections.get(i).getType_Connect() == 6) {
+                TotalNumTasks += +MessageDirections.AllMessageDirections.get(i).getNum_Thread();
                 TotalNumJMS_System = TotalNumJMS_System + 1;
-                AppThead_log.info( i + " TotalNumTasks: " + TotalNumTasks    + " ," +MessageDirections.AllMessageDirections.get(i).getMsgDirection_Desc() );
+                AppThead_log.info(i + " TotalNumTasks: " + TotalNumTasks + " ," + MessageDirections.AllMessageDirections.get(i).getMsgDirection_Desc());
                 MessageDirections_BrokerId = i; // MessageDirections.AllMessageDirections.get(i).getWSDL_Name();
             }
         }
 
-        AppThead_log.info(  "Итого имеем TotalNumTasks: " + TotalNumTasks + " для чтения из JMS, систем, читающих JMS=" + TotalNumJMS_System );
+        AppThead_log.info("Итого имеем TotalNumTasks: " + TotalNumTasks + " для чтения из JMS, систем, читающих JMS=" + TotalNumJMS_System);
         //     ActiveMQService[] jmsMQService = new ActiveMQService[ TotalNumJMS_System ];
 
         // TODO - пока считаем, что  JMS_MessageDirection_MQConnectionFactory один, в дальнейшем их должно быть по числу JMS систем, сейчас берется последний
@@ -259,38 +265,40 @@ public class ServletApplication implements CommandLineRunner {
             }
         */
         ThreadPoolTaskExecutor taskExecutor = (ThreadPoolTaskExecutor) context.getBean("taskExecutor");
-        JMSReceiveTask[] jmsReceiveTask = new JMSReceiveTask[ TotalNumTasks ];
+        JMSReceiveTask[] jmsReceiveTask = new JMSReceiveTask[TotalNumTasks];
         Thread.State JMSReceiveThreadState = Thread.State.NEW;
-        Thread[] JMSReceiveThread = new Thread[ TotalNumTasks ];
+        Thread[] JMSReceiveThread = new Thread[TotalNumTasks];
+
 
         // 2-й проход, инициализируем коннекты для каждой из систем, в которой задействованы в  JMS  систем.
 
-        int CurrentTasksIndex=0;
+        int CurrentTasksIndex = 0;
         int NumTasksInsystem;
-        for ( MessageDirections_BrokerId=0; MessageDirections_BrokerId < MessageDirections.AllMessageDirections.size(); MessageDirections_BrokerId++) {
-            if (MessageDirections.AllMessageDirections.get( MessageDirections_BrokerId ).getType_Connect() == 6) {
-                NumTasksInsystem = MessageDirections.AllMessageDirections.get(MessageDirections_BrokerId ).getNum_Thread();
-                for (i=0; i< NumTasksInsystem;  i++) {
+        for (MessageDirections_BrokerId = 0; MessageDirections_BrokerId < MessageDirections.AllMessageDirections.size(); MessageDirections_BrokerId++) {
+            if (MessageDirections.AllMessageDirections.get(MessageDirections_BrokerId).getType_Connect() == 6) {
+                NumTasksInsystem = MessageDirections.AllMessageDirections.get(MessageDirections_BrokerId).getNum_Thread();
+                for (i = 0; i < NumTasksInsystem; i++) {
                     // не нужен MessageDirectionsCode =  MessageRepositoryHelper.look4MessageDirectionsCode_4_Num_Thread( theadNum + this.FirstInfoStreamId  , AppThead_log );
-                    jmsReceiveTask[ CurrentTasksIndex ] = new JMSReceiveTask( );// (MessageSendTask) context.getBean("MessageSendTask");
-                    jmsReceiveTask[ CurrentTasksIndex ].setJMSPoint( MessageDirections.AllMessageDirections.get( MessageDirections_BrokerId ).getWSDL_Name() );
-                    jmsReceiveTask[ CurrentTasksIndex ].setJMSLogin( MessageDirections.AllMessageDirections.get( MessageDirections_BrokerId ).getDb_user() );
-                    jmsReceiveTask[ CurrentTasksIndex ].setJMSPasswd( MessageDirections.AllMessageDirections.get( MessageDirections_BrokerId ).getDb_pswd() );
-                    jmsReceiveTask[ CurrentTasksIndex ].setJMSQueueName( MessageDirections.AllMessageDirections.get( MessageDirections_BrokerId ).getApp_Server() );
-                    JMSReceiveThread[ CurrentTasksIndex ] = taskExecutor.createThread( jmsReceiveTask[ CurrentTasksIndex ]);
+                    jmsReceiveTask[CurrentTasksIndex] = new JMSReceiveTask();// (MessageSendTask) context.getBean("MessageSendTask");
+                    jmsReceiveTask[CurrentTasksIndex].setJMSPoint(MessageDirections.AllMessageDirections.get(MessageDirections_BrokerId).getWSDL_Name());
+                    jmsReceiveTask[CurrentTasksIndex].setJMSLogin(MessageDirections.AllMessageDirections.get(MessageDirections_BrokerId).getDb_user());
+                    jmsReceiveTask[CurrentTasksIndex].setJMSPasswd(MessageDirections.AllMessageDirections.get(MessageDirections_BrokerId).getDb_pswd());
+                    jmsReceiveTask[CurrentTasksIndex].setJMSQueueName(MessageDirections.AllMessageDirections.get(MessageDirections_BrokerId).getApp_Server());
+                    JMSReceiveThread[CurrentTasksIndex] = taskExecutor.createThread(jmsReceiveTask[CurrentTasksIndex]);
                     //  JMSReceiveThread[ i ].run();
                     //  AppThead_log.info("JMSReceiveThread[" + i + "] run: " + JMSReceiveThread[ i ].getName() + " Id=" + JMSReceiveThread[ i ].getId() + " isAlive=" + JMSReceiveThread[ i ].isAlive());
                     // jmsReceiveTask[ i ].setContext(  context );
 
-                    taskExecutor.execute(JMSReceiveThread[ CurrentTasksIndex ] );
-                    AppThead_log.info("JMSReceiveThread[" + CurrentTasksIndex + "] for Q " + MessageDirections.AllMessageDirections.get( MessageDirections_BrokerId ).getApp_Server() +  " run: " + JMSReceiveThread[ CurrentTasksIndex ].getName() + " JMSReceiveThread_Id=" + JMSReceiveThread[ CurrentTasksIndex ].getId()  + " isAlive=" + JMSReceiveThread[ CurrentTasksIndex ].isAlive());
-                    JMSReceiveThreadState = JMSReceiveThread[ CurrentTasksIndex ].getState();
+                    taskExecutor.execute(JMSReceiveThread[CurrentTasksIndex]);
+                    AppThead_log.info("JMSReceiveThread[" + CurrentTasksIndex + "] for Q " + MessageDirections.AllMessageDirections.get(MessageDirections_BrokerId).getApp_Server() + " run: " + JMSReceiveThread[CurrentTasksIndex].getName() + " JMSReceiveThread_Id=" + JMSReceiveThread[CurrentTasksIndex].getId() + " isAlive=" + JMSReceiveThread[CurrentTasksIndex].isAlive());
+                    JMSReceiveThreadState = JMSReceiveThread[CurrentTasksIndex].getState();
                     // AppThead_log.info("JMSReceiveThread[" + i + "] JMSReceiveThreadState: " + JMSReceiveThreadState.toString() ) ;
                     // taskExecutor.execute(jmsReceiveTask[ i ]);
                     CurrentTasksIndex = CurrentTasksIndex + 1;
                 }
             }
         }
+    }
 
 
         // int totalTasks = Integer.parseInt( "1" ); // TotalNumTasks; //Integer.parseInt( "50" ); //
@@ -387,10 +395,13 @@ public class ServletApplication implements CommandLineRunner {
                         AppThead_log.error("НЕ удалось пере-подключится к брокеру сообщений ActiveMQ [" + MessageDirections.AllMessageDirections.get(MessageDirections_BrokerId ).getWSDL_Name() + "] :" + e.getMessage());
                     }
                 */
-                for (i=0; i< TotalNumTasks; i++) {
-                    JMSReceiveThreadState = JMSReceiveThread[i].getState();
-                    AppThead_log.info("JMSReceiveThread[" + i + "] (`"+ JMSReceiveThread[i].getName() + "`) JMSReceiveThreadState: " + JMSReceiveThreadState.toString());
-                }
+                /* JMSReceiveThread[i].getState() не показывает состояние потоко, закомментарено
+                if (jmsReceiveTaskEnabled) { // Если признак hermes.jms-receive-task-enabled=tru , то тогда и только тогда реально всё запускается
+                    for (i=0; i< TotalNumTasks; i++) {
+                        JMSReceiveThreadState = JMSReceiveThread[i].getState();
+                        AppThead_log.info("JMSReceiveThread[" + i + "] (`"+ JMSReceiveThread[i].getName() + "`) JMSReceiveThreadState: " + JMSReceiveThreadState.toString());
+                    }
+                }*/
 
             } catch (InterruptedException | SQLException e) {
                 AppThead_log.error("do taskExecutor.shutdown! " + e.getMessage());

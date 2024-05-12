@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class ExtSystemDataAccess {
     public static HikariDataSourcePoolMetadata DataSourcePoolMetadata = null;
     @Bean (destroyMethod = "close")
-    public static  HikariDataSource HiDataSource(String JdbcUrl, String Username, String Password, String extSysDataSourceClassName ){
+    public static  HikariDataSource HiDataSource(String JdbcUrl, String Username, String Password, String extSysDataSourceClassName ) throws java.sql.SQLException {
         HikariConfig hikariConfig = new HikariConfig();
         String connectionUrl ;
         if ( JdbcUrl==null) {
@@ -106,7 +106,7 @@ public class ExtSystemDataAccess {
         { ServletApplication.AppThead_log.error( "dataSource.getConnection() fault" + e.getMessage());
           return null;
         }
-        String connectionTestQuery = "SELECT 1 ";
+        String connectionTestQuery = "SELECT 1 as test";
         try {
             if ( connectionUrl.indexOf("oracle") > 0 )
                 connectionTestQuery = "SELECT 1 from dual";
@@ -151,14 +151,14 @@ public class ExtSystemDataAccess {
             ServletApplication.AppThead_log.info( "getJdbcUrl: "+ hikariConfig.getJdbcUrl());
         }
         catch (java.sql.SQLException e)
-        { ServletApplication.AppThead_log.error( "dataSource connectionTestQuery fault `" + connectionTestQuery + "` :" +  e.getMessage());
+        { ServletApplication.AppThead_log.error( "dataSource connectionTestQuery `"+ connectionTestQuery + "` fault `" + connectionTestQuery + "` :" +  e.getMessage() + " \n" + sStackTrace.strInterruptedException(e));
             try { tryConn.close();
                 }
             catch (java.sql.SQLException closeE)
-            { ServletApplication.AppThead_log.error( "dataSource connection close() fault " +  closeE.getMessage()); }
-            return null;
+            { ServletApplication.AppThead_log.error( "dataSource connectionTestQuery close() fault " +  closeE.getMessage()); }
+            throw e;
+            //return null;
         }
-
 
         return dataSource;
     }

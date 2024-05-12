@@ -48,7 +48,12 @@ public class ConnectionProperties {
         return this.extsysDataSourceClassName;
     }
     public void setextSysDataSourceClassName(String extsysDataSourceClassName) { this.extsysDataSourceClassName = extsysDataSourceClassName; }
-
+// hermes.jms-receive-task-enabled=false
+    private String jmsReceiveTaskEnabled ="false";
+    public String getjmsReceiveTaskEnabled() {
+        return this.jmsReceiveTaskEnabled;
+    }
+    public void setjmsReceiveTaskEnabled(String jmsReceiveTaskEnabled) { this.jmsReceiveTaskEnabled = jmsReceiveTaskEnabled; }
 
     private String hrmsDbSchema;
     public String gethrmsDbSchema() {

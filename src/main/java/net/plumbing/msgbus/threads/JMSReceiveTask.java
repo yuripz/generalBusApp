@@ -171,20 +171,26 @@ public class JMSReceiveTask  implements Runnable {
             try {
                 if (this.theadDataAccess.Hermes_Connection != null)
                     this.theadDataAccess.Hermes_Connection.close();
+                else {
+                    JMSReceiveTask_Log.warn("Hermes_DB_Connection_close(): theadDataAccess.Hermes_Connection == null !" );
+                }
                 this.theadDataAccess.Hermes_Connection = null;
             } catch (SQLException SQLe) {
-                JMSReceiveTask_Log.error(SQLe.getMessage());
-                JMSReceiveTask_Log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                JMSReceiveTask_Log.error("Hermes_DB_Connection_close(): Call close() fault:" + SQLe.getMessage());
+                JMSReceiveTask_Log.error("Hermes_DB_Connection_close():" + sStackTrace.strInterruptedException(SQLe) );
                 SQLe.printStackTrace();
             }
             this.theadDataAccess = null;
+        }
+        else {
+            JMSReceiveTask_Log.warn("Hermes_DB_Connection_close(): theadDataAccess == null !" );
         }
     }
 public void run()   {
     boolean isDebugged = true;
         //if (( theadNum != null ) && ((theadNum == 17) || (theadNum == 18) || (theadNum == 19) || (theadNum == 20)) )
 
-    JMSReceiveTask_Log.warn( "JMSReceiveTask , ThreadId=" + Thread.currentThread().getId() + " is running, JMSPoint=`" + JMSPoint + "`" );
+    JMSReceiveTask_Log.warn( "JMSReceiveTask , ThreadId=" + Thread.currentThread().threadId() + " is running, JMSPoint=`" + JMSPoint + "`" );
 
     // TheadDataAccess
     this.theadDataAccess = new TheadDataAccess();
@@ -194,12 +200,12 @@ public void run()   {
         JMSReceiveTask_Log.info("Установаливем 'соединение' , что бы зачитывать очередь: [" +
                 ApplicationProperties.HrmsPoint + "] user:" + ApplicationProperties.hrmsDbLogin +
                 "; passwd:" + ApplicationProperties.hrmsDbPasswd + ".");
-    theadDataAccess.make_Hikari_Connection(
-            ApplicationProperties.HrmsSchema,
-            ApplicationProperties.hrmsDbLogin,
-            ApplicationProperties.dataSource,
-            JMSReceiveTask_Log
-    );
+            theadDataAccess.make_Hikari_Connection(
+                                            ApplicationProperties.HrmsSchema,
+                                            ApplicationProperties.hrmsDbLogin,
+                                            ApplicationProperties.dataSource,
+                                            JMSReceiveTask_Log
+                                            );
     if ( theadDataAccess.Hermes_Connection == null ){
         JMSReceiveTask_Log.error("Ошибка на инициализации потока приёма JMS-сообщения - theadDataAccess.make_Hikari_Connection('"+ ApplicationProperties.HrmsSchema +"' , ...) return: NULL!"  );
         return;
