@@ -557,6 +557,8 @@ public class XmlSQLStatement {
                             while (rs.next()) {
                                 messageDetails.X_Total_Count = rs.getInt(1);
                             }
+                            if (isDebugged)
+                                MessegeSend_Log.info( "[" + messageQueueVO.getQueue_Id() + "] SelectTotalStatement: X_Total_Count= " + messageDetails.X_Total_Count);
                                rs.close();
                             selectStatement.close();
 

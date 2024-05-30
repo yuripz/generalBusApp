@@ -67,7 +67,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.4.05.11";
+    public static final String ApplicationName="*Receiver_BUS* v.4.05.20";
     public static String propJDBC;
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ServletApplication.class, args);
@@ -81,10 +81,6 @@ public class ServletApplication implements CommandLineRunner {
         //Application myApplication = Application.create("SpringApplication").healthUrl("http://localhost:8005/actuator/health").serviceUrl("http://localhost:8005/instances").build();
         // ApplicationRegistrator myApplicationRegistrator = new ApplicationRegistrator();
 
-		/*String[] beans = applicationContext.getBeanDefinitionNames();
-		for (String bean : beans) {
-			System.out.println(bean);
-		}*/
         AppThead_log.info("Hellow for ServletApplication ");
         NotifyByChannel.Telegram_setChatBotUrl( telegramProperties.getchatBotUrl() , AppThead_log );
          propJDBC = connectionProperties.gethrmsPoint();
@@ -138,10 +134,10 @@ public class ServletApplication implements CommandLineRunner {
         else  jmsReceiveTaskEnabled = false;
         AppThead_log.info("jmsReceiveTaskEnabled = " + jmsReceiveTaskEnabled );
 
-        int FirstInfoStreamId = 101;
-        if ( connectionProperties.getfirstInfoStreamId() != null)
-            FirstInfoStreamId = Integer.parseInt( connectionProperties.getfirstInfoStreamId() );
+//        int FirstInfoStreamId = 101;
+//        if ( connectionProperties.getfirstInfoStreamId() != null) FirstInfoStreamId = Integer.parseInt( connectionProperties.getfirstInfoStreamId() );
         String psqlFunctionRun = connectionProperties.getpsqlFunctionRun();
+        ApplicationProperties.pSQLFunctionRun = connectionProperties.getpsqlFunctionRun();
         AppThead_log.info("psqlFunctionRun = " + psqlFunctionRun );
         // DefaultApplicationFactory myApplicationFactory = new DefaultApplicationFactory();
 
@@ -176,6 +172,10 @@ public class ServletApplication implements CommandLineRunner {
             AppThead_log.error("НЕ удалось подключится к базе данных внешней системы: ("+ " )" + e.getMessage());
             System.exit(-20);
         }
+
+        ApplicationProperties.ExtSysPoint = connectionProperties.getextsysPoint();
+        ApplicationProperties.ExtSysDbLogin = connectionProperties.getextsysDbLogin();
+        ApplicationProperties.ExtSysDbPasswd = connectionProperties.getextsysDbPasswd();
 
         AppThead_log.info("extSystem DataSource = " + ApplicationProperties.extSystemDataSource );
         if ( ApplicationProperties.extSystemDataSource != null )
@@ -221,8 +221,8 @@ public class ServletApplication implements CommandLineRunner {
             AppThead_log.warn( "Thead [" + (firstInfoStreamId + i) + "] ->" +
                                 MessageRepositoryHelper.look4MessageDirectionsCode_4_Num_Thread(firstInfoStreamId + i, AppThead_log ) );
 
-*/
-      //   System.exit(-22);
+        */
+        //   System.exit(-22);
         //AppThead_log.info("keysAllMessageDirections: " + MessageDirections.AllMessageDirections.get(1).getMsgDirection_Desc() );
 
         Long TotalTimeTasks = Long.parseLong( connectionProperties.gettotalTimeTasks());
@@ -251,7 +251,7 @@ public class ServletApplication implements CommandLineRunner {
         AppThead_log.info("Итого имеем TotalNumTasks: " + TotalNumTasks + " для чтения из JMS, систем, читающих JMS=" + TotalNumJMS_System);
         //     ActiveMQService[] jmsMQService = new ActiveMQService[ TotalNumJMS_System ];
 
-        // TODO - пока считаем, что  JMS_MessageDirection_MQConnectionFactory один, в дальнейшем их должно быть по числу JMS систем, сейчас берется последний
+        //  - пока считаем, что  JMS_MessageDirection_MQConnectionFactory один, в дальнейшем их должно быть по числу JMS систем, сейчас берется последний
         /* JMS_MessageDirection_MQConnectionFactory вынесен в поток jmsReceiveTask
         if ( JMS_MessageDirection_MQConnectionFactory.MQconnectionFactory == null )
             try {

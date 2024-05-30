@@ -63,7 +63,7 @@ public class ExtSystemDataAccess {
 
         hikariConfig.setPoolName("ExtSystemCP");
         if (( connectionUrl.contains("oracle") ) || ( connectionUrl.contains("postgresql") )) {
-            if ( connectionUrl.indexOf("oracle") > 0 )
+            if (connectionUrl.indexOf("oracle") > 0)
                 hikariConfig.setConnectionTestQuery("SELECT 1 from dual");
             else hikariConfig.setConnectionTestQuery("SELECT 1 ");
 
@@ -72,7 +72,7 @@ public class ExtSystemDataAccess {
             hikariConfig.addDataSourceProperty("dataSource.prepStmtCacheSqlLimit", "4096");
             hikariConfig.addDataSourceProperty("dataSource.useServerPrepStmts", "true");
             hikariConfig.addDataSourceProperty("dataSource.autoCommit", "false");
-        }
+        } //    dataSource.autoCommit" и для Престо Unrecognized connection property 'dataSource.autoCommit
 
         ServletApplication.AppThead_log.info( "ExtSystemDataAccess: try make DataSourcePool: " + connectionUrl + " as " + Username + " , Class.forName:" + ClassforName);
         HikariDataSource dataSource;

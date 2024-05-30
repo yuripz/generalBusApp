@@ -23,6 +23,7 @@ public  class ApplicationProperties {
     public static Integer ShortRetryInterval;
     public static Integer LongRetryInterval ;
     public static String ConnectMsgBus;
+    public static String pSQLFunctionRun;
 
     public void setWaitTimeBetweenScan(Integer waitTimeBetweenScan) {
         this.WaitTimeBetweenScan = waitTimeBetweenScan;

@@ -179,6 +179,9 @@ public class PerfotmInputMessages {
                             case "GetRequest_Body4Message":
                                 resultSQL = CustomJavaMethods.GetRequest_Body4Message(  messageQueueVO, Message, theadDataAccess, MessegeReceive_Log);
                                 break;
+                            case "GetDBConfigEntry":
+                                resultSQL = CustomJavaMethods.GetDBConfigEntry(  messageQueueVO, Message, MessegeReceive_Log);
+                                break;
 
                             case "GetResponse4MessageQueueLog":
                                 resultSQL = CustomJavaMethods.GetResponse4MessageQueueLog( messageQueueVO, Message, theadDataAccess, ApplicationProperties.HrmsSchema, MessegeReceive_Log);
@@ -830,7 +833,8 @@ public class PerfotmInputMessages {
                                     XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, false, null, Passed_Envelope4XSLTPost, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
                                 */
                             int resultSQL;
-                            if (Message.MessageTemplate4Perform.getIsExtSystemAccessPostExec()) {
+                            if (Message.MessageTemplate4Perform.getIsExtSystemAccessPostExec()) // ExtSystemAccessPostExec для внешней системы
+                            {
                                 ExtSystemDataConnection extSystemDataConnection = new ExtSystemDataConnection(Queue_Id, MessegeReceive_Log);
                                 if ( extSystemDataConnection.ExtSystem_Connection == null ){
                                     Message.MsgReason.append("Ошибка на приёме сообщения - нет соединения с внешней базой данных (extSystemDataConnection return NULL), обратитесь к системному администратору !");
@@ -838,11 +842,12 @@ public class PerfotmInputMessages {
                                 }
                                 resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, true, extSystemDataConnection.ExtSystem_Connection ,
                                                                                   Passed_Envelope4XSLTPost, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
-                                try {  extSystemDataConnection.ExtSystem_Connection.close(); } catch (SQLException e) {
+                                try {  extSystemDataConnection.ExtSystem_Connection.close();
+                                } catch (SQLException e) {
                                     MessegeReceive_Log.error("[" + Queue_Id + "] ExtSystem_Connection.close() fault:" + e.getMessage());
                                 }
                             }
-                            else
+                            else // запуск пост-обработчика в собственной БД
                             resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, false, null, Passed_Envelope4XSLTPost, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
 
 

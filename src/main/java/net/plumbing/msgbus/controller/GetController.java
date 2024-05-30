@@ -770,7 +770,7 @@ public class GetController  {
                     } catch (JSONException e) {
                         System.err.println(e.toString());
                         HttpResponse = Fault_Server_Rest_Begin +
-                                org.apache.commons.text.StringEscapeUtils.escapeJson("Не смогли преобразовать HttpResponse в JSON: " + e.getMessage()) + Fault_Rest_End;
+                                org.apache.commons.text.StringEscapeUtils.escapeJson("Не смогли преобразовать HttpResponse=`" + HttpResponse + "` в JSON: " + e.getMessage()) + Fault_Rest_End;
                         getResponse.setStatus(500); ResponseStatus="500";
                     }
 
