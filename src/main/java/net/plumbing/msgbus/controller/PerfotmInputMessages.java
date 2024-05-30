@@ -318,7 +318,7 @@ public class PerfotmInputMessages {
                         return -36L;
                     }
                     String EndPointUrl;
-                    /* перейти на Java 11 HTTP Client*/
+                    /* используем Java 21 HTTP Client*/
                     HttpClient ApiRestHttpClient = getCloseableHttpClient(  messageQueueVO,  Message ,  false,
                                                                             theadDataAccess, MessegeReceive_Log);
                     if ( ApiRestHttpClient == null) {
@@ -335,8 +335,8 @@ public class PerfotmInputMessages {
                     try {
                         String RestResponse=null;
                         if ( Message.MessageTemplate4Perform.getPropExeMetodExecute().equals(Message.MessageTemplate4Perform.WebRestExeMetod) )
-                        { RestResponse = MessageHttpSend.WebRestExecGET(ApiRestHttpClient,EndPointUrl, Queue_Id, Message.MessageTemplate4Perform,
-                                                                        ApplicationProperties.ApiRestWaitTime, MessegeReceive_Log);
+                        { RestResponse = MessageHttpSend.WebRestExecGET( ApiRestHttpClient, EndPointUrl, Queue_Id, Message.MessageTemplate4Perform,
+                                                                         ApplicationProperties.ApiRestWaitTime,  MessegeReceive_Log);
                          }
                         if ( Message.MessageTemplate4Perform.getPropExeMetodExecute().equals(Message.MessageTemplate4Perform.WebJsonExeMetod) )
                         { // отправляем в Rest то, что получили внутри Soap
@@ -910,23 +910,26 @@ public class PerfotmInputMessages {
 
         String PropUser;
         String PropPswd;
+        boolean isPreemptive; // признак Preemptive аутентификации
         if ( isPostExec ) {
             PropUser= Message.MessageTemplate4Perform.getPropUserPostExec();
             PropPswd = Message.MessageTemplate4Perform.getPropPswdPostExec();
+            isPreemptive = Message.MessageTemplate4Perform.getPreemptivePostExec();
         }
         else {
             PropUser = Message.MessageTemplate4Perform.getPropUser();
             PropPswd = Message.MessageTemplate4Perform.getPropPswd();
+            isPreemptive = Message.MessageTemplate4Perform.getPreemptive();
         }
    try {
         if ( (PropUser!= null)
-               // && (!Message.MessageTemplate4Perform.getIsPreemptive())  // adding the header to the HttpRequest and removing Authenticator
+               && (isPreemptive)  // adding the header to the HttpRequest and removing Authenticator
             )
         {
             RestPasswordAuthenticator restPasswordAuthenticator = new RestPasswordAuthenticator();
             Authenticator restApiPasswordAuthenticator  = restPasswordAuthenticator.getPasswordAuthenticator(PropUser, PropPswd);
             if ( IsDebugged ) {
-                MessegeReceive_Log.info("[" + messageQueueVO.getQueue_Id() + "] sendPostMessage.POST PropUser=`" + PropUser + "` PropPswd=`" + PropPswd + "`");
+                MessegeReceive_Log.info("[" + messageQueueVO.getQueue_Id() + "] getCloseableHttpClient: PropUser=`" + PropUser + "` PropPswd=`" + PropPswd + "`");
             }
             ApiRestHttpClient = HttpClient.newBuilder()
                     .authenticator( restApiPasswordAuthenticator )
@@ -937,7 +940,7 @@ public class PerfotmInputMessages {
         }
         else {
             if ( IsDebugged )
-                MessegeReceive_Log.info("[" + messageQueueVO.getQueue_Id() + "] sendPostMessage.POST PropUser== null (`" + PropUser + "`)" );
+                MessegeReceive_Log.info("[" + messageQueueVO.getQueue_Id() + "] getCloseableHttpClient: PropUser== null or isPreemptive = (`" + isPreemptive + "`)" );
             ApiRestHttpClient = HttpClient.newBuilder()
                     .version(HttpClient.Version.HTTP_1_1)
                     .followRedirects(HttpClient.Redirect.ALWAYS)
@@ -947,11 +950,11 @@ public class PerfotmInputMessages {
 
      } catch ( Exception e)
       {
-              MessegeReceive_Log.error("["+ messageQueueVO.getQueue_Id()  +"] " + "httpClientBuilder.build() fault");
+              MessegeReceive_Log.error("["+ messageQueueVO.getQueue_Id()  +"]  getCloseableHttpClient: httpClientBuilder.build() fault");
               Message.MsgReason.append("Внутренняя Ошибка httpClientBuilder.build() fault");
 
               MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
-                      "Внутренняя Ошибка httpClientBuilder.build() fault",
+                      "Внутренняя Ошибка getCloseableHttpClient: httpClientBuilder.build() fault",
                       null, MessegeReceive_Log);
               return null;
                // MessegeReceive_Log.error("["+ messageQueueVO.getQueue_Id()  +"] " + "Внутренняя ошибка - httpClientBuilder.build() не создал клиента. И ещё проблема с syncConnectionManager.shutdown()...");

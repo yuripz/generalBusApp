@@ -53,6 +53,7 @@ public class MessageTemplate4Perform {
     private String PropUser;
     private String PropPswd;
     private String PropUrl;
+    private boolean isPreemptive;
     private String PropWebMetod;
     private String PropJavaMethodName;
 
@@ -60,6 +61,7 @@ public class MessageTemplate4Perform {
     private String PropExeMetodExecute;
 
     private String PropExeMetodPostExec; // PropExeMetodPostExec
+    private boolean isPreemptivePostExec;
     private String PropHostPostExec;
     private String PropUserPostExec;
     private String PropPswdPostExec;
@@ -121,6 +123,7 @@ public class MessageTemplate4Perform {
     public final String  JavaMethodName     = "JavaMethodName";
 
     private final String  PropDebug  = "debug";
+    private final String  PropPreemptive = "Preemptive";
     private final String  PropNameSearchString  = "SearchString";
     private final String  ProprNameReplacement  = "Replacement";
     private final String  PropNameSOAPAction_11 = "SOAPAction";
@@ -196,6 +199,8 @@ public class MessageTemplate4Perform {
             this.MessageAnswMsgXSLT = messageTemplateVO.getMessageAnswMsgXSLT();
             this.EnvelopeInXSLT = messageTemplateVO.getEnvelopeInXSLT();
             this.AckAnswXSLT = messageTemplateVO.getAckAnswXSLT();
+            this.isPreemptivePostExec =false;
+            this.isPreemptive =false;
 
             this.ConfigExecute = messageTemplateVO.getConfigExecute();
             if (this.ConfigExecute != null) {
@@ -216,6 +221,18 @@ public class MessageTemplate4Perform {
 
                         if ( key.equals(PropNameWebHost)) this.PropHost = properties.getProperty(key);
                         if ( key.equals(PropNameWebUrl)) this.PropUrl = properties.getProperty(key);
+                        if ( key.equals(PropPreemptive) ) {
+                            if (( properties.getProperty(key).equalsIgnoreCase("on") ) ||
+                                    ( properties.getProperty(key).equalsIgnoreCase("true") ) ||
+                                    ( properties.getProperty(key).equalsIgnoreCase("ON") ) ||
+                                    ( properties.getProperty(key).equalsIgnoreCase("TRUE") )
+                            )
+                            {
+                                MessageTemplate_Log.info( "[" + Queue_Id + "]" + "PropPreemptive Property[" + key +"]=[" + properties.getProperty(key) + "]" );
+                                this.isPreemptive=true;
+                            }
+                        }
+
 
                         if ( key.equals(PropNameConnTimeOut)) this.PropTimeout_Conn = Integer.valueOf(properties.getProperty(key));
                         if ( key.equals(PropNameReadTimeOut)) this.PropTimeout_Read = Integer.valueOf(properties.getProperty(key));
@@ -298,6 +315,17 @@ public class MessageTemplate4Perform {
                         if ( key.equals(PropNameWebUrl)) PropUrlPostExec = properties.getProperty(key);
                         if ( key.equals(PropNameQuery)) PropQueryPostExec  = properties.getProperty(key);
                         if ( key.equals(PropNameWebUser)) PropUserPostExec = properties.getProperty(key);
+                        if ( key.equals(PropPreemptive) ) {
+                            if (( properties.getProperty(key).equalsIgnoreCase("on") ) ||
+                                    ( properties.getProperty(key).equalsIgnoreCase("true") ) ||
+                                    ( properties.getProperty(key).equalsIgnoreCase("ON") ) ||
+                                    ( properties.getProperty(key).equalsIgnoreCase("TRUE") )
+                            )
+                            {
+                                MessageTemplate_Log.info( "[" + Queue_Id + "]" + "PreemptivePostExec Property[" + key +"]=[" + properties.getProperty(key) + "]" );
+                                this.isPreemptivePostExec=true;
+                            }
+                        }
                         if ( key.equals(PropNameWebPswd)) PropPswdPostExec = properties.getProperty(key);
                         if ( key.equals(PropNameShortRetryCount)) this.ShortRetryCountPostExec = Integer.valueOf(properties.getProperty(key) );
                         if ( key.equals(PropNameShortRetryInterval)) this.ShortRetryIntervalPostExec = Integer.valueOf(properties.getProperty(key) );
@@ -427,11 +455,13 @@ public String getPropJavaMethodName() { return  this.PropJavaMethodName; }
     public String getPropPswdPostExec() {  return this.PropPswdPostExec; }
     public String getPropUrlPostExec() {  return this.PropUrlPostExec; }
     public String getPropQueryPostExec() {  return this.PropQueryPostExec; }
+    public boolean getPreemptivePostExec() {  return this.isPreemptivePostExec; }
 
     public String getPropHost() {  return this.PropHost; }
     public String getPropUser() {  return this.PropUser;}
     public String getPropPswd() {  return this.PropPswd; }
     public String getPropUrl() {  return this.PropUrl; }
+    public boolean getPreemptive() {  return this.isPreemptive; }
     public String getType_Connection() {  return this. Type_Connection; }
 
 

@@ -1,14 +1,14 @@
 package net.plumbing.msgbus.threads.utils;
 
-import net.plumbing.msgbus.common.XMLchars;
-import net.plumbing.msgbus.common.json.JSONException;
-import net.plumbing.msgbus.common.json.JSONObject;
+//import net.plumbing.msgbus.common.XMLchars;
+//import net.plumbing.msgbus.common.json.JSONException;
+//import net.plumbing.msgbus.common.json.JSONObject;
 import net.plumbing.msgbus.common.json.XML;
-import net.plumbing.msgbus.common.sStackTrace;
-import net.plumbing.msgbus.model.MessageQueueVO;
+//import net.plumbing.msgbus.common.sStackTrace;
+//import net.plumbing.msgbus.model.MessageQueueVO;
 import net.plumbing.msgbus.model.MessageTemplate4Perform;
-import net.plumbing.msgbus.threads.TheadDataAccess;
-import org.apache.commons.lang3.StringUtils;
+//import net.plumbing.msgbus.threads.TheadDataAccess;
+//import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 //import java.security.KeyManagementException;
 //import java.security.KeyStoreException;
@@ -31,11 +31,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
-import java.security.KeyStoreException;
+//import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.HashMap;
 
 public class MessageHttpSend {
@@ -112,7 +114,18 @@ public class MessageHttpSend {
             webEndPointUrl = EndPointUrl + "&queue_id=" + String.valueOf(Queue_Id);
         else
             webEndPointUrl = EndPointUrl + "?queue_id=" + String.valueOf(Queue_Id);
-            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+        String encodedAuth = Base64.getEncoder()
+                    .encodeToString((messageTemplate4Perform.getPropUser() + ":" + messageTemplate4Perform.getPropPswd() ).getBytes(StandardCharsets.UTF_8));
+
+        HttpRequest.Builder requestBuilder = java.net.http.HttpRequest.newBuilder();
+
+        if ( messageTemplate4Perform.getPreemptive()  // adding the header to the HttpRequest
+        ) {  // добавляем Authorization заголовки через HttpRequest.Builder
+             requestBuilder = requestBuilder
+                    .header("Authorization", "Basic " + encodedAuth );
+        }
+
+            java.net.http.HttpRequest request = requestBuilder
                     .GET()
                     .uri( URI.create(webEndPointUrl))
                     .header("User-Agent", "msgBus/Java-21")
@@ -165,11 +178,20 @@ public class MessageHttpSend {
                                             int ApiRestWaitTime, Logger MessageSend_Log )
             throws IOException, InterruptedException
     {
-
         String RestResponse = null;
         int restResponseStatus=0;
+        String encodedAuth = Base64.getEncoder()
+                .encodeToString((messageTemplate4Perform.getPropUserPostExec() + ":" + messageTemplate4Perform.getPropPswdPostExec() ).getBytes(StandardCharsets.UTF_8));
 
-            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+        HttpRequest.Builder requestBuilder = java.net.http.HttpRequest.newBuilder();
+
+        if ( messageTemplate4Perform.getPreemptive()  // adding the header to the HttpRequest
+        ) {  // добавляем Authorization заголовки через HttpRequest.Builder
+            requestBuilder = requestBuilder
+                    .header("Authorization", "Basic " + encodedAuth );
+        }
+
+        java.net.http.HttpRequest request = requestBuilder
                     .GET()
                     .uri( URI.create( webEndPointUrl ))
                     .header("User-Agent", "msgBus/Java-21")
@@ -183,7 +205,7 @@ public class MessageHttpSend {
             restResponseStatus = RestResponseGet.statusCode(); //500; //RestResponseGet.statusCode();
 
             if ( messageTemplate4Perform.getIsDebugged() )
-                MessageSend_Log.info("[" + Queue_Id + "] WebRestExePostExec.POST(" + webEndPointUrl + ") httpStatus=[" + restResponseStatus + "] RestResponse=(`" + RestResponse + "`)");
+                MessageSend_Log.info("[" + Queue_Id + "] WebRestExePostExec.GET(" + webEndPointUrl + ") httpStatus=[" + restResponseStatus + "] RestResponse=(`" + RestResponse + "`)");
             return restResponseStatus;
 
     }
