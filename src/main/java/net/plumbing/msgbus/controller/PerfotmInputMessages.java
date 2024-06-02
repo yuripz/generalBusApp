@@ -923,7 +923,7 @@ public class PerfotmInputMessages {
         }
    try {
         if ( (PropUser!= null)
-               && (isPreemptive)  // adding the header to the HttpRequest and removing Authenticator
+               && (!isPreemptive)  // adding the header to the HttpRequest and removing Authenticator
             )
         {
             RestPasswordAuthenticator restPasswordAuthenticator = new RestPasswordAuthenticator();
@@ -940,7 +940,7 @@ public class PerfotmInputMessages {
         }
         else {
             if ( IsDebugged )
-                MessegeReceive_Log.info("[" + messageQueueVO.getQueue_Id() + "] getCloseableHttpClient: PropUser== null or isPreemptive = (`" + isPreemptive + "`)" );
+                MessegeReceive_Log.info("[" + messageQueueVO.getQueue_Id() + "] getCloseableHttpClient: PropUser== null or isPreemptive= (`" + isPreemptive + "`)" );
             ApiRestHttpClient = HttpClient.newBuilder()
                     .version(HttpClient.Version.HTTP_1_1)
                     .followRedirects(HttpClient.Redirect.ALWAYS)

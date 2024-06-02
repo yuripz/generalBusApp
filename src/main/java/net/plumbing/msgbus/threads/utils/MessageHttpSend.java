@@ -155,7 +155,17 @@ public class MessageHttpSend {
             else
             webEndPointUrl = EndPointUrl + "?queue_id=" + String.valueOf(Queue_Id);
 
-        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+        HttpRequest.Builder requestBuilder = java.net.http.HttpRequest.newBuilder();
+
+        if ( messageTemplate4Perform.getPreemptive() )  // adding the header to the HttpRequest
+         {  // добавляем Authorization заголовки через HttpRequest.Builder
+             String encodedAuth = Base64.getEncoder()
+                     .encodeToString((messageTemplate4Perform.getPropUser() + ":" + messageTemplate4Perform.getPropPswd() ).getBytes(StandardCharsets.UTF_8));
+            requestBuilder = requestBuilder
+                    .header("Authorization", "Basic " + encodedAuth );
+        }
+
+        java.net.http.HttpRequest request = requestBuilder
                 .POST(HttpRequest.BodyPublishers.ofString(json_4_Post))
                 .uri( URI.create(webEndPointUrl))
                 .header("User-Agent", "msgBus/Java-21")
