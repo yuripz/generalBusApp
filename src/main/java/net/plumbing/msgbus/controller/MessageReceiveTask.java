@@ -48,7 +48,26 @@ public class MessageReceiveTask
         Long Queue_Id = -1L;
         Long Function_Result = 0L;
 
+        MessageQueueVO messageQueueVO = new MessageQueueVO();
 
+        // TheadDataAccess
+        this.theadDataAccess = new TheadDataAccess();
+        // Установаливем " соединение" , что бы зачитывать очередь
+        //  theadDataAccess.setDbSchema( ApplicationProperties.HrmsSchema ); - перенесён в make_Hikari_Connection(), что бы не забылось нигде!
+        if ( isDebugged )
+            MessegeReceive_Log.info("Установаливем `соединение`, что бы зачитывать очередь: [" +
+                    ApplicationProperties.HrmsPoint + "] user:" + ApplicationProperties.hrmsDbLogin +
+                    "; passwd:" + ApplicationProperties.hrmsDbPasswd + " Schema: " + ApplicationProperties.HrmsSchema  + ".");
+        theadDataAccess.make_Hikari_Connection(
+                ApplicationProperties.HrmsSchema,
+                ApplicationProperties.hrmsDbLogin,
+                ApplicationProperties.dataSource,
+                MessegeReceive_Log
+        );
+        if ( theadDataAccess.Hermes_Connection == null ){
+            Message.MsgReason.append("Ошибка на приёме сообщения - theadDataAccess.make_Hikari_Connection return: NULL!"  );
+            return -2L;
+        }
         // MessageTemplateVOkey - Шаблон интерфейса (на основе входного URL)
         if ( isDebugged )
         MessegeReceive_Log.info("ProcessInputMessage:  MessageTemplateVOkey 4 getEnvelopeInXSLT()=" + MessageTemplateVOkey );
@@ -76,27 +95,6 @@ public class MessageReceiveTask
         }
         if ( isDebugged )
         MessegeReceive_Log.info("Clear request: `" + Message.XML_MsgClear.toString()+ "` MessageTemplateVOkey 4 getEnvelopeInXSLT()=" + MessageTemplateVOkey );
-
-        MessageQueueVO messageQueueVO = new MessageQueueVO();
-
-        // TheadDataAccess
-        this.theadDataAccess = new TheadDataAccess();
-        // Установаливем " соединение" , что бы зачитывать очередь
-        //  theadDataAccess.setDbSchema( ApplicationProperties.HrmsSchema ); - перенесён в make_Hikari_Connection(), что бы не забылось нигде!
-        if ( isDebugged )
-        MessegeReceive_Log.info("Установаливем `соединение`, что бы зачитывать очередь: [" +
-                ApplicationProperties.HrmsPoint + "] user:" + ApplicationProperties.hrmsDbLogin +
-                "; passwd:" + ApplicationProperties.hrmsDbPasswd + " Schema: " + ApplicationProperties.HrmsSchema  + ".");
-        theadDataAccess.make_Hikari_Connection(
-                ApplicationProperties.HrmsSchema,
-                ApplicationProperties.hrmsDbLogin,
-                ApplicationProperties.dataSource,
-                MessegeReceive_Log
-                );
-        if ( theadDataAccess.Hermes_Connection == null ){
-            Message.MsgReason.append("Ошибка на приёме сообщения - theadDataAccess.make_Hikari_Connection return: NULL!"  );
-            return -2L;
-        }
 
         // Создаем запись в таблице-очереди  select ARTX_PROJ.MESSAGE_QUEUE_SEQ.NEXTVAL ...
         Queue_Id = MessageUtils.MakeNewMessage_Queue( messageQueueVO, theadDataAccess, MessegeReceive_Log );
