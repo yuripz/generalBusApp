@@ -244,7 +244,8 @@ public class XmlSQLStatement {
 
                             while (warning != null) {
                                 // System.out.println(warning.getMessage());
-                                MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] callableStatement.SQLWarning: " + warning.getMessage());
+                                if (isDebugged)
+                                    MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] callableStatement.SQLWarning: " + warning.getMessage());
                                 warning = warning.getNextWarning();
                             }
                             callableStatement.close();
@@ -268,14 +269,15 @@ public class XmlSQLStatement {
 
                         while (warning != null) {
                             // System.out.println(warning.getMessage());
-                            MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] callableStatement.SQLWarning: " + warning.getMessage());
+                            if (isDebugged)
+                                MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] callableStatement.SQLWarning: " + warning.getMessage());
                             warning = warning.getNextWarning();
                         }
                         // todo было: String countS = callableStatement.getString(1);
                         if (  isExtSystemAccess ) // Внешний вызов возвращает "0~Message"
                         {
                             String callableStatementResult = callableStatement.getString(1); // Внешняя функция возвращает строку
-                            MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] " + SQLcallableStatementExpression + " callableStatement.getString=" + callableStatementResult);
+                            MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] " + SQLcallableStatementExpression + " callableStatement.getString=`" + callableStatementResult + "`" );
                             callableStatement.close();
                             current_Connection_4_ExecuteSQL.commit();
                             // - Формируем Confirmation из пришедшей стороки
@@ -294,7 +296,10 @@ public class XmlSQLStatement {
                                 callStatementResult = 12821;
                                 callStatement_Message = "`неожиданно пусто`";
                             }
-                            // Формируем псевдо XML_ClearBodyResponse из function, с учетом non-XML символов
+                            if (isDebugged)
+                                MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] callStatementResult=" + callStatementResult +
+                                        " ; callableStatement_MessageResult =`" + StringEscapeUtils.escapeXml10(stripNonValidXMLCharacters(callStatement_Message))+"`");
+                                // Формируем псевдо XML_ClearBodyResponse из function, с учетом non-XML символов
                             MakeConfirmation4Function( callStatementResult, "Функция была успешно вызвана,callableStatement_MessageResult =" ,
                                                          StringEscapeUtils.escapeXml10(stripNonValidXMLCharacters(callStatement_Message)), messageDetails);
                             // Устанавливаеи признак завершения работы прикладного обработчика  == "EXEIN" , для функции из внешей БД

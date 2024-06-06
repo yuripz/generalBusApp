@@ -199,6 +199,9 @@ public class MessageHttpSend {
         ) {  // добавляем Authorization заголовки через HttpRequest.Builder
             requestBuilder = requestBuilder
                     .header("Authorization", "Basic " + encodedAuth );
+            if ( messageTemplate4Perform.getIsDebugged() )
+                MessageSend_Log.info("[" + Queue_Id + "] Authorization Basic " + encodedAuth +
+                        " (using User=`" + messageTemplate4Perform.getPropUserPostExec() + "` Pswd=`" + messageTemplate4Perform.getPropPswdPostExec() + "`)" );
         }
 
         java.net.http.HttpRequest request = requestBuilder
