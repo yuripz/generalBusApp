@@ -170,6 +170,7 @@ public class ServletApplication implements CommandLineRunner {
             ApplicationProperties.extSystemDataSourcePoolMetadata = ExtSystemDataAccess.DataSourcePoolMetadata;
         } catch (Exception e) {
             AppThead_log.error("НЕ удалось подключится к базе данных внешней системы: ("+ " )" + e.getMessage());
+            NotifyByChannel.Telegram_sendMessage( "Do stopping " + ApplicationName + " *extDB problem* `" +  e.getMessage() +  "` ip:" + InetAddress.getLocalHost().getHostAddress()+ ", db `" + connectionProperties.getextsysPoint() + "` as `"+ connectionProperties.getextsysDbLogin() + "`), *stopping*", AppThead_log );
             System.exit(-20);
         }
 
