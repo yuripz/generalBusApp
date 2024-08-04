@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import static net.plumbing.msgbus.common.XMLchars.*;
 import static net.plumbing.msgbus.common.XMLchars.Body_noNS_Begin;
 
+// MessageReceiveTask
 public class JMSReceiveTask  implements Runnable {
     private Connection Qconnection;
     private MessageConsumer JMS_Q_Consumer;

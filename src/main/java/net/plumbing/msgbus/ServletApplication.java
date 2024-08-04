@@ -67,7 +67,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.4.06.22";
+    public static final String ApplicationName="*Receiver_BUS* v.4.06.30";
     public static String propJDBC;
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ServletApplication.class, args);
@@ -94,7 +94,7 @@ public class ServletApplication implements CommandLineRunner {
                     propJDBC = propJDBC.substring(0, propJDBC.indexOf("/"));
             }
         }
-         NotifyByChannel.Telegram_sendMessage( "Starting "+ ApplicationName + " on " + InetAddress.getLocalHost().getHostName()+ " (ip `" +InetAddress.getLocalHost().getHostAddress() + "`, db `" + propJDBC+ "` ) ", AppThead_log );
+         NotifyByChannel.Telegram_sendMessage( "Starting "+ ApplicationName + " on " + InetAddress.getLocalHost().getHostName()+ " (ip `" +InetAddress.getLocalHost().getHostAddress() + "`, db `" + propJDBC+ "` as `"+ connectionProperties.gethrmsDbLogin() + "`)", AppThead_log );
 
         AppThead_log.warn(dbLoggingProperties.toString());
         AppThead_log.warn(connectionProperties.toString());
@@ -406,14 +406,14 @@ public class ServletApplication implements CommandLineRunner {
             } catch (InterruptedException | SQLException e) {
                 AppThead_log.error("do taskExecutor.shutdown! " + e.getMessage());
                 e.printStackTrace();
-                NotifyByChannel.Telegram_sendMessage( "Do "+ ApplicationName + " taskExecutor.Shutdown -`" +  e.getMessage() +  "` :" + InetAddress.getLocalHost().getHostAddress()+ ", db " + propJDBC+ " ) , *exit!*", AppThead_log );
+                NotifyByChannel.Telegram_sendMessage( "Do "+ ApplicationName + " taskExecutor.Shutdown -`" +  e.getMessage() +  "` :" + InetAddress.getLocalHost().getHostAddress()+ ", db `" + propJDBC+ "` as `"+ connectionProperties.gethrmsDbLogin() + "`), *exit!*", AppThead_log );
                 if (DataAccess.Hermes_Connection != null)
                     try {
                         DataAccess.Hermes_Connection.close();
                     }
                         catch ( SQLException SQLe) {
                             AppThead_log.error(" С базой совсем всё плохо! " + SQLe.getMessage());
-                            NotifyByChannel.Telegram_sendMessage( "Stopping " + ApplicationName + " DBproblem `" +  SQLe.getMessage() +  "` :" + InetAddress.getLocalHost().getHostAddress()+ ", db " + propJDBC+ " ) , *exit!*", AppThead_log );
+                            NotifyByChannel.Telegram_sendMessage( "Stopping " + ApplicationName + " *DBproblem* `" +  SQLe.getMessage() +  "` :" + InetAddress.getLocalHost().getHostAddress()+ ", db `" + propJDBC+ "` as `"+ connectionProperties.gethrmsDbLogin() + "`), *exit!*", AppThead_log );
                         }
 
                 count = 0; // надо taskExecutor.shutdown();
@@ -425,7 +425,7 @@ public class ServletApplication implements CommandLineRunner {
             }
         }
         ApplicationProperties.dataSource.close();
-        NotifyByChannel.Telegram_sendMessage( "Stop "+  ApplicationName + " (`" + InetAddress.getLocalHost().getHostAddress()+ "`, db `" + propJDBC+ "` ) , *exit!*", AppThead_log );
+        NotifyByChannel.Telegram_sendMessage( "Stop "+  ApplicationName + " (`" + InetAddress.getLocalHost().getHostAddress()+ "`, db `" + propJDBC+ "` as `"+ connectionProperties.gethrmsDbLogin() + "`), *exit!*", AppThead_log );
         System.exit(-22);
 
     }

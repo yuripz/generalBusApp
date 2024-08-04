@@ -3,8 +3,7 @@ package net.plumbing.msgbus.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-//@Validated
-// @SuppressWarnings({"unused", "WeakerAccess"})
+
 @Component
 @ConfigurationProperties(prefix = "hermes")
 
