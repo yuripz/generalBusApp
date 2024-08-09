@@ -67,8 +67,10 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.4.06.30";
+    public static final String ApplicationName="*Receiver_BUS* v.4.07.31";
     public static String propJDBC;
+    public static String propExtJDBC;
+
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ServletApplication.class, args);
     }
@@ -94,7 +96,27 @@ public class ServletApplication implements CommandLineRunner {
                     propJDBC = propJDBC.substring(0, propJDBC.indexOf("/"));
             }
         }
-         NotifyByChannel.Telegram_sendMessage( "Starting "+ ApplicationName + " on " + InetAddress.getLocalHost().getHostName()+ " (ip `" +InetAddress.getLocalHost().getHostAddress() + "`, db `" + propJDBC+ "` as `"+ connectionProperties.gethrmsDbLogin() + "`)", AppThead_log );
+        propExtJDBC = connectionProperties.getextsysPoint();
+        if ( propExtJDBC == null)  propExtJDBC = "Ext jdbc UNKNOWN ! ";
+        else {
+            if ( propExtJDBC.indexOf("//") < 1  ) ;
+            else {
+                propExtJDBC = propExtJDBC.substring(propExtJDBC.indexOf("//") + 2);
+                if ( propExtJDBC.indexOf("/") < 1  ) propExtJDBC = "INVALID db in jdbc ! `" + propExtJDBC + "`";
+                else
+                    propExtJDBC = propExtJDBC.substring(0, propExtJDBC.indexOf("/"));
+            }
+        }
+
+        String sendedMessage_2_Telegram = "Starting " + ApplicationName + " on " + InetAddress.getLocalHost().getHostName()+
+                " (ip `" +InetAddress.getLocalHost().getHostAddress() + "`, db `" + propJDBC+ "` as `"+ connectionProperties.gethrmsDbLogin() + "`, extDb `"
+                + propExtJDBC+ "` as `"+ connectionProperties.getextsysDbLogin()  + "` )";
+        AppThead_log.warn( "testSring:[" + sendedMessage_2_Telegram + "] 4 sent"  );
+        NotifyByChannel.Telegram_sendMessage( sendedMessage_2_Telegram, AppThead_log );
+         /*NotifyByChannel.Telegram_sendMessage( "Starting "+ ApplicationName + " on " + InetAddress.getLocalHost().getHostName()+ " (ip `" +InetAddress.getLocalHost().getHostAddress() +
+                 "`, db `" + propJDBC+ "` as `"+ connectionProperties.gethrmsDbLogin() + "`, extDb `"
+                 + propExtJDBC+ "` as `"+ connectionProperties.getextsysDbLogin()  + "`)", AppThead_log );
+         */
 
         AppThead_log.warn(dbLoggingProperties.toString());
         AppThead_log.warn(connectionProperties.toString());
@@ -149,6 +171,7 @@ public class ServletApplication implements CommandLineRunner {
             ApplicationProperties.DataSourcePoolMetadata = HikariDataAccess.DataSourcePoolMetadata;
     } catch (Exception e) {
         AppThead_log.error("НЕ удалось подключится к базе данных (`" + connectionProperties.gethrmsPoint() + "` ) транспортных сообщений:" + e.getMessage());
+            NotifyByChannel.Telegram_sendMessage( "Do stopping " + ApplicationName + " *DB problem* `" +  e.getMessage() +  "` ip:" + InetAddress.getLocalHost().getHostAddress()+ ", db `" + connectionProperties.gethrmsPoint() + "` as `"+ connectionProperties.gethrmsDbLogin() + "`), *stopping*", AppThead_log );
             System.exit(-19);
     }
 
@@ -159,8 +182,11 @@ public class ServletApplication implements CommandLineRunner {
                     + " JdbcUrl:" + ApplicationProperties.dataSource.getJdbcUrl()
                     + " isRunning:" + ApplicationProperties.dataSource.isRunning()
                     + " 4 dbSchema:" + ApplicationProperties.HrmsSchema);
+        } else {
+            AppThead_log.error("НЕ удалось подключится к базе данных (`" + connectionProperties.gethrmsPoint() + "` ) транспортных сообщений:" );
+            NotifyByChannel.Telegram_sendMessage( "Do stopping " + ApplicationName + " *DB problem* `"  +  "` ip:" + InetAddress.getLocalHost().getHostAddress()+ ", db `" + connectionProperties.gethrmsPoint() + "` as `"+ connectionProperties.gethrmsDbLogin() + "`), *stopping*", AppThead_log );
+            System.exit(-19);
         }
-
         try {
             ApplicationProperties.extSystemDataSource = ExtSystemDataAccess.HiDataSource (connectionProperties.getextsysPoint(),
                     connectionProperties.getextsysDbLogin(),
@@ -186,7 +212,13 @@ public class ServletApplication implements CommandLineRunner {
                     + " isRunning:" + ApplicationProperties.extSystemDataSource.isRunning()
                     + " 4 dbSchema:" + ApplicationProperties.ExtSysSchema
                     + " by driver:" + connectionProperties.getextSysDataSourceClassName());
+        }  else {
+            AppThead_log.error("НЕ удалось подключится к базе данных внешней системы: останавливаем" );
+            NotifyByChannel.Telegram_sendMessage( "Do stopping " + ApplicationName  + " *extDB problem*  ip:" + InetAddress.getLocalHost().getHostAddress()+
+                    ", db `" + connectionProperties.getextsysPoint() + "` as `"+ connectionProperties.getextsysDbLogin() + "`), *stopping*", AppThead_log );
+            System.exit(-20);
         }
+
 
         ActiveMQService activeMQService= new ActiveMQService();
         try {
