@@ -59,8 +59,6 @@ public class PerfotmInputMessages {
         String Queue_Direction = messageQueueVO.getQueue_Direction();
 
         int Function_Result = 0;
-
-
         //MessegeReceive_Log.info(Queue_Direction + " [" + Queue_Id + "] ищем Шаблон под оперрацию (" + Operation_Id + "), с учетом системы приёмника MsgDirection_Id=" + MsgDirection_Id + ", SubSys_Cod =" + SubSys_Cod);
 
         // ищем Шаблон под оперрацию, с учетом системы приёмника MessageRepositoryHelper.look4MessageTemplateVO_2_Perform
@@ -117,7 +115,6 @@ public class PerfotmInputMessages {
                         return 13L;
                     }
                 }
-
 
                 // для запросов, на интерфейсе , не предполагающих формирование блока Confirmation в БД параметры зароса берутся из памяти,
                 // их сохранение имеет смысл только для отладки в режиме Debug=on
