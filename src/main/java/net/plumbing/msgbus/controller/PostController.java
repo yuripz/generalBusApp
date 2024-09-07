@@ -631,11 +631,14 @@ public class PostController {
             if ( !isLooked4MessageTypeURL_SOAP_Ack_RestXML)
             {       // если на интерфейсе НЕ!! прописан REST-XML , то берем XML на входе
                 postResponse.setContentType("text/xml;charset=UTF-8");
+                Message.XML_MsgConfirmation.append( CharStreams.toString(reader) );
 
             if ( isDebugged )
                 Controller_log.warn("InputStreamReader to Message.JSONObject[" +  Message.XML_MsgConfirmation.toString() + "]");
 
                 JSONObject postJSONObject = new JSONObject( Message.XML_MsgConfirmation.toString() );
+                Message.XML_MsgConfirmation.setLength(0);
+                Message.XML_MsgConfirmation.trimToSize();
                  Message.XML_MsgConfirmation.append( XML.toString( postJSONObject  , "Record" ) );
             }
             else {
