@@ -21,6 +21,7 @@ import net.plumbing.msgbus.model.MessageDetails;
 import net.plumbing.msgbus.model.MessageTemplate;
 //import TheadDataAccess;
 import net.plumbing.msgbus.threads.utils.MessageRepositoryHelper;
+import net.plumbing.msgbus.common.XMLchars;
 
 
 import java.io.*;
@@ -619,11 +620,15 @@ public class PostController {
         }
         Message.XML_Request_Method.append(QueryString_End);
 
-        //PropEncoding_In = "UTF-8";
-        try (InputStreamReader reader = new InputStreamReader(inputStream, Charsets.toCharset ("UTF-8")) ;// Charsets.UTF_8)
-        ) {
-                 Message.XML_MsgConfirmation.append( CharStreams.toString(reader) );
-            if ( !MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_RestXML_2_Interface(Url_Soap_Send, Controller_log))
+        boolean isLooked4MessageTypeURL_SOAP_Ack_RestXML;
+        //PropEncoding_In == "UTF-8";
+        try (InputStreamReader reader = new InputStreamReader(inputStream, Charsets.toCharset ("UTF-8")) ) // Charsets.UTF_8)
+        {
+            Message.XML_MsgConfirmation.setLength(0);
+            Message.XML_MsgConfirmation.trimToSize();
+            isLooked4MessageTypeURL_SOAP_Ack_RestXML = MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_RestXML_2_Interface(Url_Soap_Send, Controller_log);
+
+            if ( !isLooked4MessageTypeURL_SOAP_Ack_RestXML)
             {       // если на интерфейсе НЕ!! прописан REST-XML , то берем XML на входе
                 postResponse.setContentType("text/xml;charset=UTF-8");
 
@@ -631,11 +636,13 @@ public class PostController {
                 Controller_log.warn("InputStreamReader to Message.JSONObject[" +  Message.XML_MsgConfirmation.toString() + "]");
 
                 JSONObject postJSONObject = new JSONObject( Message.XML_MsgConfirmation.toString() );
-                Message.XML_MsgConfirmation.setLength(0);
-                Message.XML_MsgConfirmation.trimToSize();
-            Message.XML_MsgConfirmation.append( XML.toString( postJSONObject  , "Record" ) );
+                 Message.XML_MsgConfirmation.append( XML.toString( postJSONObject  , "Record" ) );
             }
             else {
+                // обрамляем параметры, отличные от jSon <![CDATA[
+                Message.XML_MsgConfirmation.append(XMLchars.Data_CDATA_Begin);
+                Message.XML_MsgConfirmation.append( CharStreams.toString(reader) );
+                Message.XML_MsgConfirmation.append(XMLchars.Data_CDATA_End);
                 if ( isDebugged )
                     Controller_log.warn("InputStreamReader to XML_MsgConfirmation[" +  Message.XML_MsgConfirmation.toString() + "]");
             }
@@ -676,10 +683,9 @@ public class PostController {
 
             Long Queue_ID = messageReceiveTask.ProcessRestAPIMessage(Interface_id, Message, MessageOperationId, isDebugged);
 
-            if (Queue_ID == 0L)
-            {
+            if (Queue_ID == 0L) {
                 postResponse.setStatus(200);
-                if ( MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_Rest_2_Interface(Url_Soap_Send, Controller_log))
+                if (MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_Rest_2_Interface(Url_Soap_Send, Controller_log))
                     // в URL_SOAP_Ack интерфейса записан REST, значит без <Body></Body>
                     HttpResponse = Message.XML_MsgResponse.toString();
                 else HttpResponse = Body_noNS_Begin +
@@ -692,14 +698,15 @@ public class PostController {
                             XML.escape(Message.MsgReason.toString()) +
                             Fault_noNS_End;
                 } else {
-                    if (isDebugged) Controller_log.info( "["+ Message.Queue_Id + "] MsgReason for HttpResponse:" + Message.MsgReason );
+                    if (isDebugged)
+                        Controller_log.info("[" + Message.Queue_Id + "] MsgReason for HttpResponse:" + Message.MsgReason);
                     postResponse.setStatus(500);
                     HttpResponse = Fault_Server_noNS_Begin +
                             Message.MsgReason.toString() +
                             Fault_noNS_End;
                 }
             }
-           // postResponse.setStatus(200);
+            // postResponse.setStatus(200);
 /*
             HttpResponse = Fault_Client_noNS_Begin +
                     XML.escape(httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")") +
@@ -709,44 +716,50 @@ public class PostController {
                 Controller_log.info("HttpResponse:" + HttpResponse);
             // Controller_log.warn("XML-HttpResponse готов" );
 
-            try {
-                JSONObject xmlJSONObj = XML.toJSONObject(  HttpResponse) ; // Parametrs_End + HttpResponse + Parametrs_End); // проверяли JSONException
-                Controller_log.warn("JSON-HttpResponse построен" );
-                String jsonPrettyPrintString;
-                if (Queue_ID == 0L)
-                    jsonPrettyPrintString = ClientIpHelper.jsonPrettyArray(xmlJSONObj, -1, Controller_log ); // Post возвращает только объект а не массив объектов
-                else
-                    jsonPrettyPrintString = xmlJSONObj.toString(2);
-                //System.out.println("jsonPrettyPrintString:\n" + jsonPrettyPrintString);
-                postResponse.setContentType("text/json;Charset=UTF-8");
-                HttpResponse = jsonPrettyPrintString;
-                        Controller_log.warn("JSON-HttpResponse готов [" + jsonPrettyPrintString + "]" );
-                        if (isDebugged)
-                            messageReceiveTask.theadDataAccess.doUPDATE_QUEUElog(Message.ROWID_QUEUElog, Message.Queue_Id, jsonPrettyPrintString, Controller_log);
-                        try {
-                            if (messageReceiveTask.theadDataAccess != null) {
-                                if (messageReceiveTask.theadDataAccess.Hermes_Connection != null)
-                                    messageReceiveTask.theadDataAccess.Hermes_Connection.close();
-                                messageReceiveTask.theadDataAccess.Hermes_Connection = null;
-                            }
-                        } catch (SQLException SQLe) {
-                            Controller_log.error(SQLe.getMessage());
-                            Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
-                            System.err.println( strInterruptedException( SQLe ) );
+            if ( isLooked4MessageTypeURL_SOAP_Ack_RestXML) {
+                // если на интерфейсе прописан REST-XML , то взяв XML на входе, отдаём его и на выходе не переводя в JSON
+                postResponse.setContentType("text/xml;charset=UTF-8");
+            } else
+            {
+                try {
+                    JSONObject xmlJSONObj = XML.toJSONObject(HttpResponse); // Parametrs_End + HttpResponse + Parametrs_End); // проверяли JSONException
+                    Controller_log.warn("JSON-HttpResponse построен");
+                    String jsonPrettyPrintString;
+                    if (Queue_ID == 0L)
+                        jsonPrettyPrintString = ClientIpHelper.jsonPrettyArray(xmlJSONObj, -1, Controller_log); // Post возвращает только объект а не массив объектов
+                    else
+                        jsonPrettyPrintString = xmlJSONObj.toString(2);
+                    //System.out.println("jsonPrettyPrintString:\n" + jsonPrettyPrintString);
+                    postResponse.setContentType("application/json;Charset=UTF-8");
+                    HttpResponse = jsonPrettyPrintString;
+                    Controller_log.warn("JSON-HttpResponse готов [" + jsonPrettyPrintString + "]");
+                    if (isDebugged)
+                        messageReceiveTask.theadDataAccess.doUPDATE_QUEUElog(Message.ROWID_QUEUElog, Message.Queue_Id, jsonPrettyPrintString, Controller_log);
+                    try {
+                        if (messageReceiveTask.theadDataAccess != null) {
+                            if (messageReceiveTask.theadDataAccess.Hermes_Connection != null)
+                                messageReceiveTask.theadDataAccess.Hermes_Connection.close();
+                            messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                         }
-                        Controller_log.info( "jsonPrettyPrint:[" + jsonPrettyPrintString +"] DataSourcePool=" + DataSourcePoolMetadata.getActive() );
-                        postResponse.setContentType("text/json;Charset=UTF-8");
+                    } catch (SQLException SQLe) {
+                        Controller_log.error(SQLe.getMessage());
+                        Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                        System.err.println(strInterruptedException(SQLe));
+                    }
+                    Controller_log.info("jsonPrettyPrint:[" + jsonPrettyPrintString + "] DataSourcePool=" + DataSourcePoolMetadata.getActive());
+                    postResponse.setContentType("text/json;Charset=UTF-8");
 
-                        return ( HttpResponse );
+                    return (HttpResponse);
 
-            } catch (JSONException e) {
-                //strInterruptedException( e );
-                System.err.println( strInterruptedException( e ) );
-                // Не смогли преобразовать HttpResponse в JSON
-                HttpResponse = Fault_Server_Rest_Begin + "Не смогли преобразовать HttpResponse в JSON: " + e.getMessage() + Fault_Rest_End;
-            }
+                } catch (JSONException e) {
+                    //strInterruptedException( e );
+                    System.err.println(strInterruptedException(e));
+                    // Не смогли преобразовать HttpResponse в JSON
+                    HttpResponse = Fault_Server_Rest_Begin + "Не смогли преобразовать HttpResponse в JSON: " + e.getMessage() + Fault_Rest_End;
+                }
 
             postResponse.setContentType("text/json;Charset=UTF-8");
+        }
             if (messageReceiveTask.theadDataAccess != null) {
                 if (isDebugged)
                     messageReceiveTask.theadDataAccess.doUPDATE_QUEUElog(Message.ROWID_QUEUElog, Message.Queue_Id, HttpResponse, Controller_log);

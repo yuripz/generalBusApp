@@ -1,15 +1,13 @@
 package net.plumbing.msgbus.threads.utils;
 //import oracle.jdbc.OracleCallableStatement;
 import net.plumbing.msgbus.common.ApplicationProperties;
-import net.plumbing.msgbus.common.sStackTrace;
 import net.plumbing.msgbus.model.MessageDetails;
 import net.plumbing.msgbus.model.MessageQueueVO;
+import net.plumbing.msgbus.model.MessageTemplate;
 import net.plumbing.msgbus.model.MessageTemplateVO;
 import net.plumbing.msgbus.threads.TheadDataAccess;
 //import oracle.jdbc.OracleResultSetMetaData;
 //import oracle.jdbc.OracleTypes;
-import org.apache.commons.text.StringEscapeUtils;
-import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -274,24 +272,50 @@ public class CustomJavaMethods {
 	// сохранить конкретную секцию Шаблона MessageTemplates_SaveConfig
 	public static int MessageTemplates_SaveConfig( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
 											   TheadDataAccess theadDataAccess, String dbSchema , Logger MessageSend_Log) {
-		int nn = 0;
+		//int nn = 0;
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
 		messageDetails.MsgReason.setLength(0);
-		StringBuilder Config_Text= new StringBuilder();
+		StringBuilder Config_Text;
 
-		XPathExpression<Element> xpathTemplate_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/QueryString/Pk_Value", Filters.element());
+		XPathExpression<Element> xpathTemplate_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/QueryString/x_Template_Id", Filters.element());
 		Element elmtTemplate_Id = xpathTemplate_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
 		if ( elmtTemplate_Id == null) {
 			messageDetails.MsgReason.setLength(0);
-			messageDetails.MsgReason.append( "В запросе MessageTemplates_SaveConfig не найден параметр QueryString/Pk_Value");
+			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе MessageTemplates_SaveConfig не найден параметр Parametrs/QueryString/Template_Id");
 			return -33;
 		}
 		String Pk_Value= elmtTemplate_Id.getText();
-		String ParamElements[] = Pk_Value.split("-@-");
+		//String ParamElements[] = Pk_Value.split("-@-");
+		int Template_Id_4_Update_MessageTemplate = Integer.parseInt(Pk_Value);
 
-		String configEntry = ParamElements[1];
+		XPathExpression<Element> xpathConfigEntry = XPathFactory.instance().compile("/Envelope/Body/Parametrs/QueryString/x_ConfigEntry", Filters.element());
+		Element elmtConfigEntry = xpathConfigEntry.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
+		if ( elmtConfigEntry == null) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе MessageTemplates_SaveConfig не найден параметр Parametrs/QueryString/ConfigEntry");
+			return -34;
+		}
+		String configEntry = elmtConfigEntry.getText();
+		try {
+			PerformSaveTemplateEntry.check_Conf_Text( configEntry);
+		} catch (Exception e) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append(e.getMessage());
+			e.printStackTrace();
+			return -35;
+		}
+		XPathExpression<Element> xpathContentEntry_4_Save = XPathFactory.instance().compile("/Envelope/Body/Parametrs/Data", Filters.element());
+		Element elmtContentEntry_4_Save = xpathContentEntry_4_Save.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
+		if ( elmtContentEntry_4_Save == null) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе MessageTemplates_SaveConfig не найден параметр Parametrs/Data");
+			return -36;
+		}
+
+		String contentEntry_4_Save  = elmtContentEntry_4_Save.getText();;
+
 		try {
 			PreparedStatement stmtMsgTemplate = theadDataAccess.Hermes_Connection.prepareStatement(
 					"select t.template_id, " +
@@ -310,7 +334,7 @@ public class CustomJavaMethods {
 							"t.lastdate " +
 							"from "+ dbSchema + ".MESSAGE_TemplateS t where (1=1) and t.template_id =?"
 			);
-			stmtMsgTemplate.setInt(1, Integer.parseInt(ParamElements[0]));
+			stmtMsgTemplate.setInt(1, Template_Id_4_Update_MessageTemplate );
 			ResultSet rs = stmtMsgTemplate.executeQuery();
 			while (rs.next()) {
 				MessageTemplateVO messageTemplateVO = new MessageTemplateVO();
@@ -332,8 +356,29 @@ public class CustomJavaMethods {
 						rs.getString("LastMaker"),
 						rs.getString("LastDate")
 				);
-				//Config_Text = rs.getString("Conf_Text");
+				Config_Text =  new StringBuilder( rs.getString("Conf_Text") );
 				ConfigMsgTemplates.performConfig(messageTemplateVO, MessageSend_Log);
+
+				// MessageSend_Log.warn( "Conf_Text() before:`{}`" , Config_Text );
+				try {
+					String Conf_Text =
+							PerformSaveTemplateEntry.replace_Conf_Text(messageQueueVO.getQueue_Id(), messageTemplateVO, configEntry, contentEntry_4_Save, MessageSend_Log);
+					// MessageSend_Log.warn("["+ messageQueueVO.getQueue_Id() +" ] Conf_Text() for update [Template_Id=" + Template_Id_4_Update_MessageTemplate + "]:\n" + Conf_Text);
+					int result_UPDATE_MessageTemplate =
+									theadDataAccess.doUpdate_MESSAGE_Template( messageQueueVO.getQueue_Id(), Template_Id_4_Update_MessageTemplate, Conf_Text,
+																				MessageSend_Log );
+					if (result_UPDATE_MessageTemplate == 0)
+						MessageSend_Log.warn("["+ messageQueueVO.getQueue_Id() +" ] update Message_Template (`"+ configEntry + "`) for Template_Id =" + Template_Id_4_Update_MessageTemplate + " has been successfully done.");
+					messageDetails.MsgReason.append("update Message_Template (`"+ configEntry + "`) for Template_Id =" + Template_Id_4_Update_MessageTemplate + " has been successfully done.");
+				}
+				catch (Exception e) {
+					messageDetails.MsgReason.setLength(0);
+					messageDetails.MsgReason.append(e.getMessage());
+					e.printStackTrace();
+					return -2;
+				}
+				/*
+				// НЕПробуем чистый XML!
 				Config_Text.append(XMLchars.OpenTag).append(configEntry).append(XMLchars.CloseTag).append("<![CDATA[");
 				switch ( configEntry) {
 					case "EnvelopeInXSLT":
@@ -437,7 +482,9 @@ public class CustomJavaMethods {
 						Config_Text.append( messageTemplateVO.getErrTransXSLT() );
 						break;
 				}
+				// НЕПробуем чистый XML
 				Config_Text.append("]]>").append(XMLchars.OpenTag).append(XMLchars.EndTag).append(configEntry).append(XMLchars.CloseTag);
+				*/
 			}
 		} catch (SQLException e) {
 			messageDetails.MsgReason.setLength(0);
@@ -467,8 +514,9 @@ public class CustomJavaMethods {
         ;
 */
 		messageDetails.XML_MsgResponse.setLength(0);
-		messageDetails.XML_MsgResponse.append( Config_Text );
-		return nn;
+		// возвращаем то, что прислали
+		messageDetails.XML_MsgResponse.append( contentEntry_4_Save );
+		return 0;
 	}
 	// получить конкретную секцию Шаблона для показа в UI
     public static int GetConfig_Text_Template( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
@@ -539,7 +587,8 @@ public class CustomJavaMethods {
 				);
 				//Config_Text = rs.getString("Conf_Text");
 				ConfigMsgTemplates.performConfig(messageTemplateVO, MessageSend_Log);
-				Config_Text.append(XMLchars.OpenTag).append(configEntry).append(XMLchars.CloseTag).append("<![CDATA[");
+				// пробуем Чмстый XML
+				// Config_Text.append(XMLchars.OpenTag).append(configEntry).append(XMLchars.CloseTag).append("<![CDATA[");
 				switch ( configEntry) {
 					case "EnvelopeInXSLT":
 						Config_Text.append( messageTemplateVO.getEnvelopeInXSLT() );
@@ -642,7 +691,8 @@ public class CustomJavaMethods {
 						Config_Text.append( messageTemplateVO.getErrTransXSLT() );
 						break;
 				}
-				Config_Text.append("]]>").append(XMLchars.OpenTag).append(XMLchars.EndTag).append(configEntry).append(XMLchars.CloseTag);
+				//  пробуем Чмстый XML
+				// Config_Text.append("]]>").append(XMLchars.OpenTag).append(XMLchars.EndTag).append(configEntry).append(XMLchars.CloseTag);
 			}
 		} catch (SQLException e) {
 			messageDetails.MsgReason.setLength(0);

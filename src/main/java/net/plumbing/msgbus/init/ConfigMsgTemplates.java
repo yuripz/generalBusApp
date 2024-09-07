@@ -54,7 +54,7 @@ public class ConfigMsgTemplates {
                 String configContent = TemplateElmnt.getText();
                 if ( configContent.length() < 1 ) configContent = null;
 
-                // AppThead_log.info( "configEntry:" + configEntry // + "\n configContent:" + configContent);
+                // AppThead_log.info( "configEntry:`{}`configContent:`{}`", configEntry, configContent);
                 switch ( configEntry) {
                     case "EnvelopeInXSLT":
                         messageTemplateVO.setEnvelopeInXSLT(configContent);
@@ -121,10 +121,12 @@ public class ConfigMsgTemplates {
                         break;
 
                     case "AckXSLT":
+                        //AppThead_log.info( "AckXSLT configEntry:`{}`configContent 4 :`{}`", configEntry, configContent);
                         messageTemplateVO.setAckXSLT( configContent);
                         break;
 
                     case "EnvelopeXSLTExt":
+                        //AppThead_log.info( "EnvelopeXSLTExt configEntry:`{}`configContent:`{}`", configEntry, configContent);
                         messageTemplateVO.setEnvelopeXSLTExt( configContent);
                         break;
 

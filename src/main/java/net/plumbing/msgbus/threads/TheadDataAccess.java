@@ -267,7 +267,6 @@ public class TheadDataAccess {
             return null;
         }
 
-
         if (  make_Message_Query(dataAccess_log) == null ) {
             dataAccess_log.error( "make_Message_Query() fault");
             return null;
@@ -287,12 +286,12 @@ public class TheadDataAccess {
             dataAccess_log.error( "make_Message_ConfirmationTag_Query() fault");
             return null;
         }
-        /*
-        if (  make_MessageBody_Query(dataAccess_log) == null ) {
-            dataAccess_log.error( "make_MessageBody_Query() fault");
+
+        if (  make_update_MESSAGE_Template(dataAccess_log) == null ) {
+            dataAccess_log.error( "make_update_MESSAGE_Template() fault");
             return null;
         }
-        */
+
 /*
         if (  make_MessageConfirmation_Query(dataAccess_log) == null ) {
             dataAccess_log.error( "make_MessageConfirmation_Query() fault");
@@ -1359,23 +1358,50 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
         return  StmtMsgQueueDet ;
     }
 
-/*
-    public PreparedStatement  make_MessageBody_Query( Logger dataAccess_log ) {
-        PreparedStatement StmtMsgQueueDet;
+    private  String update_MESSAGE_Template;
+    private PreparedStatement stmt_update_MESSAGE_Template;
+    private  PreparedStatement make_update_MESSAGE_Template( Logger dataAccess_log ) {
+        PreparedStatement StmtMsg_Queue;
+        update_MESSAGE_Template = "update " + dbSchema +  ".Message_Templates set conf_text=?, Lastmaker=?, Lastdate=current_timestamp where Template_Id =?";
         try {
-            StmtMsgQueueDet = this.Hermes_Connection.prepareStatement(
-                    "select d.Tag_Id, d.Tag_Value, d.Tag_Num, d.Tag_Par_Num from " + dbSchema + ".message_queuedet D" +
-                            " where (1=1) and d.QUEUE_ID = ? and d.Tag_Id < ?  order by   Tag_Par_Num, Tag_Num "
-            );
-        } catch (Exception e) {
-            dataAccess_log.error( e.getMessage() );
+
+            StmtMsg_Queue = this.Hermes_Connection.prepareStatement(update_MESSAGE_Template);
+        } catch (SQLException e) {
+            dataAccess_log.error( "{} fault: {}", update_MESSAGE_Template, e.getMessage());
             e.printStackTrace();
-            return (  null );
+            return ((PreparedStatement) null);
         }
-        this.stmtMsgQueueBody = StmtMsgQueueDet;
-        return  StmtMsgQueueDet ;
+        stmt_update_MESSAGE_Template = StmtMsg_Queue;
+        return StmtMsg_Queue;
     }
-    */
+    public  int doUpdate_MESSAGE_Template( long Queue_Id, int updatedTemplate_Id, String Conf_Text , Logger dataAccess_log) {
+
+        if (stmt_update_MESSAGE_Template != null) {
+            try {
+                stmt_update_MESSAGE_Template.setString(1, Conf_Text );
+                String LastMaker = "j." + System.getenv("LOGNAME");
+                stmt_update_MESSAGE_Template.setString(2, LastMaker );
+                stmt_update_MESSAGE_Template.setInt(3, updatedTemplate_Id);
+                stmt_update_MESSAGE_Template.executeUpdate();
+                dataAccess_log.warn( "["+ Queue_Id +" ]>" + update_MESSAGE_Template + ":Template_Id=[" + updatedTemplate_Id + "] done");
+
+                this.Hermes_Connection.commit();
+            } catch (SQLException e) {
+                System.err.println(">" + update_MESSAGE_Template + ":Template_Id=[" + updatedTemplate_Id + "] :" + e.getMessage());
+                e.printStackTrace();
+                dataAccess_log.error( "["+ Queue_Id +" ] doUpdate_MESSAGE_Template for [" + updatedTemplate_Id + "] (" + update_MESSAGE_Template + ") fault: " + e.getMessage() );
+
+                try {
+                    this.Hermes_Connection.rollback();
+                } catch (SQLException exp) {
+                    dataAccess_log.error("["+ Queue_Id +" ] Connection.rollback() fault: " + exp.getMessage());
+                }
+                return -11;
+            }
+        }
+        return 0;
+    }
+
 /*
     public PreparedStatement  make_MessageConfirmation_Query( Logger dataAccess_log ) {
         PreparedStatement StmtMsgQueueDet;

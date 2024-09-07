@@ -116,6 +116,8 @@ public class XMLchars {
     public static final String Fault_Client_noNS_Begin="<Fault><faultcode>Client</faultcode><faultstring>";
     public static final String Fault_Server_noNS_Begin="<Fault><faultcode>Server</faultcode><faultstring>";
     public static final String Fault_noNS_End="</faultstring></Fault>";
+    public static final String Data_CDATA_Begin="<Data><![CDATA[";
+    public static final String Data_CDATA_End="]]></Data>";
 
 
 // пробуем унифицировать Fault
