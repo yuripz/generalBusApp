@@ -190,6 +190,9 @@ public class PerfotmInputMessages {
                             case "MessageTemplates_SaveConfig" :
                                 resultSQL = CustomJavaMethods.MessageTemplates_SaveConfig(  messageQueueVO, Message, theadDataAccess, ApplicationProperties.HrmsSchema, MessegeReceive_Log);
                                 break;
+                            case "SaveRequest4MessageQueue":
+                                resultSQL = CustomJavaMethods.SaveRequest_4_MessageQueue(  messageQueueVO, Message, theadDataAccess, MessegeReceive_Log);
+                                break;
                             default:
                                 Message.MsgReason.append(" попытка вызова незарегистрированного в системе Java метода:` ");
                                 Message.MsgReason.append(JavaMethodName);

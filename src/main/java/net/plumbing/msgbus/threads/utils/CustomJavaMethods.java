@@ -95,22 +95,27 @@ public class CustomJavaMethods {
 	}
 
 	public static int GetRequest_Body4Message(MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-                                              TheadDataAccess theadDataAccess, Logger MessageSend_Log) {
+                                              TheadDataAccess theadDataAccess, Logger MessegeReceive_Log) {
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
 		messageDetails.MsgReason.setLength(0);
 		messageDetails.XML_MsgResponse.setLength(0);
-		XPathExpression<Element> xpathTemplate_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/x_Queue_Id", Filters.element());
-		Element elmtTemplate_Id = xpathTemplate_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
-		String Queue_Id_Value= elmtTemplate_Id.getText();
+		XPathExpression<Element> xpathQueue_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/x_Queue_Id", Filters.element());
+		Element elmtQueue_Id = xpathQueue_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
+		if ( elmtQueue_Id== null) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе GetRequest_Body4Message не найден параметр Parametrs/QueryString/Queue_Id");
+			return -33;
+		}
+		String Queue_Id_Value= elmtQueue_Id.getText();
 		long Queue_Id= Long.parseLong(Queue_Id_Value);
 		/*messageDetails.XML_MsgResponse.append( "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SaveGeoObjectResponse>\n" +
 				"\t<ResponseCode>10</ResponseCode><ResponseMessage>106891449</ResponseMessage>\n" +
 				"</SaveGeoObjectResponse>" );
 		*/
 		boolean IsDebugged = false; //true;
-		int nn = MessageUtils.ReadMessage( theadDataAccess,  Queue_Id,  messageDetails, IsDebugged, MessageSend_Log);
+		int nn = MessageUtils.ReadMessage( theadDataAccess,  Queue_Id,  messageDetails, IsDebugged, MessegeReceive_Log);
 		if (nn >= 0) {
 			// -- без formatXml - в одну строку, некрасиво на Форнте
 
@@ -142,7 +147,7 @@ public class CustomJavaMethods {
 	}
 
 	public static int GetRequest_Confirmation4Message( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-											   TheadDataAccess theadDataAccess,Logger MessageSend_Log) {
+											   TheadDataAccess theadDataAccess,Logger MessegeReceive_Log) {
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
@@ -153,7 +158,7 @@ public class CustomJavaMethods {
 		String Queue_Id_Value= elmtTemplate_Id.getText();
 		long Queue_Id= Long.parseLong(Queue_Id_Value);
 
-		int nn = MessageUtils.ReadConfirmation(theadDataAccess, Queue_Id, messageDetails, MessageSend_Log);
+		int nn = MessageUtils.ReadConfirmation(theadDataAccess, Queue_Id, messageDetails, MessegeReceive_Log);
 		messageDetails.XML_MsgResponse.setLength(0);
 		// -- без formatXml - в одну строку, некрасиво на Форнте
 		if ( (nn > 0) && (messageDetails.XML_MsgConfirmation.length() > XMLchars.nanXSLT_Result.length() ))
@@ -174,7 +179,7 @@ public class CustomJavaMethods {
 	}
 
 	public static int GetRequest4MessageQueueLog( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-													   TheadDataAccess theadDataAccess, String dbSchema, Logger MessageSend_Log) {
+													   TheadDataAccess theadDataAccess, String dbSchema, Logger MessegeReceive_Log) {
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
@@ -198,7 +203,7 @@ public class CustomJavaMethods {
 				messageDetails.XML_MsgClear.append( rs.getString("Request"));
 				//MessageQueueLogResponse = rs.getString("Request");
 				if ( isDebugged )
-					MessageSend_Log.info( "["+ messageQueueVO.getQueue_Id() +"] select Request from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "'");
+					MessegeReceive_Log.info( "["+ messageQueueVO.getQueue_Id() +"] select Request from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "'");
 			}
 			rs.close();
 			stmt_SELECT_QUEUElog_Response.close();
@@ -226,7 +231,7 @@ public class CustomJavaMethods {
 	}
 
 	public static int GetResponse4MessageQueueLog( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-												  TheadDataAccess theadDataAccess, String dbSchema, Logger MessageSend_Log) {
+												  TheadDataAccess theadDataAccess, String dbSchema, Logger MessegeReceive_Log) {
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
@@ -250,7 +255,7 @@ public class CustomJavaMethods {
 				messageDetails.XML_MsgResponse.append(rs.getString("Response"));
 				//MessageQueueLogResponse = rs.getString("Response");
 				if ( isDebugged )
-					MessageSend_Log.info( "["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "'");
+					MessegeReceive_Log.info( "["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "'");
 
 			}
 			rs.close();
@@ -258,7 +263,7 @@ public class CustomJavaMethods {
 			stmt_SELECT_QUEUElog_Response = null;
 
 		}catch (SQLException e) {
-			MessageSend_Log.error( "["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "' fault: " + e.getMessage());
+			MessegeReceive_Log.error( "["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "' fault: " + e.getMessage());
 			System.err.println( "["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "' fault: " + e.getMessage());
 			messageDetails.XML_MsgResponse.append("["+ messageQueueVO.getQueue_Id() +"] select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "' fault: " + e.getMessage() );
 			e.printStackTrace();
@@ -269,15 +274,68 @@ public class CustomJavaMethods {
 
 			return 0;
 	}
+
+	public static int SaveRequest_4_MessageQueue ( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
+												   TheadDataAccess theadDataAccess,  Logger MessegeReceive_Log) {
+
+		messageDetails.Message.clear();
+		messageDetails.MessageRowNum = 0;
+		messageDetails.Message_Tag_Num = 0;
+		messageDetails.MsgReason.setLength(0);
+
+		XPathExpression<Element> xpathQueue_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/QueryString/x_Queue_Id", Filters.element());
+		Element elmtQueue_Id = xpathQueue_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
+		if ( elmtQueue_Id== null) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе SaveRequest4MessageQueue не найден параметр Parametrs/QueryString/Queue_Id");
+			return -33;
+		}
+		String Pk_Value= elmtQueue_Id.getText();
+		//String ParamElements[] = Pk_Value.split("-@-");
+		long Queue_Id_4_SaveRequest = Long.parseLong(Pk_Value);
+
+		XPathExpression<Element> xpathRequestContent_4_Save = XPathFactory.instance().compile("/Envelope/Body/Parametrs/Data", Filters.element());
+		Element elmtRequestContent_4_Save = xpathRequestContent_4_Save.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
+		if ( elmtRequestContent_4_Save == null) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе SaveRequest4MessageQueue не найден параметр Parametrs/Data");
+			return -36;
+		}
+		String requestContent_4_Save = elmtRequestContent_4_Save.getText();
+		int Function_Result;
+		try {
+			Function_Result = PerformSaveRequest.SaveRequestBody_4_MessageQueue(
+					theadDataAccess, Queue_Id_4_SaveRequest, messageDetails, requestContent_4_Save, MessegeReceive_Log);
+		}
+		catch (Exception e) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append(" В системе Java метод:`SaveRequest4MessageQueue при вызове SaveRequestBody_4_MessageQueue=(" + requestContent_4_Save + ") fault" + e.getMessage() );
+			Function_Result = -1;
+		}
+		if ( Function_Result != 0) {
+			messageDetails.MsgReason.append(" В системе Java метод:`SaveRequest4MessageQueue");
+			messageDetails.MsgReason.append("` не реализован, проконсультируйтесь с разработчиками");
+			MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "] В системе Java метод:`SaveRequest4MessageQueue` не реализован, проконсультируйтесь с разработчиками");
+		}
+		else {
+			messageDetails.XML_MsgResponse.setLength(0);
+			// возвращаем то, что прислали
+			messageDetails.XML_MsgResponse.append( requestContent_4_Save );
+		}
+
+		return Function_Result;
+		}
+
+
+
 	// сохранить конкретную секцию Шаблона MessageTemplates_SaveConfig
 	public static int MessageTemplates_SaveConfig( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-											   TheadDataAccess theadDataAccess, String dbSchema , Logger MessageSend_Log) {
+											   TheadDataAccess theadDataAccess, String dbSchema , Logger MessegeReceive_Log) {
 		//int nn = 0;
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
 		messageDetails.MsgReason.setLength(0);
-		StringBuilder Config_Text;
 
 		XPathExpression<Element> xpathTemplate_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/QueryString/x_Template_Id", Filters.element());
 		Element elmtTemplate_Id = xpathTemplate_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
@@ -356,19 +414,18 @@ public class CustomJavaMethods {
 						rs.getString("LastMaker"),
 						rs.getString("LastDate")
 				);
-				Config_Text =  new StringBuilder( rs.getString("Conf_Text") );
-				ConfigMsgTemplates.performConfig(messageTemplateVO, MessageSend_Log);
+				ConfigMsgTemplates.performConfig(messageTemplateVO, MessegeReceive_Log);
 
-				// MessageSend_Log.warn( "Conf_Text() before:`{}`" , Config_Text );
+				// MessegeReceive_Log.warn( "Conf_Text() before:`{}`" , Config_Text );
 				try {
 					String Conf_Text =
-							PerformSaveTemplateEntry.replace_Conf_Text(messageQueueVO.getQueue_Id(), messageTemplateVO, configEntry, contentEntry_4_Save, MessageSend_Log);
-					// MessageSend_Log.warn("["+ messageQueueVO.getQueue_Id() +" ] Conf_Text() for update [Template_Id=" + Template_Id_4_Update_MessageTemplate + "]:\n" + Conf_Text);
+							PerformSaveTemplateEntry.replace_Conf_Text(messageQueueVO.getQueue_Id(), messageTemplateVO, configEntry, contentEntry_4_Save, MessegeReceive_Log);
+					// MessegeReceive_Log.warn("["+ messageQueueVO.getQueue_Id() +" ] Conf_Text() for update [Template_Id=" + Template_Id_4_Update_MessageTemplate + "]:\n" + Conf_Text);
 					int result_UPDATE_MessageTemplate =
 									theadDataAccess.doUpdate_MESSAGE_Template( messageQueueVO.getQueue_Id(), Template_Id_4_Update_MessageTemplate, Conf_Text,
-																				MessageSend_Log );
+																				MessegeReceive_Log );
 					if (result_UPDATE_MessageTemplate == 0)
-						MessageSend_Log.warn("["+ messageQueueVO.getQueue_Id() +" ] update Message_Template (`"+ configEntry + "`) for Template_Id =" + Template_Id_4_Update_MessageTemplate + " has been successfully done.");
+						MessegeReceive_Log.warn("["+ messageQueueVO.getQueue_Id() +" ] update Message_Template (`"+ configEntry + "`) for Template_Id =" + Template_Id_4_Update_MessageTemplate + " has been successfully done.");
 					messageDetails.MsgReason.append("update Message_Template (`"+ configEntry + "`) for Template_Id =" + Template_Id_4_Update_MessageTemplate + " has been successfully done.");
 				}
 				catch (Exception e) {
@@ -377,114 +434,6 @@ public class CustomJavaMethods {
 					e.printStackTrace();
 					return -2;
 				}
-				/*
-				// НЕПробуем чистый XML!
-				Config_Text.append(XMLchars.OpenTag).append(configEntry).append(XMLchars.CloseTag).append("<![CDATA[");
-				switch ( configEntry) {
-					case "EnvelopeInXSLT":
-						Config_Text.append( messageTemplateVO.getEnvelopeInXSLT() );
-						break;
-
-					case "HeaderInXSLT":
-						Config_Text.append( messageTemplateVO.getHeaderInXSLT() );
-						break;
-					case "WsdlInterface":
-						Config_Text.append( messageTemplateVO.getWsdlInterface() );
-						break;
-					case "WsdlXSD1":
-						Config_Text.append( messageTemplateVO.getWsdlXSD1() );
-						break;
-					case "WsdlXSD2":
-						Config_Text.append( messageTemplateVO.getWsdlXSD2() );
-						break;
-					case "WsdlXSD3":
-						Config_Text.append( messageTemplateVO.getWsdlXSD3() );
-						break;
-					case "WsdlXSD4":
-						Config_Text.append( messageTemplateVO.getWsdlXSD4() );
-						break;
-					case "WsdlXSD5":
-						Config_Text.append( messageTemplateVO.getWsdlXSD5() );
-						break;
-					case "WsdlXSD6":
-						Config_Text.append( messageTemplateVO.getWsdlXSD6() );
-						break;
-					case "WsdlXSD7":
-						Config_Text.append( messageTemplateVO.getWsdlXSD7() );
-						break;
-					case "WsdlXSD8":
-						Config_Text.append( messageTemplateVO.getWsdlXSD8() );
-						break;
-					case "WsdlXSD9":
-						Config_Text.append( messageTemplateVO.getWsdlXSD9() );
-						break;
-
-					case "ConfigExecute":
-						Config_Text.append( messageTemplateVO.getConfigExecute() );
-						break;
-					case "MessageXSD":
-						Config_Text.append( messageTemplateVO.getMessageXSD() );
-						break;
-					case "HeaderXSLT":
-						Config_Text.append( messageTemplateVO.getHeaderXSLT() );
-						break;
-
-					case  "ConfigPostExec":
-						Config_Text.append( messageTemplateVO.getConfigPostExec() );
-
-						break;
-					case "EnvelopeXSLTPost":
-						Config_Text.append( messageTemplateVO.getEnvelopeXSLTPost() );
-						break;
-
-					case "MsgAnswXSLT":
-						Config_Text.append( messageTemplateVO.getMsgAnswXSLT() );
-						break;
-
-					case "MessageXSLT":
-						Config_Text.append( messageTemplateVO.getMessageXSLT() );
-						break;
-
-					case "AckXSLT":
-						Config_Text.append( messageTemplateVO.getAckXSLT() );
-						break;
-
-					case "EnvelopeXSLTExt":
-						Config_Text.append( messageTemplateVO.getEnvelopeXSLTExt() );
-						break;
-
-					case "EnvelopeNS":
-						Config_Text.append( messageTemplateVO.getEnvelopeNS() );
-						break;
-					case "MessageAck":
-						Config_Text.append( messageTemplateVO.getMessageAck() );
-						break;
-					case "MessageAnswAck":
-						Config_Text.append( messageTemplateVO.getMessageAnswAck() );
-						break;
-					case "MessageAnswerXSD":
-						Config_Text.append( messageTemplateVO.getMessageAnswerXSD() );
-						break;
-					case "MessageAnswMsgXSLT":
-						Config_Text.append( messageTemplateVO.getMessageAnswMsgXSLT () );
-						break;
-
-					case "AckXSD":
-						Config_Text.append( messageTemplateVO.getAckXSD() );
-						break;
-					case "AckAnswXSLT":
-						Config_Text.append( messageTemplateVO.getAckAnswXSLT() );
-						break;
-					case "HeaderXSD":
-						Config_Text.append( messageTemplateVO.getHeaderXSD() );
-						break;
-					case "ErrTransXSLT":
-						Config_Text.append( messageTemplateVO.getErrTransXSLT() );
-						break;
-				}
-				// НЕПробуем чистый XML
-				Config_Text.append("]]>").append(XMLchars.OpenTag).append(XMLchars.EndTag).append(configEntry).append(XMLchars.CloseTag);
-				*/
 			}
 		} catch (SQLException e) {
 			messageDetails.MsgReason.setLength(0);
@@ -492,27 +441,7 @@ public class CustomJavaMethods {
 			e.printStackTrace();
 			return -2;
 		}
-/*
-        String Config_Text= 	"<orderStatusNotification>" +
-			"<originator>CMS.KKFU</originator>" +
-			"<receiver>HRMS</receiver>" +
-			"<orderResult>" +
-				"<orderResultCode>0</orderResultCode>" +
-			"</orderResult>" +
-			"<order>" +
-			    "<orderId>5356769</orderId>" +
-				"<orderOMSId>22-600304-1</orderOMSId>" +
-				"<orderState>COMPLETED</orderState>" +
-				"<orderCompletionDate>2022-02-17T17:47:26.000+03:00</orderCompletionDate>" +
-				"<orderComments>" +
-					"<Comment>" +
-                        "<text>Заказ создан успешно в CMS КЦ. Ожидает команды отправки на проработку</text>" +
-					"</Comment>" +
-				"</orderComments>" +
-			"</order>" +
-		"</orderStatusNotification>"
-        ;
-*/
+
 		messageDetails.XML_MsgResponse.setLength(0);
 		// возвращаем то, что прислали
 		messageDetails.XML_MsgResponse.append( contentEntry_4_Save );
@@ -520,7 +449,7 @@ public class CustomJavaMethods {
 	}
 	// получить конкретную секцию Шаблона для показа в UI
     public static int GetConfig_Text_Template( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-                                                TheadDataAccess theadDataAccess, String dbSchema , Logger MessageSend_Log) {
+                                                TheadDataAccess theadDataAccess, String dbSchema , Logger MessegeReceive_Log) {
         int nn = 0;
         messageDetails.Message.clear();
         messageDetails.MessageRowNum = 0;
@@ -586,7 +515,7 @@ public class CustomJavaMethods {
 						rs.getString("LastDate")
 				);
 				//Config_Text = rs.getString("Conf_Text");
-				ConfigMsgTemplates.performConfig(messageTemplateVO, MessageSend_Log);
+				ConfigMsgTemplates.performConfig(messageTemplateVO, MessegeReceive_Log);
 				// пробуем Чмстый XML
 				// Config_Text.append(XMLchars.OpenTag).append(configEntry).append(XMLchars.CloseTag).append("<![CDATA[");
 				switch ( configEntry) {
@@ -727,7 +656,7 @@ public class CustomJavaMethods {
     }
 	// получить список непустых секций для конкретного Шаблона
 	public static int GetConfig_Entrys_Template( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-											   TheadDataAccess theadDataAccess,String dbSchema, Logger MessageSend_Log) {
+											   TheadDataAccess theadDataAccess,String dbSchema, Logger MessegeReceive_Log) {
 		int nn = 0;
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
