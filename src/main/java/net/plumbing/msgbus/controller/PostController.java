@@ -74,7 +74,7 @@ public class PostController {
 
         String Url_Soap_Send = ClientIpHelper.findUrl_Soap_Send(url);
 
-        Integer Interface_id =
+        int Interface_id =
                 MessageRepositoryHelper.look4MessageTypeVO_2_Interface(Url_Soap_Send, Controller_log);
 
         if (Interface_id < 0) {
@@ -560,7 +560,11 @@ public class PostController {
 //                    Controller_log.warn("Орерация с типом:" + BusOperationMesssageType + "GetList" + " NN=" + OperationId);
 //                }
 
+            // для InternalRestApi переопределяем интерфейс по тиру сообщения, что бы не сводить всё только к одному
+            //Interface_id = MessageRepositoryHelper.look4MessageTypeVO_by_MesssageTypeGlobally(BusOperationMesssageType,  Controller_log);
             OperationId = MessageRepositoryHelper.look4MessageTypeVO_by_MesssageType(BusOperationMesssageType, Interface_id, Controller_log);
+
+
         }
 
         if (OperationId == null) {

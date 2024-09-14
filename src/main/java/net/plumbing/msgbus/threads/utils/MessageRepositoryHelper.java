@@ -108,6 +108,7 @@ public class MessageRepositoryHelper {
         }
         return null;
     }
+
     public static  int look4MessageTypeVO_2_Interface(String pUrl_Soap_Send,  Logger messegeSend_log) {
        //  messegeSend_log.info("look4MessageTypeVO_2_Interface[0-" + MessageType.AllMessageType.size() + "]:`" + pUrl_Soap_Send+"`");
         for (int i = 0; i < MessageType.AllMessageType.size(); i++) {
@@ -118,6 +119,7 @@ public class MessageRepositoryHelper {
              //    messegeSend_log.info("look4MessageTypeVO[" + i + "]:" + URL_SOAP_Send + " , " +messageTypeVO.getMsg_TypeDesc());
                 if ( URL_SOAP_Send != null ) {
                     if ( URL_SOAP_Send.equals(pUrl_Soap_Send) ) {    //  нашли операцию,
+                        messegeSend_log.info("look4MessageTypeVO ok[{}]: for `{}` == `{}` , Msg_TypeDesc== `{}`", messageTypeVO.getInterface_Id(), pUrl_Soap_Send, URL_SOAP_Send , messageTypeVO.getMsg_TypeDesc());
                         return messageTypeVO.getInterface_Id(); // i;
                     }
                 }
@@ -133,7 +135,7 @@ public class MessageRepositoryHelper {
                 String OperationMesssageType = messageTypeVO.getMsg_Type();
                 int InterfaceId = messageTypeVO.getInterface_Id();
                 if ( OperationMesssageType != null ) {
-                    if ( ( InterfaceId == BusOperationInterfaceId) &&
+                    if (  ( InterfaceId == BusOperationInterfaceId) && // ищем глобально по типу, игнорируя BusOperationInterfaceId
                          ( OperationMesssageType.toUpperCase().equals(BusOperationMesssageType.toUpperCase()) )
                        )
                     {    //  нашли операцию,
@@ -142,6 +144,28 @@ public class MessageRepositoryHelper {
                         return MessageOperationId.toString();
                     }
                 }
+        }
+        return null;
+    }
+
+
+    public static  Integer look4MessageTypeVO_by_MesssageTypeGlobally(final String BusOperationMesssageType,   Logger messegeSend_log) {
+        // messegeSend_log.info("look4MessageTypeVO_by_MesssageType [0-" + MessageType.AllMessageType.size() + "]: BusOperationInterfaceId=" +BusOperationInterfaceId + " for " + BusOperationMesssageType);
+        for (int i = 0; i < MessageType.AllMessageType.size(); i++) {
+            MessageTypeVO messageTypeVO = MessageType.AllMessageType.get(i);
+            String OperationMesssageType = messageTypeVO.getMsg_Type();
+
+            if ( OperationMesssageType != null ) {
+                if ( // ( InterfaceId == BusOperationInterfaceId) && // ищем глобально по типу, игнорируя BusOperationInterfaceId
+                        ( OperationMesssageType.toUpperCase().equals(BusOperationMesssageType.toUpperCase()) )
+                )
+                {    //  нашли операцию,
+                    int MessageOperationId = messageTypeVO.getOperation_Id(); // i;
+                    // messegeSend_log.info("look4MessageTypeVO_by_MesssageType MessageOperationId=" + MessageOperationId.toString() + " found" );
+                    Integer InterfaceId = messageTypeVO.getInterface_Id();
+                    return InterfaceId;
+                }
+            }
         }
         return null;
     }
