@@ -398,11 +398,33 @@ public class TheadDataAccess {
             dataAccess_log.error( "make_Message_Update_ExeIn2DelIN() fault");
             return null;
         }
+
+        if ( make_delete_Message_Details( dataAccess_log) == null ) {
+            dataAccess_log.error( "make_delete_Message_Details() fault");
+            return null;
+        }
         return Target_Connection;
     }
 
+    public PreparedStatement stmt_DELETE_Message_Details;
+    public  String DELETE_Message_Details;
 
-    public PreparedStatement make_SelectLink_Queue_Id( Logger dataAccess_log )
+    private PreparedStatement  make_delete_Message_Details( Logger dataAccess_log ) {
+        PreparedStatement StmtMsg_Queue;
+        DELETE_Message_Details = "delete from " + dbSchema + ".MESSAGE_QueueDET D where D.queue_id =?";
+        try {
+
+            StmtMsg_Queue = (PreparedStatement)this.Hermes_Connection.prepareStatement( DELETE_Message_Details );
+        } catch (Exception e) {
+            dataAccess_log.error( e.getMessage() );
+            e.printStackTrace();
+            return ( (PreparedStatement) null );
+        }
+        this.stmt_DELETE_Message_Details = StmtMsg_Queue;
+        return  StmtMsg_Queue ;
+    }
+
+    private PreparedStatement make_SelectLink_Queue_Id( Logger dataAccess_log )
     {
         PreparedStatement StmtMsg_Queue;
         try {
@@ -419,7 +441,7 @@ public class TheadDataAccess {
         return  StmtMsg_Queue ;
     }
 
-    public PreparedStatement make_SelectNew_Queue(  Logger dataAccess_log )
+    private PreparedStatement make_SelectNew_Queue(  Logger dataAccess_log )
     {
         PreparedStatement StmtMsg_Queue;
         try {
@@ -475,7 +497,7 @@ public class TheadDataAccess {
         return  StmtMsg_Queue ;
     }
 
-    public PreparedStatement  make_insert_Message_Queue( Logger dataAccess_log ) {
+    private PreparedStatement  make_insert_Message_Queue( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
         try {
              INSERT_Message_Queue= "INSERT into " + dbSchema + ".MESSAGE_Queue " +
@@ -492,7 +514,7 @@ public class TheadDataAccess {
     }
 
 
-    public PreparedStatement  make_UPDATE_QUEUElog( Logger dataAccess_log ) {
+    private PreparedStatement  make_UPDATE_QUEUElog( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
         try {
             UPDATE_QUEUElog_Response="update " + dbSchema + ".MESSAGE_QUEUElog set Resp_DT = current_timestamp, Response = ? where QUEUE_ID= ? and ROWID = ?";
@@ -509,7 +531,7 @@ public class TheadDataAccess {
     //public final String UPDATE_QUEUElog_Response="update " + dbSchema + ".MESSAGE_QUEUElog L set l.Resp_DT = current_timestamp, l.Response = ? where l.Queue_Id = ?";
     //public PreparedStatement stmt_UPDATE_QUEUElog;
 
-    public  int doUPDATE_QUEUElog( String ROWID_QUEUElog, // TODO RowId ROWID_QUEUElog, (oracle)
+    public int doUPDATE_QUEUElog( String ROWID_QUEUElog, // TODO RowId ROWID_QUEUElog, (oracle)
                                   long Queue_Id, String sResponse,
                                                        Logger dataAccess_log ) {
         dataAccess_log.info( "[" + Queue_Id + "] doUPDATE_QUEUElog: `update " + dbSchema + ".MESSAGE_QUEUElog L set l.Resp_DT = current_timestamp, l.Response = '" +sResponse +
@@ -549,7 +571,7 @@ public class TheadDataAccess {
         return  StmtMsg_Queue ;
     }
     -------------------------------------*/
-private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
+ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
     if (!rdbmsVendor.equals("oracle")) {
         // TODO 4_Postgre
         PreparedStatement StmtMsg_Queue;
@@ -673,7 +695,7 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
         return ROWID_QUEUElog;
     }
 
-    public PreparedStatement  make_insert_Message_Details( Logger dataAccess_log ) {
+    private PreparedStatement  make_insert_Message_Details( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
         try {
             INSERT_Message_Details= "INSERT into " + dbSchema + ".MESSAGE_QueueDET (QUEUE_ID, TAG_ID, TAG_VALUE, TAG_NUM, TAG_PAR_NUM) " +
@@ -758,7 +780,7 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
         return 0;
     }
 
-    public PreparedStatement  make_UPDATE_MessageQueue_In2Ok( Logger dataAccess_log ) {
+    private PreparedStatement  make_UPDATE_MessageQueue_In2Ok( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
         try {
             UPDATE_MessageQueue_In2Ok =
@@ -825,7 +847,7 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
     }
 
 
-    public PreparedStatement  make_Message_Update_In2ExeIn( Logger dataAccess_log ) {
+    private PreparedStatement  make_Message_Update_In2ExeIn( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
         try {
             UPDATE_MessageQueue_In2ExeIn=
@@ -916,7 +938,7 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
         return 0;
     }
 */
-    public PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_log ) {
+private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
         PreparedStatement StmtMsg_QueueH;
         try {
@@ -1161,7 +1183,7 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
     }
 */
 
-    public PreparedStatement  make_Message_Update_ExeIn2DelIN( Logger dataAccess_log ) {
+    private PreparedStatement  make_Message_Update_ExeIn2DelIN( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
         try {
             UPDATE_MessageQueue_ExeIn2DelIN =
@@ -1204,7 +1226,7 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
     }
 
 
-    public PreparedStatement  make_Message_Update_In2ErrorIN( Logger dataAccess_log ) {
+    private PreparedStatement  make_Message_Update_In2ErrorIN( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
         try {
             UPDATE_MessageQueue_In2ErrorIN= "update " + dbSchema + ".MESSAGE_QUEUE " +
@@ -1246,7 +1268,7 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
         return 0;
     }
 
-    public PreparedStatement  make_Message_Update_ExeIN2PostIN( Logger dataAccess_log ) {
+    private PreparedStatement  make_Message_Update_ExeIN2PostIN( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
         try {
             UPDATE_MessageQueue_ExeIN2PostIN=
@@ -1290,7 +1312,7 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
     }
 
 
-    public PreparedStatement  make_Message_QueryConfirmation( Logger dataAccess_log ) {
+    private PreparedStatement  make_Message_QueryConfirmation( Logger dataAccess_log ) {
         PreparedStatement stmtMsgQueueConfirmationDet;
         try {
 
@@ -1421,7 +1443,7 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
         return  StmtMsgQueueDet ;
     }
 */
-    public PreparedStatement make_Message_Query(  Logger dataAccess_log ) {
+private PreparedStatement make_Message_Query(  Logger dataAccess_log ) {
     PreparedStatement stmtMsgQueue;
 
     String selectMessageStatement =
@@ -1446,7 +1468,7 @@ private PreparedStatement  make_INSERT_QUEUElog( Logger dataAccess_log ) {
     return stmtMsgQueue;
     }
 
-    public PreparedStatement  make_MessageDet_Query( Logger dataAccess_log ) {
+    private PreparedStatement  make_MessageDet_Query( Logger dataAccess_log ) {
         PreparedStatement StmtMsgQueueDet;
         try {
 

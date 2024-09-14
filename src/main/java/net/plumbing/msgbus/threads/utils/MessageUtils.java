@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 //import java.io.InputStream;
 //import java.nio.charset.StandardCharsets;
 import javax.validation.constraints.NotNull;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -1041,6 +1042,67 @@ public class MessageUtils {
         }
 
         // MessegeReceive_Log.info(theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "] :  INSERT new Message Details, " + nn + " rows done");
+        return nn;
+    }
+
+
+    public static int ReplaceMessage(@NotNull TheadDataAccess theadDataAccess, long Queue_Id, @NotNull MessageDetails messageDetails, Logger MessegeReceive_Log) {
+        int nn = 0;
+
+        try {
+            theadDataAccess.stmt_DELETE_Message_Details.setLong(1, Queue_Id);
+            theadDataAccess.stmt_DELETE_Message_Details.executeUpdate();
+        } catch (SQLException e) {
+            MessegeReceive_Log.error("DELETE(" + theadDataAccess.DELETE_Message_Details + "[" + Queue_Id + "]" + ") fault: " + e.getMessage());
+            e.printStackTrace();
+            try {
+                theadDataAccess.Hermes_Connection.rollback();
+            } catch (SQLException exp) {
+                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: " + exp.getMessage());
+            }
+            return -1;
+        }
+
+        try {
+            for (int i = 0; i < messageDetails.Message.size(); i++) {
+                MessageDetailVO MessageDetailVO = messageDetails.Message.get(i);
+                theadDataAccess.stmt_INSERT_Message_Details.setLong(1, Queue_Id);
+                theadDataAccess.stmt_INSERT_Message_Details.setString(2, MessageDetailVO.Tag_Id);
+                if ( MessageDetailVO.Tag_Value.length() > (XMLchars.MAX_TAG_VALUE_BYTE_SIZE /2) ) {
+                    String ElementContentS = new String( XMLchars.cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE(MessageDetailVO.Tag_Value, MessegeReceive_Log), StandardCharsets.UTF_8 );
+                    theadDataAccess.stmt_INSERT_Message_Details.setString(3, ElementContentS );
+                }
+                else {
+                    theadDataAccess.stmt_INSERT_Message_Details.setString(3, MessageDetailVO.Tag_Value);
+                }
+                theadDataAccess.stmt_INSERT_Message_Details.setInt(4, MessageDetailVO.Tag_Num);
+                theadDataAccess.stmt_INSERT_Message_Details.setInt(5, MessageDetailVO.Tag_Par_Num);
+                //theadDataAccess.stmt_INSERT_Message_Details.executeUpdate();
+                theadDataAccess.stmt_INSERT_Message_Details.addBatch();
+        /*MessegeSend_Log.info( i + ">" + theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "]" +
+                "\n Tag_Id=" + MessageDetailVO.Tag_Id +
+                "\n Tag_Value=" + MessageDetailVO.Tag_Value +
+                "\n Tag_Num=" + MessageDetailVO.Tag_Num +
+                "\n Tag_Par_Num=" + MessageDetailVO.Tag_Par_Num +
+                " done");
+                */
+                nn = i;
+            }
+            // Insert data in Oracle with Java … Batched mode
+            theadDataAccess.stmt_INSERT_Message_Details.executeBatch();
+
+        } catch (SQLException e) {
+            MessegeReceive_Log.error(theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "] :" + sStackTrace.strInterruptedException(e));
+            e.printStackTrace();
+            try {
+                theadDataAccess.Hermes_Connection.rollback();
+            } catch (SQLException exp) {
+                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: " + exp.getMessage());
+            }
+            return -2;
+        }
+
+        MessegeReceive_Log.info("Queue_Id=[" + Queue_Id + "] : Delete and INSERT new Message Details, " + nn + " rows done");
         return nn;
     }
 

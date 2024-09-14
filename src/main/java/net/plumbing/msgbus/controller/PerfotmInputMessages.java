@@ -193,6 +193,10 @@ public class PerfotmInputMessages {
                             case "SaveRequest4MessageQueue":
                                 resultSQL = CustomJavaMethods.SaveRequest_4_MessageQueue(  messageQueueVO, Message, theadDataAccess, MessegeReceive_Log);
                                 break;
+
+                            case "ReplaceConfirmation4MessageQueue":
+                                resultSQL = CustomJavaMethods.ReplaceConfirmation_4_MessageQueue(  messageQueueVO, Message, theadDataAccess, MessegeReceive_Log);
+                                break;
                             default:
                                 Message.MsgReason.append(" попытка вызова незарегистрированного в системе Java метода:` ");
                                 Message.MsgReason.append(JavaMethodName);
