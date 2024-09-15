@@ -304,13 +304,14 @@ public class CustomJavaMethods {
 		}
 		catch (Exception e) {
 			messageDetails.MsgReason.setLength(0);
-			messageDetails.MsgReason.append(" В системе Java метод:`ReplaceConfirmation4MessageQueue при вызове SaveRequestBody_4_MessageQueue=(" + confirmationContent_4_Replace + ") fault" + e.getMessage() );
+			messageDetails.MsgReason.append(" В системе Java метод:`ReplaceConfirmation4MessageQueue сбой при вызове SaveRequestBody_4_MessageQueue=(" + confirmationContent_4_Replace + ") fault" + e.getMessage() );
+			MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "] В системе Java метод:`ReplaceConfirmation4MessageQueue` сбой при вызове SaveRequestBody_4_MessageQueue=(" + confirmationContent_4_Replace + ") fault" + e.getMessage() );
 			Function_Result = -1;
+
 		}
 		if ( Function_Result != 0) {
-			messageDetails.MsgReason.append(" В системе Java метод:`ReplaceConfirmation4MessageQueue");
-			messageDetails.MsgReason.append("` не реализован, проконсультируйтесь с разработчиками");
-			MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "] В системе Java метод:`ReplaceConfirmation4MessageQueue` не реализован, проконсультируйтесь с разработчиками");
+			//messageDetails.MsgReason.append(" В системе Java метод:`ReplaceConfirmation4MessageQueue");
+			messageDetails.MsgReason.append("` , проконсультируйтесь с разработчиками");
 		}
 		else {
 			messageDetails.XML_MsgResponse.setLength(0);

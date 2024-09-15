@@ -1199,13 +1199,9 @@ public class MessageUtils {
         return nn;
     }
 
-
-    public static int ReplaceConfirmation(TheadDataAccess theadDataAccess, long Queue_Id, MessageDetails messageDetails, Logger MessegeReceive_Log) {
+/*
+    public static int InsertNewConfirmation(TheadDataAccess theadDataAccess, long Queue_Id, MessageDetails messageDetails, Logger MessegeReceive_Log) {
         int nn = 0;
-
-        nn = theadDataAccess.doDELETE_Message_Confirmation( Queue_Id, MessegeReceive_Log);
-        if ( nn < 0 )
-            return -1;
         int iNumberRecordInConfirmation=0;
 
         try {
@@ -1244,5 +1240,5 @@ public class MessageUtils {
         MessegeReceive_Log.info(theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "] :" + nn + " done");
         return nn;
     }
-
+*/
 }

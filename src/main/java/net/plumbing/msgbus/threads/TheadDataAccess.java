@@ -403,6 +403,11 @@ public class TheadDataAccess {
             dataAccess_log.error( "make_delete_Message_Details() fault");
             return null;
         }
+
+        if (make_Message_LastBodyTag_Query(dataAccess_log) == null) {
+            dataAccess_log.error("make_Message_LastBodyTag_Query() fault");
+            return null;
+        }
         return Target_Connection;
     }
 
@@ -958,14 +963,14 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
     }
 
     public  int doDELETE_Message_Confirmation(long Queue_Id, Logger dataAccess_log ) {
-        dataAccess_log.info( "[" + Queue_Id + "] doDELETE_Message_Confirmation!" );
+        dataAccess_log.info( "[" + Queue_Id + "] doDELETE_Message_ConfirmationBody! {};", DELETE_Message_Confirmation );
         try {
                 // сначала удаляем всЁ, что растет из Confirmation
             stmt_DELETE_Message_Confirmation.setLong( 1, Queue_Id );
             stmt_DELETE_Message_Confirmation.setLong( 2, Queue_Id );
             stmt_DELETE_Message_Confirmation.executeUpdate();
                  // а теперь и сам Confirmation tag
-
+            dataAccess_log.info( "[" + Queue_Id + "] doDELETE_Message_ConfirmationTag {};", DELETE_Message_ConfirmationH );
             stmt_DELETE_Message_ConfirmationH.setLong( 1, Queue_Id );
             stmt_DELETE_Message_ConfirmationH.executeUpdate();
 
@@ -1332,19 +1337,33 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
         this.stmtMsgQueueConfirmationDet = stmtMsgQueueConfirmationDet;
         return  stmtMsgQueueConfirmationDet ;
     }
-/*
-    public PreparedStatement  make_Message_LastBodyTag_Query( Logger dataAccess_log ) {
+
+    public PreparedStatement stmtMsgLastBodyTag = null;
+    public String selectMsgLastBodyTag = null;
+
+    private PreparedStatement  make_Message_LastBodyTag_Query( Logger dataAccess_log ) {
         PreparedStatement StmtMsgQueueDet;
+
+            if (rdbmsVendor.equals("oracle")) {
+                selectMsgLastBodyTag = "select Tag_Num from (" +
+                        " select Tag_Num from (" +
+                        " select Tag_Num from " + dbSchema + ".message_queuedet  WHERE QUEUE_ID = ? and Tag_Par_Num = 0 and tag_Id ='Confirmation'" +
+                        " union all" +
+                        " select max(Tag_Num) + 1  as  Tag_Num from " + dbSchema + ".message_queuedet  WHERE QUEUE_ID = ?" +
+                        " ) order by Tag_Num" +
+                        " ) where rownum =1";
+            } else {
+                selectMsgLastBodyTag = "select Tag_Num from (" +
+                        " select Tag_Num from (" +
+                        " select Tag_Num from " + dbSchema + ".message_queuedet  WHERE QUEUE_ID = ? and Tag_Par_Num = 0 and tag_Id ='Confirmation'" +
+                        " union all" +
+                        " select max(Tag_Num) + 1  as  Tag_Num from " + dbSchema + ".message_queuedet  WHERE QUEUE_ID = ?" +
+                        " ) conf_union order by Tag_Num" +
+                        " ) conf_tag limit 1";
+            }
         try {
-            StmtMsgQueueDet = (PreparedStatement)this.Hermes_Connection.prepareStatement(
-                    "select Tag_Num from (" +
-                            " select Tag_Num from (" +
-                                    " select Tag_Num from  artx_proj.message_queuedet  WHERE QUEUE_ID = ? and Tag_Par_Num = 0 and tag_Id ='Confirmation'" +
-                                    " union all" +
-                                    " select max(Tag_Num) + 1  as  Tag_Num from  artx_proj.message_queuedet  WHERE QUEUE_ID = ?" +
-                            " ) order by Tag_Num" +
-                    " ) where rownum =1"
-                    );
+                StmtMsgQueueDet = (PreparedStatement) this.Hermes_Connection.prepareStatement(selectMsgLastBodyTag);
+
         } catch (Exception e) {
             dataAccess_log.error( e.getMessage() );
             e.printStackTrace();
@@ -1353,7 +1372,6 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
         this.stmtMsgLastBodyTag = StmtMsgQueueDet;
         return  StmtMsgQueueDet ;
     }
-    */
 
     public PreparedStatement  make_Message_ConfirmationTag_Query( Logger dataAccess_log ) {
         PreparedStatement StmtMsgQueueDet;
@@ -1361,15 +1379,13 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
             if (rdbmsVendor.equals("oracle")) {
                 StmtMsgQueueDet = (PreparedStatement)this.Hermes_Connection.prepareStatement(
                         "select Tag_Num from ( select Tag_Num from " + dbSchema + ".message_queuedet  WHERE QUEUE_ID = ? and Tag_Par_Num = 0 and tag_Id ='Confirmation' order by Tag_Num desc) qd " +
-                                // todo Oracle
                                 "where rownum=1"
                 );
             }
             else
             StmtMsgQueueDet = (PreparedStatement)this.Hermes_Connection.prepareStatement(
                             "select Tag_Num from ( select Tag_Num from " + dbSchema + ".message_queuedet  WHERE QUEUE_ID = ? and Tag_Par_Num = 0 and tag_Id ='Confirmation' order by Tag_Num desc) qd " +
-                                    // todo PostGree
-                    "limit 1"
+                                "limit 1"
             );
         } catch (Exception e) {
             dataAccess_log.error( e.getMessage() );
