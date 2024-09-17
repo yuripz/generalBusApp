@@ -604,7 +604,8 @@ public class PerfotmInputMessages {
                             // надо читать ответ из Confirmation родного OUT, куда дополнительный обработчик положит Confirmation, перезаписав его
                             // или обработчик порожденного OUT-сообщения перезаписывает Confirmation входящего по результатам прикладной обработки Confirmation от Link_Queue
                             /////////////////////////////////////////////////
-                            if ( Message.MessageTemplate4Perform.getPropExeMetodPostExec().equals(Message.MessageTemplate4Perform.WebRestExeMetod) ) { // 2.2) Это Rest-HttpGet-вызов
+                            if ( Message.MessageTemplate4Perform.getPropExeMetodPostExec().equals(Message.MessageTemplate4Perform.WebRestExeMetod) )
+                            { // 2.2) Это Rest-HttpGet-вызов
 
                                 if ((Message.MessageTemplate4Perform.getPropHostPostExec() == null) ||
                                         (Message.MessageTemplate4Perform.getPropUserPostExec() == null) ||

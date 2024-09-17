@@ -80,7 +80,7 @@ public class GetController  {
 
                     String jsonPrettyPrintString = xmlJSONObj.toString(4);
                     Controller_log.warn("jsonPrettyPrintString:[" + jsonPrettyPrintString + "]");
-                    getResponse.setContentType("text/json;Charset=UTF-8");
+                    getResponse.setContentType("application/json;Charset=UTF-8");
                     return(jsonPrettyPrintString);
 
                 } catch (JSONException e) {
@@ -109,7 +109,7 @@ public class GetController  {
 
                     String jsonPrettyPrintString = xmlJSONObj.toString(4);
                     Controller_log.warn("jsonPrettyPrintString:[" + jsonPrettyPrintString + "]");
-                    getResponse.setContentType("text/json;Charset=UTF-8");
+                    getResponse.setContentType("application/json;Charset=UTF-8");
                     return (jsonPrettyPrintString);
 
                 } catch (JSONException e) {
@@ -232,7 +232,7 @@ public class GetController  {
                 if (isDebugged)
                 Controller_log.info("HttpResponse:[" + HttpResponse + "]");
                 getResponse.setHeader("Access-Control-Allow-Origin", "*");
-                getResponse.setContentType("text/json;Charset=UTF-8");
+                getResponse.setContentType("application/json;Charset=UTF-8");
                 // getResponse.setContentType("text/xml;charset=UTF-8");
                 if (is_TextJsonResponse ) {
                     try {
@@ -240,7 +240,7 @@ public class GetController  {
                         // TODO внутри XML.toJSONObject метод stringToValue делает аналогично StringEscapeUtils.escapeJson()
 
                         String jsonPrettyPrintString = xmlJSONObj.toString(4); //StringEscapeUtils.unescapeXml (xmlJSONObj.toString(4) );
-                        getResponse.setContentType("text/json;Charset=UTF-8");
+                        getResponse.setContentType("application/json;Charset=UTF-8");
                         if (isDebugged)
                             messageReceiveTask.theadDataAccess.doUPDATE_QUEUElog(Message.ROWID_QUEUElog, Message.Queue_Id, jsonPrettyPrintString, Controller_log);
                         try {
@@ -425,7 +425,7 @@ public class GetController  {
                         "Клиент не передал в " +
                         org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ")  интерфейс для обработки" ) +
                         Fault_Rest_End ;
-            getResponse.setContentType("text/json;Charset=UTF-8");
+            getResponse.setContentType("application/json;Charset=UTF-8");
             return HttpResponse;
         }
 
@@ -441,7 +441,7 @@ public class GetController  {
                     " в системе не сконфигурирован" +
                     Fault_Rest_End ;
             Controller_log.warn("HttpResponse:" + HttpResponse);
-            getResponse.setContentType("text/json;Charset=UTF-8");
+            getResponse.setContentType("application/json;Charset=UTF-8");
             return HttpResponse;
         }
 
@@ -455,7 +455,7 @@ public class GetController  {
                         "Клиент не передал в " +
                         org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ") имя сущности (тип операции) для обработки") +
                         Fault_Rest_End;
-                getResponse.setContentType("text/json;Charset=UTF-8");
+                getResponse.setContentType("application/json;Charset=UTF-8");
                 return HttpResponse;
             }
             Controller_log.warn("try look4MessageTypeVO_by_MesssageType: [" + BusOperationMesssageType + "]");
@@ -475,7 +475,7 @@ public class GetController  {
 //                                    " в системе не сконфигурирована" +
 //                                    Fault_Rest_End;
 //                            Controller_log.warn("HttpResponse:" + HttpResponse);
-//                            getResponse.setContentType("text/json;Charset=UTF-8");
+//                            getResponse.setContentType("application/json;Charset=UTF-8");
 //                            getResponse.setStatus(422);
 //                            return HttpResponse;
 //                        } else {
@@ -491,7 +491,7 @@ public class GetController  {
 //                                    " в системе не сконфигурирована" +
 //                                    Fault_Rest_End;
 //                            Controller_log.warn("HttpResponse:" + HttpResponse);
-//                            getResponse.setContentType("text/json;Charset=UTF-8");
+//                            getResponse.setContentType("application/json;Charset=UTF-8");
 //                            getResponse.setStatus(422);
 //                            return HttpResponse;
 //                        }
@@ -511,7 +511,7 @@ public class GetController  {
 //                                " в системе не сконфигурирована" +
 //                                Fault_Rest_End;
 //                        Controller_log.warn("HttpResponse:" + HttpResponse);
-//                        getResponse.setContentType("text/json;Charset=UTF-8");
+//                        getResponse.setContentType("application/json;Charset=UTF-8");
 //                        getResponse.setStatus(422);
 //                        return HttpResponse;
 //                    }
@@ -533,7 +533,7 @@ public class GetController  {
                             Fault_noNS_End ;
                 }
                 else {  // возвращаем JSON
-                    getResponse.setContentType("text/json;Charset=UTF-8");
+                    getResponse.setContentType("application/json;Charset=UTF-8");
                     HttpResponse = Fault_Client_Rest_Begin +
                             "Ресурса нет на сервере: Орерация с типом " + BusOperationMesssageType  + " для обработки " +
                             org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ")") +
@@ -560,7 +560,7 @@ public class GetController  {
                             "Клиент не передал  в запросе HTTP-Header BusOperationId" +
                             Fault_Rest_End ;
                 Controller_log.warn("HttpResponse:" + HttpResponse);
-                getResponse.setContentType("text/json;Charset=UTF-8");
+                getResponse.setContentType("application/json;Charset=UTF-8");
                 return HttpResponse;
             }
 
@@ -588,7 +588,7 @@ public class GetController  {
                                   "Клиент передал  в запросе фильтр не в формате JSON, " + JSe.getMessage() +
                                   Fault_Rest_End ;
                           Controller_log.warn("HttpResponse: Filter=`" + ParamElements[0].indexOf("Filter")  + "` ==> " + HttpResponse);
-                          getResponse.setContentType("text/json;Charset=UTF-8");
+                          getResponse.setContentType("application/json;Charset=UTF-8");
                           return HttpResponse;
                       }
                     else
@@ -618,7 +618,7 @@ public class GetController  {
                             "Ошибка при разборе параметров от клиента (" + queryString + ") " + e.getMessage() ) +
                             Fault_Rest_End ;
                     Controller_log.warn("HttpResponse:[" + HttpResponse + "]");
-                    getResponse.setContentType("text/json;Charset=UTF-8");
+                    getResponse.setContentType("application/json;Charset=UTF-8");
                     //getResponse.setHeader("x-total-count", "0" );
                     //getResponse.setStatus(422);
                     return HttpResponse;
@@ -702,7 +702,7 @@ public class GetController  {
                 }
                 else
                 {  // возвращаем JSON
-                    getResponse.setContentType("text/json;Charset=UTF-8");
+                    getResponse.setContentType("application/json;Charset=UTF-8");
                     try
                     {
                         String jsonPrettyPrintString;
@@ -725,7 +725,7 @@ public class GetController  {
                                 jsonPrettyPrintString = xmlJSONObj.toString(2);
                         }
                         //System.out.println("jsonPrettyPrintString:\n" + jsonPrettyPrintString);
-                        // getResponse.setContentType("text/json;Charset=UTF-8");
+                        // getResponse.setContentType("application/json;Charset=UTF-8");
                         if (isDebugged)
                             Controller_log.warn("JSON-HttpResponse готов:" + jsonPrettyPrintString);
                         if ((isDebugged) &&
@@ -867,7 +867,7 @@ public class GetController  {
 
                     String jsonPrettyPrintString = xmlJSONObj.toString(4);
                     Controller_log.warn("jsonPrettyPrintString:|" + jsonPrettyPrintString + "|");
-                    getResponse.setContentType("text/json;Charset=UTF-8");
+                    getResponse.setContentType("application/json;Charset=UTF-8");
                     return(jsonPrettyPrintString);
 
                 } catch (JSONException e) {
@@ -896,7 +896,7 @@ public class GetController  {
 
                     String jsonPrettyPrintString = xmlJSONObj.toString(4);
                     Controller_log.warn("jsonPrettyPrintString:\n" + jsonPrettyPrintString);
-                    getResponse.setContentType("text/json;Charset=UTF-8");
+                    getResponse.setContentType("application/json;Charset=UTF-8");
                     return (jsonPrettyPrintString);
 
                 } catch (JSONException e) {
@@ -992,7 +992,7 @@ public class GetController  {
                 if (isDebugged)
                     Controller_log.info("HttpResponse:" + HttpResponse);
                 getResponse.setHeader("Access-Control-Allow-Origin", "*");
-                getResponse.setContentType("text/json;Charset=UTF-8");
+                getResponse.setContentType("application/json;Charset=UTF-8");
                 // getResponse.setContentType("text/xml;charset=UTF-8");
                 if (is_TextJsonResponse ) {
                     try {
@@ -1000,7 +1000,7 @@ public class GetController  {
 
                         String jsonPrettyPrintString = xmlJSONObj.toString(4);
                         //System.out.println("jsonPrettyPrintString:\n" + jsonPrettyPrintString);
-                        getResponse.setContentType("text/json;Charset=UTF-8");
+                        getResponse.setContentType("application/json;Charset=UTF-8");
                         if (isDebugged)
                             messageReceiveTask.theadDataAccess.doUPDATE_QUEUElog(Message.ROWID_QUEUElog, Message.Queue_Id, jsonPrettyPrintString, Controller_log);
                         try {

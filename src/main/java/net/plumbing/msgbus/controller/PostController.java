@@ -455,7 +455,7 @@ public class PostController {
                     "Клиент не передал в " +
                     org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ")  интерфейс для обработки" ) +
                     Fault_Rest_End ;
-            postResponse.setContentType("text/json;Charset=UTF-8");
+            postResponse.setContentType("application/json;Charset=UTF-8");
             return HttpResponse;
         }
 
@@ -471,7 +471,7 @@ public class PostController {
                     " в системе не сконфигурирован" +
                     Fault_Rest_End ;
             Controller_log.warn("HttpResponse:`{}`" , HttpResponse);
-            postResponse.setContentType("text/json;Charset=UTF-8");
+            postResponse.setContentType("application/json;Charset=UTF-8");
             return HttpResponse;
         }
 
@@ -483,7 +483,7 @@ public class PostController {
             String OutResponse = Fault_Client_Rest_Begin +
                     "postServletRequest.getInputStream fault:" + ioException.getMessage() +
                     Fault_Rest_End;
-            postResponse.setContentType("text/json;Charset=UTF-8");
+            postResponse.setContentType("application/json;Charset=UTF-8");
             return OutResponse;
         }
         // int MessageTemplateVOkey = MessageRepositoryHelper.look4MessageTemplate_2_Interface(Interface_id, Controller_log);
@@ -498,7 +498,7 @@ public class PostController {
                         "Клиент не передал в " +
                         org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ") имя сущности (тип операции) для обработки") +
                         Fault_Rest_End;
-                postResponse.setContentType("text/json;Charset=UTF-8");
+                postResponse.setContentType("application/json;Charset=UTF-8");
                 return HttpResponse;
             }
             Controller_log.warn("BusOperationMesssageType: [" + BusOperationMesssageType + "]");
@@ -518,7 +518,7 @@ public class PostController {
 //                                    " в системе не сконфигурирована" +
 //                                    Fault_Rest_End;
 //                            Controller_log.warn("HttpResponse:" + HttpResponse);
-//                            getResponse.setContentType("text/json;Charset=UTF-8");
+//                            getResponse.setContentType("application/json;Charset=UTF-8");
 //                            getResponse.setStatus(422);
 //                            return HttpResponse;
 //                        } else {
@@ -534,7 +534,7 @@ public class PostController {
 //                                    " в системе не сконфигурирована" +
 //                                    Fault_Rest_End;
 //                            Controller_log.warn("HttpResponse:" + HttpResponse);
-//                            getResponse.setContentType("text/json;Charset=UTF-8");
+//                            getResponse.setContentType("application/json;Charset=UTF-8");
 //                            getResponse.setStatus(422);
 //                            return HttpResponse;
 //                        }
@@ -554,7 +554,7 @@ public class PostController {
 //                                " в системе не сконфигурирована" +
 //                                Fault_Rest_End;
 //                        Controller_log.warn("HttpResponse:" + HttpResponse);
-//                        getResponse.setContentType("text/json;Charset=UTF-8");
+//                        getResponse.setContentType("application/json;Charset=UTF-8");
 //                        getResponse.setStatus(422);
 //                        return HttpResponse;
 //                    }
@@ -575,7 +575,7 @@ public class PostController {
                     " в системе не сконфигурирована" +
                     Fault_Rest_End;
             Controller_log.warn("HttpResponse:" + HttpResponse);
-            postResponse.setContentType("text/json;Charset=UTF-8");
+            postResponse.setContentType("application/json;Charset=UTF-8");
             postResponse.setStatus(422);
             return HttpResponse;
         }
@@ -617,7 +617,7 @@ public class PostController {
                             "Ошибка при разборе параметров от клиента (" + queryString + ") " + e.getMessage() ) +
                             Fault_Rest_End ;
                     Controller_log.warn("HttpResponse:\n" + HttpResponse);
-                    postResponse.setContentType("text/json;Charset=UTF-8");
+                    postResponse.setContentType("application/json;Charset=UTF-8");
                     postResponse.setStatus(422);
                     return HttpResponse;
                 }
@@ -674,7 +674,7 @@ public class PostController {
 
                 String OutResponse = Fault_Server_Rest_Begin + "CharStreams.toString(getInputStream) fault:" + ioException.getMessage()
                         + Fault_Rest_End;
-                postResponse.setContentType("text/json;Charset=UTF-8");
+                postResponse.setContentType("application/json;Charset=UTF-8");
                 return OutResponse;
 
         }
@@ -755,7 +755,7 @@ public class PostController {
                         System.err.println(strInterruptedException(SQLe));
                     }
                     Controller_log.info("jsonPrettyPrint:[" + jsonPrettyPrintString + "] DataSourcePool=" + DataSourcePoolMetadata.getActive());
-                    postResponse.setContentType("text/json;Charset=UTF-8");
+                    postResponse.setContentType("application/json;Charset=UTF-8");
 
                     return (HttpResponse);
 
@@ -766,7 +766,7 @@ public class PostController {
                     HttpResponse = Fault_Server_Rest_Begin + "Не смогли преобразовать HttpResponse в JSON: " + e.getMessage() + Fault_Rest_End;
                 }
 
-            postResponse.setContentType("text/json;Charset=UTF-8");
+            postResponse.setContentType("application/json;Charset=UTF-8");
         }
             if (messageReceiveTask.theadDataAccess != null) {
                 if (isDebugged)
@@ -859,7 +859,7 @@ public class PostController {
 
                 String jsonPrettyPrintString = xmlJSONObj.toString(4);
                 Controller_log.warn("jsonPrettyPrintString:\n" + jsonPrettyPrintString);
-                getResponse.setContentType("text/json;Charset=UTF-8");
+                getResponse.setContentType("application/json;Charset=UTF-8");
                 return (jsonPrettyPrintString);
 
             } catch (JSONException e) {

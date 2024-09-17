@@ -170,7 +170,7 @@ public class MessageHttpSend {
                 .uri( URI.create(webEndPointUrl))
                 .header("User-Agent", "msgBus/Java-21")
                 .header("Accept", "*/*")
-                .header("Content-Type", "text/json;charset=UTF-8")
+                .header("Content-Type", "application/json;charset=UTF-8")
                 .header("Connection", "close")
                 .timeout( Duration.ofSeconds( ApiRestWaitTime ) )
                 .build();

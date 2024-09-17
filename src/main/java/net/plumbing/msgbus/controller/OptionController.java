@@ -41,7 +41,7 @@ public class OptionController {
 //    String HttpResponse = "{ \"Response\": \"" +
 //            XML.escape(httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")") +
 //            "\"}";
-        getResponse.setContentType("text/json;Charset=UTF-8");
+        getResponse.setContentType("application/json;Charset=UTF-8");
         getResponse.setHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE,OPTIONS");
         getResponse.setHeader("Allow", "POST,GET,PUT,DELETE,OPTIONS");
         getResponse.setHeader("Access-Control-Allow-Origin","*");
@@ -75,7 +75,7 @@ public void OptionRestApi( ServletRequest getServletRequest, HttpServletResponse
 //    String HttpResponse = "{ \"Response\": \"" +
 //            XML.escape(httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")") +
 //            "\"}";
-       getResponse.setContentType("text/json;Charset=UTF-8");
+       getResponse.setContentType("application/json;Charset=UTF-8");
        getResponse.setHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE,OPTIONS");
        getResponse.setHeader("Allow", "POST,GET,PUT,DELETE,OPTIONS");
        getResponse.setHeader("Access-Control-Allow-Origin","*");
@@ -106,7 +106,7 @@ return  ;
 //    String HttpResponse = "{ \"Response\": \"" +
 //            XML.escape(httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")") +
 //            "\"}";
-        getResponse.setContentType("text/json;Charset=UTF-8");
+        getResponse.setContentType("application/json;Charset=UTF-8");
         getResponse.setHeader("Access-Control-Allow-Methods","GET,PUT,POST,DELETE,OPTIONS");
         getResponse.setHeader("Allow", "POST,GET,PUT,DELETE,OPTIONS");
         getResponse.setHeader("Access-Control-Allow-Origin","*");

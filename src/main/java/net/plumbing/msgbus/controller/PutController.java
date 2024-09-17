@@ -61,7 +61,7 @@ public class PutController {
                     Fault_Rest_End ;
             Controller_log.warn("HttpResponse:\n" + HttpResponse);
 
-            postResponse.setContentType("text/json;Charset=UTF-8");
+            postResponse.setContentType("application/json;Charset=UTF-8");
             return HttpResponse;
         }
 
@@ -76,7 +76,7 @@ public class PutController {
             String OutResponse = Fault_Client_Rest_Begin +
                     "postServletRequest.getInputStream fault:" + ioException.getMessage() +
                     Fault_Rest_End;
-            postResponse.setContentType("text/json;Charset=UTF-8");
+            postResponse.setContentType("application/json;Charset=UTF-8");
             return OutResponse;
         }
 
@@ -147,7 +147,7 @@ public class PutController {
 
             String OutResponse = Fault_Server_Rest_Begin + "CharStreams.toString(getInputStream) fault:" + ioException.getMessage()
                     + Fault_Rest_End;
-            postResponse.setContentType("text/json;Charset=UTF-8");
+            postResponse.setContentType("application/json;Charset=UTF-8");
             return OutResponse;
 
         }
@@ -200,7 +200,7 @@ public class PutController {
                 Controller_log.warn("JSON-HttpResponse построен" );
                 String jsonPrettyPrintString = xmlJSONObj.toString(2);
                 //System.out.println("jsonPrettyPrintString:\n" + jsonPrettyPrintString);
-                postResponse.setContentType("text/json;Charset=UTF-8");
+                postResponse.setContentType("application/json;Charset=UTF-8");
                 HttpResponse = jsonPrettyPrintString;
                 Controller_log.warn("JSON-HttpResponse готов [" + jsonPrettyPrintString + "]" );
                 if (isDebugged)
@@ -217,7 +217,7 @@ public class PutController {
                     System.err.println( strInterruptedException( SQLe ) );
                 }
                 Controller_log.info( "jsonPrettyPrint:[" + jsonPrettyPrintString +"] DataSourcePool=" + DataSourcePoolMetadata.getActive() );
-                postResponse.setContentType("text/json;Charset=UTF-8");
+                postResponse.setContentType("application/json;Charset=UTF-8");
 
                 return ( HttpResponse );
 
@@ -228,7 +228,7 @@ public class PutController {
                 HttpResponse = Fault_Server_Rest_Begin + "Не смогли преобразовать HttpResponse в JSON: " + e.getMessage() + Fault_Rest_End;
             }
 
-            postResponse.setContentType("text/json;Charset=UTF-8");
+            postResponse.setContentType("application/json;Charset=UTF-8");
             if (messageReceiveTask.theadDataAccess != null) {
                 if (isDebugged)
                     messageReceiveTask.theadDataAccess.doUPDATE_QUEUElog(Message.ROWID_QUEUElog, Message.Queue_Id, HttpResponse, Controller_log);
