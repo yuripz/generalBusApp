@@ -238,8 +238,10 @@ public class XmlSQLStatement {
                             // TODO : try change callableStatement.execute(); => callableStatement.executeUpdate(); for PgRee
 
                         } catch (SQLException e) {
+                            e.printStackTrace();
                             messageDetails.MsgReason.append( (", SQLException callableStatement.execute(`"+ messageQueueVO.getOutQueue_Id() + "`):=" + sStackTrace.strInterruptedException(e)) );
-                            MessegeSend_Log.error(messageDetails.MsgReason.toString());
+                            MessegeSend_Log.error("[ {} ] , SQLException callableStatement.execute(`{}`):= {}", messageQueueVO.getQueue_Id(), messageQueueVO.getQueue_Id(), e.getMessage());
+                            //MessegeSend_Log.error(messageDetails.MsgReason.toString());
                             SQLWarning warning = callableStatement.getWarnings();
 
                             while (warning != null) {

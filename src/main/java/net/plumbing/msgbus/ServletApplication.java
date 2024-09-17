@@ -399,7 +399,10 @@ public class ServletApplication implements CommandLineRunner {
                     AppThead_log.info(" New InitDate=" +  DataAccess.dateFormat.format( DataAccess.InitDate ) );
 
                     // если указана pl-sql функция, то она будет периодически исполняться
-                    if (( psqlFunctionRun != null) && ( !psqlFunctionRun.equalsIgnoreCase("NONE")) )
+                    if (( psqlFunctionRun != null) &&
+                        ( !psqlFunctionRun.equalsIgnoreCase("NONE")) &&
+                        ( psqlFunctionRun.length() > 3 )
+                      )
                         DataAccess.moveERROUT2RESOUT( psqlFunctionRun, AppThead_log );
                 }
                 DataAccess.Hermes_Connection.close();

@@ -459,6 +459,7 @@ public class PostController {
             return HttpResponse;
         }
 
+        //Controller_log.warn("Url_Soap_Send:`{}`" , Url_Soap_Send);
         Integer Interface_id =
                 MessageRepositoryHelper.look4MessageTypeVO_2_Interface(Url_Soap_Send, Controller_log);
         if ( Interface_id < 0 )
@@ -469,7 +470,7 @@ public class PostController {
                     // + httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")"
                     " в системе не сконфигурирован" +
                     Fault_Rest_End ;
-            Controller_log.warn("HttpResponse:\n" + HttpResponse);
+            Controller_log.warn("HttpResponse:`{}`" , HttpResponse);
             postResponse.setContentType("text/json;Charset=UTF-8");
             return HttpResponse;
         }

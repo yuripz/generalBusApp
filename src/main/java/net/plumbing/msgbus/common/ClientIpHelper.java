@@ -15,6 +15,7 @@ import net.plumbing.msgbus.threads.utils.MessageUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 
+import javax.validation.constraints.NotNull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,20 +37,23 @@ public class ClientIpHelper {
         else
             return null;
     }
-    public static String findTypes_URL_SOAP_SEND( String url, final String partUrlInternalRestApi, Logger Controller_log) {
+    public static String findTypes_URL_SOAP_SEND( @NotNull String url, final String partUrlInternalRestApi, Logger Controller_log) {
         int posInternalRestApi = url.indexOf(partUrlInternalRestApi);
 //      Controller_log.warn("findTypes_URL_SOAP_SEND() posInternalRestApi:" + posInternalRestApi );
         if (posInternalRestApi > 0) // в переданном URL есть ссылка имеено на Внутреннее Rest-API
         {
             String[] Url_Soap_Send = url.substring(posInternalRestApi + partUrlInternalRestApi.length()).split("/");
-//            Controller_log.warn("url.substring:" + url.substring(posInternalRestApi + partUrlInternalRestApi.length()));
+          Controller_log.warn("url.substring:" + url.substring(posInternalRestApi + partUrlInternalRestApi.length()));
 //            for (String sFrag : Url_Soap_Send) {
 //                Controller_log.warn(sFrag);
 //            }
             if ( Url_Soap_Send!=null )
                 return Url_Soap_Send[0];
-            else
+            else {
+                Controller_log.warn(" В полученном URL в выделенном substring: {} не найден разделитель `/`" , url.substring(posInternalRestApi , partUrlInternalRestApi.length()));
                 return null;
+            }
+
             /*
             if (Url_Soap_Send.length > 0) {
                 if (Url_Soap_Send.length > 1)
