@@ -536,7 +536,7 @@ public class PerfotmInputMessages {
                     if ( isLink_Queue_Finish)
                     { // Считаем, что как то готово готово
                        // MessegeReceive_Log.error("[" + Queue_Id + "] Считаем, что как то готово готово, " + "AckAnswXSLT: " + Message.MessageTemplate4Perform.getAckAnswXSLT());
-                        if (Message.MessageTemplate4Perform.getAckAnswXSLT() != null)
+                        if (Message.MessageTemplate4Perform.getAckAnswXSLT() != null) // наличие секции AckAnswXSLT является признаком, что Confirmation из порожденного OUT
                         {
                             // надо читать ответ из Confirmation порожденного OUT
                             if ( Message.MessageTemplate4Perform.getIsDebugged() )
@@ -598,8 +598,11 @@ public class PerfotmInputMessages {
                             theadDataAccess.doUPDATE_MessageQueue_ExeIn2DelIN(Queue_Id, MessegeReceive_Log);
                             return  0L;
                         }
+                        //MessegeReceive_Log.warn("[" + Queue_Id + "]: Check ==> getConfigPostExec=`{}`, MsgAnswXSLT=`{}` ", Message.MessageTemplate4Perform.getConfigPostExec() , Message.MessageTemplate4Perform.getMsgAnswXSLT());
 
-                        if ((Message.MessageTemplate4Perform.getConfigPostExec()!= null) && (Message.MessageTemplate4Perform.getMsgAnswXSLT() != null ))
+                        if ((Message.MessageTemplate4Perform.getConfigPostExec()!= null) &&
+                                (Message.MessageTemplate4Perform.getMsgAnswXSLT() != null ) &&
+                                (Message.MessageTemplate4Perform.getPropExeMetodPostExec() != null) )
                          { // Есть Post-обработчик , работающий ПОВЕРХ результата порожденного OUT-сообщения
                             // надо читать ответ из Confirmation родного OUT, куда дополнительный обработчик положит Confirmation, перезаписав его
                             // или обработчик порожденного OUT-сообщения перезаписывает Confirmation входящего по результатам прикладной обработки Confirmation от Link_Queue
