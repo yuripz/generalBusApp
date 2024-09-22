@@ -30,7 +30,7 @@ public class TheadDataAccess {
     // private PreparedStatement stmtMsgQueueConfirmation ;
     private PreparedStatement stmt_UPDATE_MessageQueue_In2Ok = null;
     private  String dbSchema="orm";
-    private String rdbmsVendor;
+    public String rdbmsVendor;
 
 
     // public void setDbSchema(String DbSchema) {

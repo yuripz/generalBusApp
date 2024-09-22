@@ -443,7 +443,7 @@ public class PerfotmInputMessages {
 
                     int theadNum  = MessageUtils.get_SelectLink_msg_InfostreamId(theadDataAccess, Link_Queue_Id, Message.MessageTemplate4Perform.getIsDebugged(),  MessegeReceive_Log);
                     ////////////////////////////////
-                    /// посылаем сообщение в Очередь - для ускорения !!!
+                    /// Посылаем сообщение в Очередь - для ускорения !!!
                     String MessageDirectionsCode = null;
                     PerformTextMessageJMSQueue performTextMessageJMSQueue = new PerformTextMessageJMSQueue();
                     javax.jms.Connection Qconnection = null;

@@ -188,16 +188,24 @@ public class CustomJavaMethods {
 
 		XPathExpression<Element> xpathTemplate_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/x_RowId", Filters.element());
 		Element elmtRow_Id = xpathTemplate_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
-		String QueueLog_RowId_Value= elmtRow_Id.getText();
+		String QueueLog_RowId_base64Value= elmtRow_Id.getText();
+		//byte[] decoded = Base64.getDecoder().decode(QueueLog_RowId_base64Value);
+		//String decodedStr = new String(decoded, StandardCharsets.UTF_8);
+		String QueueLog_RowId_Value = new String(Base64.getDecoder().decode(QueueLog_RowId_base64Value), StandardCharsets.UTF_8);
+
 		// RowId ROWID_QUEUElog= RowId...parseLong(QueueLog_RowId_Value);
-		final String SELECT_QUEUElog_Response="select Request from " + dbSchema + ".MESSAGE_QUEUElog where ROWID = ?";
-		// PreparedStatement stmt_SELECT_QUEUElog_Response;
-		//String MessageQueueLogResponse = null;
+		String SELECT_QUEUElog_Response;
+		if (! theadDataAccess.rdbmsVendor.equals("oracle"))
+			SELECT_QUEUElog_Response ="select Request from " + dbSchema + ".MESSAGE_QUEUElog where ROWID = ?";
+			else
+			SELECT_QUEUElog_Response ="select Request from " + dbSchema + ".MESSAGE_QUEUElog where ROWID = CHARTOROWID(?)";
+
 		PreparedStatement stmt_SELECT_QUEUElog_Response = null;
 		messageDetails.XML_MsgClear.setLength(0);
 		try {
 			stmt_SELECT_QUEUElog_Response = theadDataAccess.Hermes_Connection.prepareStatement( SELECT_QUEUElog_Response );
 			stmt_SELECT_QUEUElog_Response.setString(1, QueueLog_RowId_Value);
+
 			ResultSet rs = stmt_SELECT_QUEUElog_Response.executeQuery();
 			while (rs.next()) {
 				messageDetails.XML_MsgClear.append( rs.getString("Request"));
@@ -210,6 +218,9 @@ public class CustomJavaMethods {
 			stmt_SELECT_QUEUElog_Response = null;
 
 		}catch (SQLException e) {
+			MessegeReceive_Log.info( "["+ messageQueueVO.getQueue_Id() +"] select Request from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "'; fault {}",
+					e.getMessage() );
+
 			e.printStackTrace();
 			if ( stmt_SELECT_QUEUElog_Response != null )
 				try { stmt_SELECT_QUEUElog_Response.close(); } catch (SQLException ex) { ex.printStackTrace(); }
@@ -240,9 +251,14 @@ public class CustomJavaMethods {
 
 		XPathExpression<Element> xpathTemplate_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/x_RowId", Filters.element());
 		Element elmtRow_Id = xpathTemplate_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
-		String QueueLog_RowId_Value= elmtRow_Id.getText();
+
+		String QueueLog_RowId_base64Value= elmtRow_Id.getText();
+		//byte[] decoded = Base64.getDecoder().decode(QueueLog_RowId_base64Value);
+		//String decodedStr = new String(decoded, StandardCharsets.UTF_8);
+		String QueueLog_RowId_Value = new String(Base64.getDecoder().decode(QueueLog_RowId_base64Value), StandardCharsets.UTF_8);
 		// RowId ROWID_QUEUElog= RowId...parseLong(QueueLog_RowId_Value);
 		String SELECT_QUEUElog_Response="select Response from " + dbSchema + ".MESSAGE_QUEUElog where ROWID = ?";
+
 		// PreparedStatement stmt_SELECT_QUEUElog_Response;
 		//String MessageQueueLogResponse = null;
 		PreparedStatement stmt_SELECT_QUEUElog_Response = null;
