@@ -147,22 +147,7 @@ public class GetController  {
                 // Message.XML_Request_Method.append( ClientIpHelper.mapQryParam2SQLRequest(ParamElements[0]) );
                 Message.XML_Request_Method.append(ParamElements[0]);
                 Message.XML_Request_Method.append(CloseTag);
-//-------------------------------------------------/
-/*=============================================================
-                Message.XML_Request_Method.append(OpenTag);
-                Message.XML_Request_Method.append(ParamElements[0]);
-                Message.XML_Request_Method.append(CloseTag);
 
-                if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
-                    // Controller_log.warn(queryParams[i].substring(ParamElements[0].length() + 1));
-                    Message.XML_Request_Method.append(queryParams[queryParamIndex].substring(ParamElements[0].length() + 1));
-                }
-
-                Message.XML_Request_Method.append(OpenTag);
-                Message.XML_Request_Method.append(EndTag);
-                Message.XML_Request_Method.append(ParamElements[0]);
-                Message.XML_Request_Method.append(CloseTag);
-                //===================================================*/
             }
             Message.XML_Request_Method.append(Parametrs_End);
             Controller_log.info("input XML_Request_Method: [" + Message.XML_Request_Method.toString() + "]");
@@ -547,18 +532,13 @@ public class GetController  {
             }
             Controller_log.warn("Орерация с типом: `" + BusOperationMesssageType + "` NN=" + OperationId);
 
-            if ( (queryString == null)  || (OperationId == null ))
+            if ( (queryString == null)  )
             {   getResponse.setStatus(422);
-                if (queryString == null)
                 HttpResponse= Fault_Client_Rest_Begin +
                         "Клиент не передал " +
                         org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")" ) +
                         " параметры в запросе" +
                         Fault_Rest_End ;
-                if (OperationId == null)
-                    HttpResponse= Fault_Client_Rest_Begin +
-                            "Клиент не передал  в запросе HTTP-Header BusOperationId" +
-                            Fault_Rest_End ;
                 Controller_log.warn("HttpResponse:" + HttpResponse);
                 getResponse.setContentType("application/json;Charset=UTF-8");
                 return HttpResponse;
@@ -632,7 +612,7 @@ public class GetController  {
                 + Message.XML_Request_Method.toString()
                 + Body_noNS_End + Envelope_noNS_End;
 
-            Controller_log.info("Сформировали XML_MsgInput: `" + Message.XML_MsgInput.toString()+"`");
+            Controller_log.info("Сформировали XML_MsgInput:`{}`", Message.XML_MsgInput);
             // Message.XML_MsgClear.append(Message.XML_MsgInput);
             RestAPI_ReceiveTask messageReceiveTask=null;
             try {

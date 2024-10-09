@@ -418,6 +418,90 @@ public class CustomJavaMethods {
 			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе MessageTemplates_SaveConfig не найден параметр Parametrs/QueryString/ConfigEntry");
 			return -34;
 		}
+
+		XPathExpression<Element> xpathUsr_Token = XPathFactory.instance().compile("/Envelope/Body/Parametrs/QueryString/Usr_Token", Filters.element());
+		Element elmtUsr_Token = xpathUsr_Token.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
+		if ( elmtUsr_Token== null) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе MessageTemplates_SaveConfig не найден параметр Parametrs/QueryString/Usr_Token");
+			return -37;
+		}
+		String Usr_Token_Value= elmtUsr_Token.getText();
+		String Usr_Login_LastMaker= null;
+		String Select_Usr_Login_by_Usr_Token;
+		if (!theadDataAccess.rdbmsVendor.equals("oracle")) {
+		/*
+			with Token as (
+			select T.Usr_Id,
+				   case when T.Usr_Id != 0 then
+				   COALESCE( T.EXPARED_DT + Interval '90 minutes', CURRENT_TIMESTAMP at time zone 'Europe/Moscow' - Interval '1 second')
+				   else CURRENT_TIMESTAMP at time zone 'Europe/Moscow' + Interval '60 second' end  as EXPARED_DT , CURRENT_TIMESTAMP at time zone 'Europe/Moscow'-- into STRICT  v_USR_ID, v_EXPARED_DT
+			from orm.Tokens T where T.USR_TOKEN = '45C86F488D1623379EEBF82E5C13ADC4' )
+			select r.Login from Token, orm.AU_USERS R
+			WHERE R.Usr_Id = Token.Usr_Id
+			and r.usr_state ='ON'
+			and EXPARED_DT > CURRENT_TIMESTAMP at time zone 'Europe/Moscow'
+			and r.role_id < 3
+			;
+		 */
+			Select_Usr_Login_by_Usr_Token =
+			"""
+			with Token as (
+					select T.Usr_Id,
+			case when T.Usr_Id != 0 then
+				COALESCE( T.EXPARED_DT + Interval '90 minutes', CURRENT_TIMESTAMP at time zone 'Europe/Moscow' - Interval '1 second')
+       			else CURRENT_TIMESTAMP at time zone 'Europe/Moscow' + Interval '60 second' end as EXPARED_DT
+			from\s"""  + dbSchema + """
+			.Tokens T where T.USR_TOKEN = ? )
+			select r.Login from Token,\s""" + dbSchema +"""
+.AU_USERS R
+				WHERE R.Usr_Id = Token.Usr_Id
+				and r.usr_state ='ON'
+				and EXPARED_DT >= CURRENT_TIMESTAMP at time zone 'Europe/Moscow'
+				and r.role_id < 3
+			"""
+			;
+		} else  {
+			Select_Usr_Login_by_Usr_Token =
+					"""
+                    with Token as (
+                            select T.Usr_Id,
+                    case when T.Usr_Id != 0 then
+                        COALESCE( T.EXPARED_DT + 1/12, sysDate - 1/3600)
+                           else sysDate + 1/24  end  as EXPARED_DT
+                        from\s"""  + dbSchema + """
+				.Tokens T where T.USR_TOKEN = ? )
+				select r.Login from Token,\s""" + dbSchema +"""
+.AU_USERS R WHERE R.Usr_Id = Token.Usr_Id
+				and r.usr_state ='ON'
+				and EXPARED_DT >= sysDate
+				and r.role_id < 3"""
+			;
+		}
+
+		try ( PreparedStatement stmtUsr_Login_by_Usr_Token = theadDataAccess.Hermes_Connection.prepareStatement(Select_Usr_Login_by_Usr_Token))
+		{
+			stmtUsr_Login_by_Usr_Token.setString(1, Usr_Token_Value );
+			ResultSet rs = stmtUsr_Login_by_Usr_Token.executeQuery();
+			while (rs.next()) {
+				//LastMaker = "ui." + Login_LastMaker ;
+				Usr_Login_LastMaker = "ui." + rs.getString("Login");
+			}
+			rs.close();
+		}
+			catch (SQLException e) {
+			messageDetails.MsgReason.setLength(0);
+				messageDetails.MsgReason.append("Запрос на получение пользователя по ключу доступа `").append(Select_Usr_Login_by_Usr_Token).append("` fault: ");
+			messageDetails.MsgReason.append(e.getMessage());
+			e.printStackTrace();
+			return -2;
+		}
+		if ( Usr_Login_LastMaker== null) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] Для запросе MessageTemplates_SaveConfig не найден пользователь по ключу доступа Usr_Token =`" + Usr_Token_Value + "`");
+			return -38;
+		}
+
 		String configEntry = elmtConfigEntry.getText();
 		try {
 			PerformSaveTemplateEntry.check_Conf_Text( configEntry);
@@ -437,7 +521,7 @@ public class CustomJavaMethods {
 
 		String contentEntry_4_Save  = elmtContentEntry_4_Save.getText();;
 
-		try {
+		try (
 			PreparedStatement stmtMsgTemplate = theadDataAccess.Hermes_Connection.prepareStatement(
 					"select t.template_id, " +
 							"t.interface_id, " +
@@ -453,8 +537,9 @@ public class CustomJavaMethods {
 							"t.dst_subcod, " +
 							"t.lastmaker, " +
 							"t.lastdate " +
-							"from "+ dbSchema + ".MESSAGE_TemplateS t where (1=1) and t.template_id =?"
-			);
+							"from "+ dbSchema + ".MESSAGE_TemplateS t where (1=1) and t.template_id =?")
+		    )
+		{
 			stmtMsgTemplate.setInt(1, Template_Id_4_Update_MessageTemplate );
 			ResultSet rs = stmtMsgTemplate.executeQuery();
 			while (rs.next()) {
@@ -498,11 +583,19 @@ public class CustomJavaMethods {
 					return -2;
 				}
 			}
+			rs.close();
 		} catch (SQLException e) {
 			messageDetails.MsgReason.setLength(0);
 			messageDetails.MsgReason.append(e.getMessage());
 			e.printStackTrace();
-			return -2;
+			return -3;
+		}
+		if (
+		theadDataAccess.doUpdate_MESSAGE_Template_Param( messageQueueVO.getQueue_Id(), Template_Id_4_Update_MessageTemplate, Usr_Login_LastMaker, MessegeReceive_Log ) != 0
+		)
+		{  messageDetails.XML_MsgResponse.setLength(0);
+			messageDetails.MsgReason.append("update Message_Template params for Template_Id =" + Template_Id_4_Update_MessageTemplate + " fault");
+			return -4;
 		}
 
 		messageDetails.XML_MsgResponse.setLength(0);

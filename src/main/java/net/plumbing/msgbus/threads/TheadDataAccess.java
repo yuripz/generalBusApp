@@ -31,7 +31,9 @@ public class TheadDataAccess {
     private PreparedStatement stmt_UPDATE_MessageQueue_In2Ok = null;
     private  String dbSchema="orm";
     public String rdbmsVendor;
-
+    public String getDbSchema() {
+        return dbSchema;
+    }
 
     // public void setDbSchema(String DbSchema) {
     //     this.dbSchema = DbSchema;
@@ -159,14 +161,9 @@ public class TheadDataAccess {
      */
     public PreparedStatement stmt_New_Queue_Insert;
 
-/*
-    public void close_Hermes_Connection() {
-        try { this.Hermes_Connection.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    */
+    private  String update_MESSAGE_Template_Param;
+    private  PreparedStatement stmt_update_MESSAGE_Template_Param=null;
+
 
     public Connection make_Hikari_Connection_Only( String db_userid , String db_password,
                                                  HikariDataSource dataSource,
@@ -408,6 +405,11 @@ public class TheadDataAccess {
             dataAccess_log.error("make_Message_LastBodyTag_Query() fault");
             return null;
         }
+
+        if (make_update_MESSAGE_Template_Param(HrmsSchema, dataAccess_log) == null) {
+            dataAccess_log.error("make_Message_LastBodyTag_Query() fault");
+            return null;
+        }
         return Target_Connection;
     }
 
@@ -427,6 +429,50 @@ public class TheadDataAccess {
         }
         this.stmt_DELETE_Message_Details = StmtMsg_Queue;
         return  StmtMsg_Queue ;
+    }
+
+
+    private  PreparedStatement make_update_MESSAGE_Template_Param( String HrmsSchema, Logger dataAccess_log ) {
+        PreparedStatement StmtMsg_Queue;
+        update_MESSAGE_Template_Param = "update " + HrmsSchema +  ".Message_Templates set Lastmaker=?, Lastdate=current_timestamp where Template_Id =?";
+        try {
+
+            StmtMsg_Queue = this.Hermes_Connection.prepareStatement(update_MESSAGE_Template_Param);
+        } catch (SQLException e) {
+            dataAccess_log.error( e.getMessage() );
+            e.printStackTrace();
+            return ( (PreparedStatement) null );
+        }
+        stmt_update_MESSAGE_Template_Param = StmtMsg_Queue;
+        return StmtMsg_Queue;
+    }
+
+    public int doUpdate_MESSAGE_Template_Param( long Queue_Id, Integer Template_Id, String Login_LastMaker, Logger dataAccess_log ) {
+
+        if (stmt_update_MESSAGE_Template_Param != null) {
+            try {
+                // String LastMaker = "ui." + Login_LastMaker ;
+                stmt_update_MESSAGE_Template_Param.setString(1, Login_LastMaker );
+                stmt_update_MESSAGE_Template_Param.setInt(2, Template_Id);
+                stmt_update_MESSAGE_Template_Param.executeUpdate();
+                dataAccess_log.info( "[" + Queue_Id + "] `{}` for Template_Id=" + Template_Id+  "]: ) done", update_MESSAGE_Template_Param  );
+
+                this.Hermes_Connection.commit();
+            } catch (SQLException SQLe) {
+                dataAccess_log.error( "[" + Queue_Id + "] `" + update_MESSAGE_Template_Param + "` for Template_Id=" + Template_Id+  "]: ) fault: " + SQLe.getMessage() );
+
+                try {
+                    this.Hermes_Connection.rollback();
+                } catch (SQLException exp) {
+                    dataAccess_log.error( "[" + Queue_Id + "] rollback(" + update_MESSAGE_Template_Param + ") fault: " + SQLe.getMessage() );
+                    System.err.println( "[" + Queue_Id + "] rollback (" + update_MESSAGE_Template_Param + ") fault: " + SQLe.getMessage()  );
+                    exp.printStackTrace();
+                    return -1;
+                }
+                return -11;
+            }
+        }
+        return 0;
     }
 
     private PreparedStatement make_SelectLink_Queue_Id( Logger dataAccess_log )
