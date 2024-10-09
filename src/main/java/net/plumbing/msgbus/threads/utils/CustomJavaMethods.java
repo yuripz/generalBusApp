@@ -458,7 +458,7 @@ public class CustomJavaMethods {
 				WHERE R.Usr_Id = Token.Usr_Id
 				and r.usr_state ='ON'
 				and EXPARED_DT >= CURRENT_TIMESTAMP at time zone 'Europe/Moscow'
-				and r.role_id < 3
+				and r.role_id < 2
 			"""
 			;
 		} else  {
@@ -475,7 +475,7 @@ public class CustomJavaMethods {
 .AU_USERS R WHERE R.Usr_Id = Token.Usr_Id
 				and r.usr_state ='ON'
 				and EXPARED_DT >= sysDate
-				and r.role_id < 3"""
+				and r.role_id < 2"""
 			;
 		}
 
