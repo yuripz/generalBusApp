@@ -3,6 +3,7 @@ package net.plumbing.msgbus.threads.utils;
 //import oracle.jdbc.OracleCallableStatement;
 import net.plumbing.msgbus.common.sStackTrace;
 import net.plumbing.msgbus.threads.TheadDataAccess;
+import oracle.jdbc.OracleResultSet;
 import org.postgresql.jdbc.PgResultSet;
 //import oracle.jdbc.OracleResultSetMetaData;
 //import oracle.jdbc.OracleTypes;
@@ -345,13 +346,23 @@ public class XmlSQLStatement {
                             try {
                                 // Step 2.C: Executing Select-Statement
                                 //ResultSet rs = selectStatement.executeQuery();
-                                ResultSet rs = (ResultSet)callableStatement.getObject (1); // .getResultSet(); //
-                                // TODO Oracle
-                                //OracleResultSet oraRs = (OracleResultSet) callableStatement.getObject(1);
-                                PgResultSet oraRs = (PgResultSet) callableStatement.getObject(1);
-                                ResultSetMetaData resultSetMetaData = callableStatement.getMetaData(); // getParameterMetaData(); .getMetaData();
-                                MessegeSend_Log.warn( "resultSetMetaData =" + resultSetMetaData ) ;
-                                ResultSetMetaData oraRsMetaDatasmd = oraRs.getMetaData();
+                                ResultSetMetaData oraRsMetaDatasmd;
+
+                                    ResultSet rs = (ResultSet) callableStatement.getObject(1); // .getResultSet(); //
+                                    // TODO Oracle
+                                    //OracleResultSet oraRs = (OracleResultSet) callableStatement.getObject(1);
+                                if (theadDataAccess.rdbmsVendor.equalsIgnoreCase("postgresql")) {
+                                    PgResultSet oraRs = (PgResultSet) callableStatement.getObject(1);
+                                    ResultSetMetaData resultSetMetaData = callableStatement.getMetaData(); // getParameterMetaData(); .getMetaData();
+                                    MessegeSend_Log.warn("resultSetMetaData =" + resultSetMetaData);
+                                     oraRsMetaDatasmd = oraRs.getMetaData();
+                                }
+                                else {
+                                    OracleResultSet oraRs = (OracleResultSet) callableStatement.getObject(1);
+                                    ResultSetMetaData resultSetMetaData = callableStatement.getMetaData(); // getParameterMetaData(); .getMetaData();
+                                    MessegeSend_Log.warn("resultSetMetaData =" + resultSetMetaData);
+                                    oraRsMetaDatasmd = oraRs.getMetaData();
+                                }
                                 MessegeSend_Log.warn( "OraResultSetMetaData =" + oraRsMetaDatasmd ) ;
                                 //ParameterMetaData resultSetMetaData = callableStatement.getParameterMetaData();
                                 int ColumnCount = oraRsMetaDatasmd.getColumnCount(); // Integer.parseInt(SQLStatement_ColumnCount); //
