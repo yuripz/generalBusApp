@@ -465,8 +465,8 @@ public class PostController {
         if ( Interface_id < 0 )
         {   postResponse.setStatus(500);
             HttpResponse= Fault_Client_Rest_Begin +
-                    "Ресурса нет на сервере: Интерфейс для обработки " +
-                    org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")" ) +
+                    "Ресурса нет на сервере: полученный из URL Интерфейс `" + Url_Soap_Send + "` для обработки запроса, Method=" +
+                    org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": URL= (" + url + ") queryString(" + queryString + ")" ) +
                     // + httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")"
                     " в системе не сконфигурирован" +
                     Fault_Rest_End ;

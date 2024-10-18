@@ -324,7 +324,7 @@ public class ClientIpHelper {
                         String JSONkey = (String) FilterRecordJSONs.next();
                         Object currJSONObject = FilterRecordJSONObj.get(JSONkey);
 
-                        String JSONvalue = currJSONObject.toString(); //FilterRecordJSONObj.getString( JSONkey );
+                        String JSONvalue = customReplaceAll(currJSONObject.toString(),"\n", ""); // Убираем из филра переводы строки
                         XML_Request_Method.append(XMLchars.OpenTag);
                         XML_Request_Method.append( "RecordFilterFieldName"  ) ;
                         XML_Request_Method.append(XMLchars.CloseTag);
@@ -336,8 +336,36 @@ public class ClientIpHelper {
                         XML_Request_Method.append(XMLchars.OpenTag);
                         XML_Request_Method.append( "RecordFilterFieldValue"  ) ;
                         XML_Request_Method.append(XMLchars.CloseTag);
-                            XML_Request_Method.append(JSONvalue); // .replace('\"', '\''));
 
+
+                        //  вместо конкотенации парсим вложенный JSON
+                        //   XML_Request_Method.append(JSONvalue); // .replace('\"', '\''));
+                        // вместо конкотенации парсим вложенный JSON
+                        if (JSONvalue.length() > 3 ) {
+                            if (( JSONvalue.charAt(0) == '{') || ( JSONvalue.charAt(0) == '[') ) {
+
+                                String JSONvalue_4_Parsing;
+                                if ( JSONvalue.charAt(0) == '{') JSONvalue_4_Parsing = JSONvalue;
+                                else JSONvalue_4_Parsing = "{ \"" + JSONkey + "s\":  " + JSONvalue + " }";
+                                try {
+                                    JSONObject RestResponseJSON = new JSONObject(JSONvalue_4_Parsing);
+                                    XML.setMessege_Log( Controller_log );
+                                    XML_Request_Method.append( XML.toString(RestResponseJSON, XMLchars.NameRootTagContentJsonResponse ) );
+
+                                } catch (Exception e) {
+                                    XML_Request_Method.append(JSONvalue);
+                                    Controller_log.error("add2XML_Request_Method_FilterTags on `" + JSONvalue_4_Parsing + "` fault: " + sStackTrace.strInterruptedException(e));
+                                    XML_Request_Method.append(  StringEscapeUtils.escapeXml10(MessageUtils.stripNonValidXMLCharacters(JSONvalue)) );
+                                }
+                            }
+                            else // - это не Json, добавляем строку как есть
+                                XML_Request_Method.append(  StringEscapeUtils.escapeXml10(MessageUtils.stripNonValidXMLCharacters(JSONvalue)) );
+                            // int ParamElementNameLength = ( ParamElementName.indexOf(']') > 0) ? ParamElementName.indexOf(']') : ParamElementName.length() ;
+
+                        }
+                        else // - это не может быть Json добавляем строку как есть
+                            XML_Request_Method.append( MessageUtils.stripNonValidXMLCharacters( JSONvalue) );
+                        ////////
                         XML_Request_Method.append(XMLchars.OpenTag);
                         XML_Request_Method.append(XMLchars.EndTag);
                         XML_Request_Method.append( "RecordFilterFieldValue"  ) ;
@@ -358,82 +386,125 @@ public class ClientIpHelper {
 
     }
 
+    private static String customReplaceAll(String str, String oldStr, String newStr) {
 
-    // Sort
-    public static void add2XML_Request_Method_CustomTags(StringBuilder XML_Request_Method,  String ParamElement,  Logger Controller_log )
+        if ("".equals(str) || "".equals(oldStr) || oldStr.equals(newStr)) {
+            return str;
+        }
+        if (newStr == null) {
+            newStr = "";
+        }
+        final int strLength = str.length();
+        final int oldStrLength = oldStr.length();
+        StringBuilder builder = new StringBuilder(str);
+
+        for (int i = 0; i < strLength; i++) {
+            int index = builder.indexOf(oldStr, i);
+
+            if (index == -1) {
+                if (i == 0) {
+                    return str;
+                }
+                return builder.toString();
+            }
+            builder = builder.replace(index, index + oldStrLength, newStr);
+
+        }
+        return builder.toString();
+    }
+    public static void add2XML_Request_Method_CustomTags(StringBuilder XML_Request_Method, String QryParam, String ParamElement,  Logger Controller_log )
             throws  StringIndexOutOfBoundsException
     {
         Controller_log.warn("add2XML_Request_Method_CustomTags:`" + ParamElement + "` escapeXml10(stripNonValidXMLCharacters()) : `" +  StringEscapeUtils.escapeXml10(MessageUtils.stripNonValidXMLCharacters(ParamElement)) + "`"  );
-    if (ParamElement.length() > 3 ) {
-        if (( ParamElement.charAt(0) == '{') || ( ParamElement.charAt(0) == '[') ) {
+        String ClearParamElement;
+        Long ParamElement2Long;
+        switch ( QryParam) {
+                case  "Sort" :
+                case  "OrderBy" :
+                case  "Pk_FieldName" :ClearParamElement = customReplaceAll(customReplaceAll(customReplaceAll(ParamElement, "union " , ""), "select ", ""), "\n", "");
+            break;
+                case  "FirstRecord2Fetch" :
+                case  "LastRecord2Fetch" : ParamElement2Long = Long.parseLong(ParamElement); ClearParamElement = ParamElement2Long.toString();
+            break;
+                case "Usr_Token" : ClearParamElement =ParamElement.replaceAll("[^\\d]+", "");
+            break;
+                case  "Pk_Value" :
+                case  "Id" :
+                default: ClearParamElement =ParamElement;
+            break;
+        }
+
+    if (ClearParamElement.length() > 3 ) {
+        if (( ClearParamElement.charAt(0) == '{') || ( ClearParamElement.charAt(0) == '[') ) {
             try {
-                JSONObject RestResponseJSON = new JSONObject(ParamElement);
+                JSONObject RestResponseJSON = new JSONObject(ClearParamElement);
                 XML.setMessege_Log( Controller_log );
 
                 XML_Request_Method.append( XML.toString(RestResponseJSON, XMLchars.NameRootTagContentJsonResponse ) );
 
             } catch (Exception e) {
-                XML_Request_Method.append(ParamElement);
+                XML_Request_Method.append(ClearParamElement);
                 Controller_log.error("add2XML_Request_Method_CustomTags on `" + XML_Request_Method + "` fault: " + sStackTrace.strInterruptedException(e));
                 return;
             }
         }
         else // - это не Json, добавляем строку как есть
-        XML_Request_Method.append(  StringEscapeUtils.escapeXml10(MessageUtils.stripNonValidXMLCharacters(ParamElement)) );
-        // int ParamElementNameLength = ( ParamElementName.indexOf(']') > 0) ? ParamElementName.indexOf(']') : ParamElementName.length() ;
+        XML_Request_Method.append(  StringEscapeUtils.escapeXml10(MessageUtils.stripNonValidXMLCharacters(ClearParamElement)) );
+        // int ClearParamElementNameLength = ( ClearParamElementName.indexOf(']') > 0) ? ClearParamElementName.indexOf(']') : ClearParamElementName.length() ;
 
     }
     else // - это не может быть Json добавляем строку как есть
-        XML_Request_Method.append( MessageUtils.stripNonValidXMLCharacters( ParamElement) );
+        XML_Request_Method.append( MessageUtils.stripNonValidXMLCharacters( ClearParamElement) );
     }
 // Sort
-public static void add2XML_Request_Method_SortTags(StringBuilder XML_Request_Method, int queryParamIndex,  String queryParams[], String ParamElements[], Logger Controller_log )
-throws  StringIndexOutOfBoundsException
-{
-    String ParamElementName = ClientIpHelper.toCamelCase( ParamElements[0] , "_" ) ;
-    // int ParamElementNameLength = ( ParamElementName.indexOf(']') > 0) ? ParamElementName.indexOf(']') : ParamElementName.length() ;
+//public static void add2XML_Request_Method_SortTags(StringBuilder XML_Request_Method, int queryParamIndex,  String queryParams[], String ParamElements[], Logger Controller_log )
+//throws  StringIndexOutOfBoundsException
+//{
+//    String ParamElementName = ClientIpHelper.toCamelCase( ParamElements[0] , "_" ) ;
+//    // int ParamElementNameLength = ( ParamElementName.indexOf(']') > 0) ? ParamElementName.indexOf(']') : ParamElementName.length() ;
+//
+//    if ( ParamElementName.equalsIgnoreCase("Sort"))
+//    {
+//        XML_Request_Method.append(XMLchars.OpenTag);
+//        XML_Request_Method.append( "Sort"  ) ;
+//        XML_Request_Method.append(XMLchars.CloseTag);
+//        if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
+//            //Controller_log.warn(queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1));
+//            String SortField_and_Order = queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1);
+//            // извлекаем из [0,9] первое число после "{" до "}"
+//            XML_Request_Method.append( SortField_and_Order.substring(
+//                    SortField_and_Order.indexOf("[\"") +2,
+//                    SortField_and_Order.indexOf("\",\"")
+//            ) ) ;
+//        }
+//
+//        XML_Request_Method.append(XMLchars.OpenTag);
+//        XML_Request_Method.append(XMLchars.EndTag);
+//        XML_Request_Method.append("Sort" ) ;
+//        XML_Request_Method.append(XMLchars.CloseTag);
+//
+//        if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
+//            XML_Request_Method.append(XMLchars.OpenTag);
+//            XML_Request_Method.append( "Order_By"  ) ;
+//            XML_Request_Method.append(XMLchars.CloseTag);
+//
+//            //Controller_log.warn(queryParams[ queryParamIndex].substring(ParamElements[0].length() + 1));
+//            String SortField_and_Order = queryParams[queryParamIndex ].substring(ParamElements[0].length() + 1);
+//            // извлекаем из [0,9] первое число после "[" до ","
+//            XML_Request_Method.append( SortField_and_Order.substring(
+//                    SortField_and_Order.indexOf("\",\"") +3,
+//                    SortField_and_Order.indexOf("\"]")
+//                    )
+//            );
+//            XML_Request_Method.append(XMLchars.OpenTag);
+//            XML_Request_Method.append(XMLchars.EndTag);
+//            XML_Request_Method.append( "Order_By"  ) ;
+//            XML_Request_Method.append(XMLchars.CloseTag);
+//
+//        }
+//    }
+//}
 
-    if ( ParamElementName.equalsIgnoreCase("Sort"))
-    {
-        XML_Request_Method.append(XMLchars.OpenTag);
-        XML_Request_Method.append( "Sort"  ) ;
-        XML_Request_Method.append(XMLchars.CloseTag);
-        if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
-            //Controller_log.warn(queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1));
-            String SortField_and_Order = queryParams[ queryParamIndex ].substring(ParamElements[0].length() + 1);
-            // извлекаем из [0,9] первое число после "{" до "}"
-            XML_Request_Method.append( SortField_and_Order.substring(
-                    SortField_and_Order.indexOf("[\"") +2,
-                    SortField_and_Order.indexOf("\",\"")
-            ) ) ;
-        }
-
-        XML_Request_Method.append(XMLchars.OpenTag);
-        XML_Request_Method.append(XMLchars.EndTag);
-        XML_Request_Method.append("Sort" ) ;
-        XML_Request_Method.append(XMLchars.CloseTag);
-
-        if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
-            XML_Request_Method.append(XMLchars.OpenTag);
-            XML_Request_Method.append( "Order_By"  ) ;
-            XML_Request_Method.append(XMLchars.CloseTag);
-
-            //Controller_log.warn(queryParams[ queryParamIndex].substring(ParamElements[0].length() + 1));
-            String SortField_and_Order = queryParams[queryParamIndex ].substring(ParamElements[0].length() + 1);
-            // извлекаем из [0,9] первое число после "[" до ","
-            XML_Request_Method.append( SortField_and_Order.substring(
-                    SortField_and_Order.indexOf("\",\"") +3,
-                    SortField_and_Order.indexOf("\"]")
-                    )
-            );
-            XML_Request_Method.append(XMLchars.OpenTag);
-            XML_Request_Method.append(XMLchars.EndTag);
-            XML_Request_Method.append( "Order_By"  ) ;
-            XML_Request_Method.append(XMLchars.CloseTag);
-
-        }
-    }
-}
 //    public static String BrecketString2CamelCase(final String init, final String separator) {
 //        if ( (init == null) || (separator == null))
 //            return null;
