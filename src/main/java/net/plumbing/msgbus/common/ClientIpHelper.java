@@ -426,7 +426,7 @@ public class ClientIpHelper {
                 case  "FirstRecord2Fetch" :
                 case  "LastRecord2Fetch" : ParamElement2Long = Long.parseLong(ParamElement); ClearParamElement = ParamElement2Long.toString();
             break;
-                case "Usr_Token" : ClearParamElement =ParamElement.replaceAll("[^\\h]+", "");
+                case "Usr_Token" : ClearParamElement =ParamElement.replaceAll("[^A-F0-9]+", "");
             break;
                 case  "Pk_Value" :
                 case  "Id" :
