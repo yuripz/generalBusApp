@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>net.plumbing.msgbus</groupId>
 	<artifactId>Receiver</artifactId>
-    <version>0.3.24.10.16-SNAPSHOT</version>
+    <version>0.3.24.10.26-SNAPSHOT</version>
     <name>Receiver</name>
     <description>servlet project for Spring Boot</description>
     	<properties>
@@ -19,38 +19,7 @@
 	</properties>
     <dependencies>
 
-        <!--
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>1.4.8</version>
-        </dependency> -->
 
-        <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.4.8</version>
-            <scope>test</scope>
-        </dependency>-->
-
-        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>2.20.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.20.0</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.2</version>
-        </dependency> -->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -98,12 +67,6 @@
             <optional>true</optional>
         </dependency>
 
-        <!--
-        <dependency> <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-            <version>3.2.9</version>
-        </dependency>
-        -->
 
         <dependency>
             <groupId>javax.jms</groupId>
@@ -239,14 +202,6 @@
             <artifactId>javax.xml.soap-api</artifactId>
             <version>1.4.0</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>24.1.0</version>
-            <scope>provided</scope>
-        </dependency>-->
 
         <dependency>
             <groupId>com.github.javadev</groupId>
