@@ -415,7 +415,7 @@ public class ClientIpHelper {
     public static void add2XML_Request_Method_CustomTags(StringBuilder XML_Request_Method, String QryParam, String ParamElement,  Logger Controller_log )
             throws  StringIndexOutOfBoundsException
     {
-        Controller_log.warn("add2XML_Request_Method_CustomTags:`" + ParamElement + "` escapeXml10(stripNonValidXMLCharacters()) : `" +  StringEscapeUtils.escapeXml10(MessageUtils.stripNonValidXMLCharacters(ParamElement)) + "`"  );
+        // Controller_log.warn("add2XML_Request_Method_CustomTags:`" + ParamElement + "` escapeXml10(stripNonValidXMLCharacters()) : `" +  StringEscapeUtils.escapeXml10(MessageUtils.stripNonValidXMLCharacters(ParamElement)) + "`"  );
         String ClearParamElement;
         Long ParamElement2Long;
         switch ( QryParam) {

@@ -899,7 +899,7 @@ public class PerfotmInputMessages {
             return  0L;
     }
 
-    public HttpClient getCloseableHttpClient( MessageQueueVO messageQueueVO, MessageDetails Message , boolean isPostExec,TheadDataAccess theadDataAccess,
+    private HttpClient getCloseableHttpClient( MessageQueueVO messageQueueVO, MessageDetails Message , boolean isPostExec,TheadDataAccess theadDataAccess,
                                                        Logger MessegeReceive_Log) {
         // int ReadTimeoutInMillis = ApplicationProperties.ApiRestWaitTime * 1000;
         int ConnectTimeout = 5 ;

@@ -67,7 +67,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.4.10.27";
+    public static final String ApplicationName="*Receiver_BUS* v.4.11.30";
     public static String propJDBC;
     public static String propExtJDBC;
 
@@ -187,36 +187,45 @@ public class ServletApplication implements CommandLineRunner {
             NotifyByChannel.Telegram_sendMessage( "Do stopping " + ApplicationName + " *DB problem* `"  +  "` ip:" + InetAddress.getLocalHost().getHostAddress()+ ", db `" + connectionProperties.gethrmsPoint() + "` as `"+ connectionProperties.gethrmsDbLogin() + "`), *stopping*", AppThead_log );
             System.exit(-19);
         }
-        try {
-            ApplicationProperties.extSystemDataSource = ExtSystemDataAccess.HiDataSource (connectionProperties.getextsysPoint(),
-                    connectionProperties.getextsysDbLogin(),
-                    connectionProperties.getextsysDbPasswd(),
-                    connectionProperties.getextSysDataSourceClassName()
-            );
-            ApplicationProperties.extSystemDataSourcePoolMetadata = ExtSystemDataAccess.DataSourcePoolMetadata;
-        } catch (Exception e) {
-            AppThead_log.error("НЕ удалось подключится к базе данных внешней системы: ("+ " )" + e.getMessage());
-            NotifyByChannel.Telegram_sendMessage( "Do stopping " + ApplicationName + " *extDB problem* `" +  e.getMessage() +  "` ip:" + InetAddress.getLocalHost().getHostAddress()+ ", db `" + connectionProperties.getextsysPoint() + "` as `"+ connectionProperties.getextsysDbLogin() + "`), *stopping*", AppThead_log );
-            System.exit(-20);
-        }
 
         ApplicationProperties.ExtSysPoint = connectionProperties.getextsysPoint();
         ApplicationProperties.ExtSysDbLogin = connectionProperties.getextsysDbLogin();
         ApplicationProperties.ExtSysDbPasswd = connectionProperties.getextsysDbPasswd();
 
-        AppThead_log.info("extSystem DataSource = " + ApplicationProperties.extSystemDataSource );
-        if ( ApplicationProperties.extSystemDataSource != null )
+        if ( ApplicationProperties.ExtSysPoint.equalsIgnoreCase("NONE") )
         {
-            AppThead_log.info("extSystem DataSource = " + ApplicationProperties.extSystemDataSource
-                    + " JdbcUrl:" + ApplicationProperties.extSystemDataSource.getJdbcUrl()
-                    + " isRunning:" + ApplicationProperties.extSystemDataSource.isRunning()
-                    + " 4 dbSchema:" + ApplicationProperties.ExtSysSchema
-                    + " by driver:" + connectionProperties.getextSysDataSourceClassName());
-        }  else {
-            AppThead_log.error("НЕ удалось подключится к базе данных внешней системы: останавливаем" );
-            NotifyByChannel.Telegram_sendMessage( "Do stopping " + ApplicationName  + " *extDB problem*  ip:" + InetAddress.getLocalHost().getHostAddress()+
-                    ", db `" + connectionProperties.getextsysPoint() + "` as `"+ connectionProperties.getextsysDbLogin() + "`), *stopping*", AppThead_log );
-            System.exit(-20);
+            NotifyByChannel.Telegram_sendMessage("Do starting " + ApplicationName + " ` ip:" + InetAddress.getLocalHost().getHostAddress() + ", without extDB `" + connectionProperties.getextsysPoint() + "` as `" + connectionProperties.getextsysDbLogin() + "`)", AppThead_log);
+            ApplicationProperties.extSystemDataSource = null;
+        }
+        else {
+            try {
+                ApplicationProperties.extSystemDataSource = ExtSystemDataAccess.HiDataSource(connectionProperties.getextsysPoint(),
+                        connectionProperties.getextsysDbLogin(),
+                        connectionProperties.getextsysDbPasswd(),
+                        connectionProperties.getextSysDataSourceClassName()
+                );
+                ApplicationProperties.extSystemDataSourcePoolMetadata = ExtSystemDataAccess.DataSourcePoolMetadata;
+            } catch (Exception e) {
+                AppThead_log.error("НЕ удалось подключится к базе данных внешней системы: (" + " )" + e.getMessage());
+                NotifyByChannel.Telegram_sendMessage("Do stopping " + ApplicationName + " *extDB problem* `" + e.getMessage() + "` ip:" + InetAddress.getLocalHost().getHostAddress() + ", db `" + connectionProperties.getextsysPoint() + "` as `" + connectionProperties.getextsysDbLogin() + "`), *stopping*", AppThead_log);
+                System.exit(-20);
+            }
+        }
+
+        AppThead_log.info("extSystem DataSource = " + ApplicationProperties.extSystemDataSource );
+        if (! ApplicationProperties.ExtSysPoint.equalsIgnoreCase("NONE")) {
+            if (ApplicationProperties.extSystemDataSource != null) {
+                AppThead_log.info("extSystem DataSource = " + ApplicationProperties.extSystemDataSource
+                        + " JdbcUrl:" + ApplicationProperties.extSystemDataSource.getJdbcUrl()
+                        + " isRunning:" + ApplicationProperties.extSystemDataSource.isRunning()
+                        + " 4 dbSchema:" + ApplicationProperties.ExtSysSchema
+                        + " by driver:" + connectionProperties.getextSysDataSourceClassName());
+            } else {
+                AppThead_log.error("НЕ удалось подключится к базе данных внешней системы: останавливаем");
+                NotifyByChannel.Telegram_sendMessage("Do stopping " + ApplicationName + " *extDB problem*  ip:" + InetAddress.getLocalHost().getHostAddress() +
+                        ", db `" + connectionProperties.getextsysPoint() + "` as `" + connectionProperties.getextsysDbLogin() + "`), *stopping*", AppThead_log);
+                System.exit(-20);
+            }
         }
 
 
@@ -399,10 +408,7 @@ public class ServletApplication implements CommandLineRunner {
                     AppThead_log.info(" New InitDate=" +  DataAccess.dateFormat.format( DataAccess.InitDate ) );
 
                     // если указана pl-sql функция, то она будет периодически исполняться
-                    if (( psqlFunctionRun != null) &&
-                        ( !psqlFunctionRun.equalsIgnoreCase("NONE")) &&
-                        ( psqlFunctionRun.length() > 3 )
-                      )
+                    if (( psqlFunctionRun != null) && ( !psqlFunctionRun.equalsIgnoreCase("NONE")) )
                         DataAccess.moveERROUT2RESOUT( psqlFunctionRun, AppThead_log );
                 }
                 DataAccess.Hermes_Connection.close();

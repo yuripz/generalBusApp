@@ -10,17 +10,15 @@
 	</parent>
 	<groupId>net.plumbing.msgbus</groupId>
 	<artifactId>Receiver</artifactId>
-    <version>0.3.24.10.27-SNAPSHOT</version>
+    <version>0.3.24.11.30-SNAPSHOT</version>
     <name>Receiver</name>
     <description>servlet project for Spring Boot</description>
     	<properties>
 	    <java.version>21</java.version>
             <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
     <dependencies>
-
-
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>

@@ -152,7 +152,8 @@ public class XMLchars {
     public static final String EmptyXSLT_Result ="<?xml version=\"1.0\" encoding=\"utf-8\"?><nan/>";
       public static final String nanXSLT_Result ="<nan/>";
 
-    final public static int MAX_TAG_VALUE_BYTE_SIZE=3966;
+        // TODO  for Oracle it must be 3986
+    final public static int MAX_TAG_VALUE_BYTE_SIZE= 32778;
 
     public static byte[] cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE(String s,
                                                           Logger ext_Logger)  {

@@ -164,8 +164,8 @@ public class GetController  {
                 messageReceiveTask = new MessageReceiveTask();
                 // получив на вход интерфейса (на основе входного URL) ищем для него Шаблон
                 int MessageTemplateVOkey = MessageRepositoryHelper.look4MessageTemplate_2_Interface(Interface_id, Controller_log);
-                boolean isDebugged = true ; // TODO: this.isDebugged=true; -- для Документирования // false
-                Controller_log.warn("isDebugged before ClientIpHelper.getIsDebuged(): false" + isDebugged );
+                boolean isDebugged = false ; // TODO: this.isDebugged=true; -- для Документирования // false
+                Controller_log.warn("isDebugged before ClientIpHelper.getIsDebuged():`{}`" , isDebugged );
                 String getIsDebugedResponse = ClientIpHelper.getIsDebuged( MessageTemplateVOkey, isDebugged, Controller_log);
                 if ( ( ! getIsDebugedResponse.equalsIgnoreCase("true") ) && ( ! getIsDebugedResponse.equalsIgnoreCase("false") ))
                 {
@@ -174,7 +174,7 @@ public class GetController  {
                 else {
                     isDebugged = getIsDebugedResponse.equalsIgnoreCase("true");
                 }
-                Controller_log.warn("isDebugged after ClientIpHelper.getIsDebuged(): " + isDebugged );
+                Controller_log.warn("isDebugged after ClientIpHelper.getIsDebuged():`{}`" , isDebugged );
 
                 Long Queue_ID;
                 Queue_ID = messageReceiveTask.ProcessInputMessage(Interface_id, Message, MessageTemplateVOkey, isDebugged);
