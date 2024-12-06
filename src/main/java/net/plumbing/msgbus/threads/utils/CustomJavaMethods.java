@@ -5,6 +5,7 @@ import net.plumbing.msgbus.model.MessageDetails;
 import net.plumbing.msgbus.model.MessageQueueVO;
 import net.plumbing.msgbus.model.MessageTemplate;
 import net.plumbing.msgbus.model.MessageTemplateVO;
+import net.plumbing.msgbus.telegramm.NotifyByChannel;
 import net.plumbing.msgbus.threads.TheadDataAccess;
 //import oracle.jdbc.OracleResultSetMetaData;
 //import oracle.jdbc.OracleTypes;
@@ -21,8 +22,6 @@ import org.slf4j.Logger;
 //import DataAccess;
 import net.plumbing.msgbus.common.XMLchars;
 import net.plumbing.msgbus.init.ConfigMsgTemplates;
-
-//import javax.validation.constraints.NotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -49,6 +48,52 @@ public class CustomJavaMethods {
 	private static final String  AttrNameParamNum  = "pnum";
 	private static final String  OperTypeSel     = "select";
 	private static final String  RowTag = "Record";
+
+	public static int UserRequestExit(MessageQueueVO messageQueueVO, MessageDetails messageDetails,
+									  Logger Message_Log)  {
+		boolean isDebugged = messageDetails.MessageTemplate4Perform.getIsDebugged();
+		XPathExpression<Element> xpathTemplate_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/x_Queue_Id", Filters.element());
+		Element elmtTemplate_Id = xpathTemplate_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
+		String Queue_Id_Value;
+		if (elmtTemplate_Id != null) { Queue_Id_Value= elmtTemplate_Id.getText(); }
+		else Queue_Id_Value="";
+		//long Queue_Id= Long.parseLong(Queue_Id_Value);
+		String DataAccessProperties;
+
+		if ( Queue_Id_Value.equalsIgnoreCase("A0F9E1D2B8C3B7A4D6E5F")) {
+
+			NotifyByChannel.Telegram_sendMessage("GET User Request 4 Exit, stop after 5 sec., db `" + ApplicationProperties.ExtSysPoint + "` as `" + ApplicationProperties.ExtSysDbLogin + "`), *stopping*", Message_Log);
+			UserRequesExit_after_Wait userRequesExit_after_5_sec= new UserRequesExit_after_Wait() ;
+			userRequesExit_after_5_sec.set_Message_Log_Logger( Message_Log );
+			userRequesExit_after_5_sec.start();
+
+			DataAccessProperties =  "GET User Request 4 Exit, stop after 5 sec., db `" +
+					ApplicationProperties.ExtSysPoint + "` as `" + ApplicationProperties.ExtSysDbLogin + "`)\n, DO stopping!\n";
+		}
+		else {
+			DataAccessProperties = "Queue_Id=" + Queue_Id_Value + "'\n"
+					+ "HrmsPoint='" + ApplicationProperties.HrmsPoint + "'\n"
+					+ "ExtSysPoint='" + ApplicationProperties.ExtSysPoint + "'\n";
+		}
+		String encodedAuth = "Queue_Id='" + Queue_Id_Value + "'\n"
+				+ DataAccessProperties
+				// + Base64.getEncoder().encodeToString((DataAccessProperties).getBytes(StandardCharsets.UTF_8))
+				;
+
+		if ( isDebugged ) {
+			Message_Log.info("[" + messageQueueVO.getQueue_Id() + "] User Request 4 Exit, stop after 5 sec., db :`" + DataAccessProperties + "`");
+		}
+		messageDetails.XML_MsgResponse.append(encodedAuth);
+//		}
+//		catch (SQLException e) {
+//			messageDetails.XML_MsgResponse.setLength(0); messageDetails.XML_MsgResponse.trimToSize();
+//			messageDetails.XML_MsgResponse.append(XMLchars.Fault_Server_noNS_Begin).append(e.getMessage()).append(XMLchars.Fault_noNS_End);
+//			e.printStackTrace();
+//		}
+//		messageDetails.XML_MsgResponse.setLength(0);
+//		messageDetails.XML_MsgResponse.append(XMLchars.nanXSLT_Result);
+		return 0;
+	}
 
 	public static int GetDBConfigEntry(MessageQueueVO messageQueueVO, MessageDetails messageDetails,
 									     Logger Message_Log)  {
@@ -430,8 +475,7 @@ public class CustomJavaMethods {
 		String Usr_Login_LastMaker= null;
 		String Select_Usr_Login_by_Usr_Token;
 		if (!theadDataAccess.rdbmsVendor.equals("oracle")) {
-		/*
-			with Token as (
+		/* with Token as (
 			select T.Usr_Id,
 				   case when T.Usr_Id != 0 then
 				   COALESCE( T.EXPARED_DT + Interval '90 minutes', CURRENT_TIMESTAMP at time zone 'Europe/Moscow' - Interval '1 second')
@@ -442,7 +486,6 @@ public class CustomJavaMethods {
 			and r.usr_state ='ON'
 			and EXPARED_DT > CURRENT_TIMESTAMP at time zone 'Europe/Moscow'
 			and r.role_id < 3
-			;
 		 */
 			Select_Usr_Login_by_Usr_Token =
 			"""
@@ -466,8 +509,7 @@ public class CustomJavaMethods {
 					"""
                     with Token as (
                             select T.Usr_Id,
-                    case when T.Usr_Id != 0 then
-                        COALESCE( T.EXPARED_DT + 1/12, sysDate - 1/3600)
+                    case when T.Usr_Id != 0 then COALESCE( T.EXPARED_DT + 1/12, sysDate - 1/3600)
                            else sysDate + 1/24  end  as EXPARED_DT
                         from\s"""  + dbSchema + """
 				.Tokens T where T.USR_TOKEN = ? )

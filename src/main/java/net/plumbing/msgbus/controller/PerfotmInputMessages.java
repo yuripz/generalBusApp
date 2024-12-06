@@ -180,6 +180,10 @@ public class PerfotmInputMessages {
                                 resultSQL = CustomJavaMethods.GetDBConfigEntry(  messageQueueVO, Message, MessegeReceive_Log);
                                 break;
 
+                            case "UserRequestExit_4_RestartApplication":
+                                resultSQL = CustomJavaMethods.UserRequestExit(  messageQueueVO, Message, MessegeReceive_Log);
+                                break;
+
                             case "GetResponse4MessageQueueLog":
                                 resultSQL = CustomJavaMethods.GetResponse4MessageQueueLog( messageQueueVO, Message, theadDataAccess, ApplicationProperties.HrmsSchema, MessegeReceive_Log);
                                 break;
