@@ -244,7 +244,7 @@ public class MessageTemplateVO {
     public void setErrTransXSD (String ErrTransXSD) { this.ErrTransXSD = ErrTransXSD ; }
     public String getErrTransXSD() { return this.ErrTransXSD; }
 
-    public void setHeaderXSD (String HeaderXSD) { this.ErrTransXSD = HeaderXSD ; }
+    public void setHeaderXSD (String HeaderXSD) { this.HeaderXSD = HeaderXSD ; }
     public String getHeaderXSD() { return this.HeaderXSD; }
 
     public void setHeaderXSLT (String HeaderXSLT) { this.HeaderXSLT = HeaderXSLT ; }

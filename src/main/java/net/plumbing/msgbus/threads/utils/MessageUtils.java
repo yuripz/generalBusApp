@@ -721,12 +721,13 @@ public class MessageUtils {
 
         for (int i = 0; i < in.length(); i++) {
             current = in.charAt(i); // NOTE: No IndexOutOfBoundsException caught here; it should not happen.
-            if ((current == 0x9) ||
+            if (    (current == 0x9) ||
                     (current == 0xA) ||
                     (current == 0xD) ||
                     ((current >= 0x20) && (current <= 0xD7FF)) ||
                     ((current >= 0xE000) && (current <= 0xFFFD)) ||
-                    ((current >= 0x10000) && (current <= 0x10FFFF)))
+                    ((current >= 0x10000) && (current <= 0x10FFFF)) // 0x7fffffff
+               )
                 out.append(current);
         }
         return out.toString();

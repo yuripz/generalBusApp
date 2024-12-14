@@ -926,7 +926,7 @@ public class PostController {
 
                                     if ( isDebugged)
                                     Controller_log.info("WsdlInterface:" + WsdlInterface);
-                                    if (WsdlInterface != null) {
+                                    if (MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getWsdlInterface() != null) {
                                         getResponse.setStatus(200);
                                         getResponse.setContentType("text/xml; charset=utf-8");
                                         return WsdlInterface.toString();

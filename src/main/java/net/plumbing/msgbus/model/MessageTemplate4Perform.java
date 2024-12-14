@@ -80,7 +80,7 @@ public class MessageTemplate4Perform {
     private Integer LongRetryInterval;
 
     private Integer ShortRetryCountPostExec;
-    private Integer ShortRetryIntervalPostExec;;
+    private Integer ShortRetryIntervalPostExec;
     private Integer LongRetryCountPostExec;
     private Integer LongRetryIntervalPostExec;
 
@@ -145,7 +145,7 @@ public class MessageTemplate4Perform {
                 "Msg_Type:" + Msg_Type  + ", " +
         "LastDate :" + LastDate + ", " +
         "ExeMetodExecute:" + PropExeMetodExecute + ", " +
-        "ShortRetryCount:" + ShortRetryCount + ", " +
+        //"ShortRetryCount:" + ShortRetryCount + ", " +
         "ShortRetryInterval:" + ShortRetryInterval + ", " +
         "LongRetryCount:" + LongRetryCount + ", " +
         "LongRetryInterval:" + LongRetryInterval + ", " +
@@ -185,10 +185,10 @@ public class MessageTemplate4Perform {
             this.LastDate = messageTemplateVO.getLastDate();
 
 
-            this.ShortRetryCount = ShortRetryCount;
-            this.ShortRetryInterval = ShortRetryInterval;
-            this.LongRetryCount= LongRetryCount;
-            this.LongRetryInterval = LongRetryInterval;
+            this.ShortRetryCount = 0;
+            this.ShortRetryInterval = 10;
+            this.LongRetryCount= 0;
+            this.LongRetryInterval = 0;
         this.ShortRetryCountPostExec = ShortRetryCount;
         this.ShortRetryIntervalPostExec = ShortRetryInterval;
         this.LongRetryCountPostExec= LongRetryCount;
