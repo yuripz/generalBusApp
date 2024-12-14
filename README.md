@@ -11,3 +11,7 @@ transfer data and number of threads to one data source).
 Adding new data flow for consumers and providers does not require a program shutdown and may
 be performed on the fly, processing and routing rules are configured
 based on XML family configuration parameters.
+
+## SAST Tools
+
+[PVS-Studio](https://pvs-studio.com/pvs-studio/?utm_source=website&utm_medium=github&utm_campaign=open_source) - static analyzer for C, C++, C#, and Java code.
