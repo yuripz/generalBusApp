@@ -545,6 +545,13 @@ public class CustomJavaMethods {
 		}
 
 		String configEntry = elmtConfigEntry.getText();
+		if  ( !( configEntry.equalsIgnoreCase("ConfigExecute") || configEntry.equalsIgnoreCase("ConfigPostExec") ))
+		{
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] Для запросе MessageTemplates_SaveConfig запрещено менять секции кроме  ConfigExecute и ConfigPostExec , потытка сменить =`" + configEntry + "` заблокирована");
+			return -38;
+		}
+
 		try {
 			PerformSaveTemplateEntry.check_Conf_Text( configEntry);
 		} catch (Exception e) {
