@@ -59,7 +59,7 @@ public class PerfotmInputMessages {
         String Queue_Direction = messageQueueVO.getQueue_Direction();
 
         int Function_Result = 0;
-        //MessegeReceive_Log.info(Queue_Direction + " [" + Queue_Id + "] ищем Шаблон под оперрацию (" + Operation_Id + "), с учетом системы приёмника MsgDirection_Id=" + MsgDirection_Id + ", SubSys_Cod =" + SubSys_Cod);
+        //MessegeReceive_Log.info(Queue_Direction + " [" + Queue_Id + "] ищем Шаблон под операцию (" + Operation_Id + "), с учетом системы приёмника MsgDirection_Id=" + MsgDirection_Id + ", SubSys_Cod =" + SubSys_Cod);
 
         // ищем Шаблон под оперрацию, с учетом системы приёмника MessageRepositoryHelper.look4MessageTemplateVO_2_Perform
         int Template_Id = MessageRepositoryHelper.look4MessageTemplateVO_2_Perform(Operation_Id, MsgDirection_Id, SubSys_Cod, MessegeReceive_Log);
@@ -90,6 +90,12 @@ public class PerfotmInputMessages {
             MessegeReceive_Log.info("[" + Queue_Id + "] MessageTemplate4Perform[" + Message.MessageTemplate4Perform.printMessageTemplate4Perform() );
         boolean is_NoConfirmation = // Признак на типе сообщения, что Confirmation формируется в памяти, messageDetails.XML_MsgConfirmation
                 MessageRepositoryHelper.isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation(messageQueueVO.getOperation_Id(), MessegeReceive_Log);
+        if ( Message.MessageTemplate4Perform.getIsDebugged() )
+            MessegeReceive_Log.info("[" + Queue_Id + "] признак `NoConfirmation` для операции {} is {}", messageQueueVO.getOperation_Id(), is_NoConfirmation );
+        boolean is_NoWait4Sender = // Признак на типе сообщения, что несмотря на наличие связанного сообщения, обработка Sender-ом будет асинхронная и ждать не нужно!
+                MessageRepositoryHelper.isNoWaitSender4MessageTypeURL_SOAP_Ack_2_Operation(messageQueueVO.getOperation_Id(), MessegeReceive_Log);
+        if ( Message.MessageTemplate4Perform.getIsDebugged() )
+            MessegeReceive_Log.info("[" + Queue_Id + "] признак `NoWait4Sender` для операции {} is {}", messageQueueVO.getOperation_Id(), is_NoWait4Sender );
 
         switch (Queue_Direction){
             case XMLchars.DirectNEWIN:
@@ -395,10 +401,10 @@ public class PerfotmInputMessages {
                 }
 
                 if (Message.MessageTemplate4Perform.getPropExeMetodExecute() != null) {
-                    // Был обработчик, нужен результат
+                    // Был обработчик, нужен результат.
                     // Проверяем готовность результата
                     if (MessageUtils.isMessageQueue_Direction_EXEIN(theadDataAccess, Queue_Id, messageQueueVO, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log )) {
-                        // Если статус EXEIN , сообщение выполнено, либо нормально либо с ошибкой смотрим на Confirmation
+                        // Если статус EXEIN , сообщение выполнено, либо нормально, либо с ошибкой смотрим на Confirmation
                         // если на интерфейсе в типе сообщения URL_SOAP_ACK = REST- это значит, что Confirmation в БД не пишем
                         is_NoConfirmation = // Признак на типе сообщения, что Confirmation формируется в памяти, messageDetails.XML_MsgConfirmation
                                 MessageRepositoryHelper.isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation(messageQueueVO.getOperation_Id(), MessegeReceive_Log);
@@ -478,69 +484,77 @@ public class PerfotmInputMessages {
 
                     boolean isLink_Queue_Finish=false;
                     // # hermes.api-rest-wait-time=1200
-                    int try_count = 0;
-                    //int time4waitMessageReplyQueue=0; // Несльзя ждать весь тайм-аут на jms-QUEUE, т.к. запрос межет взять нет тот Sender, который прочимал сообщение)
-                    Integer ShortRetryCountPostExec = Message.MessageTemplate4Perform.getShortRetryCountPostExec();
-                    Integer ShortRetryIntervalPostExec = Message.MessageTemplate4Perform.getShortRetryIntervalPostExec();
-                    Integer LongRetryCountPostExec  = Message.MessageTemplate4Perform.getLongRetryCountPostExec();
-                    Integer LongRetryIntervalPostExec  = Message.MessageTemplate4Perform.getLongRetryIntervalPostExec();
-                    if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                        MessegeReceive_Log.warn("[" + Queue_Id + "] Time-out calculate: ShortRetryCountPostExec=" + ShortRetryCountPostExec +
-                                " ; ShortRetryIntervalPostExec=" + ShortRetryIntervalPostExec +
-                                " ; LongRetryCountPostExec=" + LongRetryCountPostExec +
-                                " ; LongRetryIntervalPostExec=" + LongRetryIntervalPostExec);
-                    if ( ( LongRetryIntervalPostExec != null ) &&
-                         ( LongRetryCountPostExec != null )) {
-                        //time4waitMessageReplyQueue = LongRetryIntervalPostExec * LongRetryCountPostExec;
-                        try_count = (LongRetryIntervalPostExec * LongRetryCountPostExec) / 2;
-                    }
-                    if ( ( ShortRetryCountPostExec != null ) &&
-                            ( ShortRetryIntervalPostExec != null ) ) {
-                        //time4waitMessageReplyQueue = time4waitMessageReplyQueue + ( ShortRetryIntervalPostExec * ShortRetryCountPostExec );
-                        try_count = try_count  +
-                                ( ShortRetryIntervalPostExec * ShortRetryCountPostExec ) / 2;
-                    }
+                    int try_count = 0; // вынесли, что бы печаталось
+                    int time4wait = 0;
+                    if (!is_NoWait4Sender) { // признака НЕ-ждать-связанного сообщения нет, надо дождаться окончания от Sener-а ибо данный вызов внешней системы синхолнный
 
-                    if (try_count == 0 )
-                    {   //time4waitMessageReplyQueue = ApplicationProperties.ApiRestWaitTime/1000;
-                        try_count = ApplicationProperties.ApiRestWaitTime/( 2 * 1000);
-                        if  (try_count == 0 ) try_count = 1;
-                    }
-                    ///! try_count = 1;
-                    int time4wait = try_count * 2;
+                        //int time4waitMessageReplyQueue=0; // Несльзя ждать весь тайм-аут на jms-QUEUE, т.к. запрос межет взять нет тот Sender, который прочимал сообщение)
+                        Integer ShortRetryCountPostExec = Message.MessageTemplate4Perform.getShortRetryCountPostExec();
+                        Integer ShortRetryIntervalPostExec = Message.MessageTemplate4Perform.getShortRetryIntervalPostExec();
+                        Integer LongRetryCountPostExec = Message.MessageTemplate4Perform.getLongRetryCountPostExec();
+                        Integer LongRetryIntervalPostExec = Message.MessageTemplate4Perform.getLongRetryIntervalPostExec();
+                        if (Message.MessageTemplate4Perform.getIsDebugged())
+                            MessegeReceive_Log.warn("[" + Queue_Id + "] Time-out calculate: ShortRetryCountPostExec=" + ShortRetryCountPostExec +
+                                    " ; ShortRetryIntervalPostExec=" + ShortRetryIntervalPostExec +
+                                    " ; LongRetryCountPostExec=" + LongRetryCountPostExec +
+                                    " ; LongRetryIntervalPostExec=" + LongRetryIntervalPostExec);
+                        if ((LongRetryIntervalPostExec != null) &&
+                                (LongRetryCountPostExec != null)) {
+                            //time4waitMessageReplyQueue = LongRetryIntervalPostExec * LongRetryCountPostExec;
+                            try_count = (LongRetryIntervalPostExec * LongRetryCountPostExec) / 2;
+                        }
+                        if ((ShortRetryCountPostExec != null) &&
+                                (ShortRetryIntervalPostExec != null)) {
+                            //time4waitMessageReplyQueue = time4waitMessageReplyQueue + ( ShortRetryIntervalPostExec * ShortRetryCountPostExec );
+                            try_count = try_count +
+                                    (ShortRetryIntervalPostExec * ShortRetryCountPostExec) / 2;
+                        }
 
-                    while ((!isLink_Queue_Finish) && (try_count > 0)) {
-                        try {
-                            if ( Qconnection == null) // Если не удалось присоедениться к JMS
-                            Thread.sleep( 2 * 1000);
-                            else {
-                                if ( performTextMessageJMSQueue.ReadTextMessageReplyQueue(2 * 1000, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log) != null )
-                                 Qconnection = null; // сообщение зачитано, но если исходящее не готово( потому что его взял нет тот Sender, который прочимал сообщение), то надо проверять по Taine-out в цикле дальше
+                        if (try_count == 0) {   //time4waitMessageReplyQueue = ApplicationProperties.ApiRestWaitTime/1000;
+                            try_count = ApplicationProperties.ApiRestWaitTime / (2 * 1000);
+                            if (try_count == 0) try_count = 1;
+                        }
+                        ///! try_count = 1;
+                        time4wait = try_count * 2;
+
+                        while ((!isLink_Queue_Finish) && (try_count > 0)) {
+                            try {
+                                if (Qconnection == null) // Если не удалось присоедениться к JMS
+                                    Thread.sleep(2 * 1000);
+                                else {
+                                    if (performTextMessageJMSQueue.ReadTextMessageReplyQueue(2 * 1000, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log) != null)
+                                        Qconnection = null; // сообщение зачитано, но если исходящее не готово( потому что его взял нет тот Sender, который прочимал сообщение), то надо проверять по Taine-out в цикле дальше
+                                }
+                                //////////////////////////////////////
+                                try_count = try_count - 1;
+                            } catch (JMSException | InterruptedException e) { //
+                                Qconnection = null; // что-то не так с брокером, надо переходить на цикл с ожиданием sleep( 2 * 1000);
+                                MessegeReceive_Log.error("Message ReadTextMessageReplyQueue() ExeIN2PostIN wait Task[" + Queue_Id + "]: is interrapted: " + e.getMessage());
+                                System.err.println("Message ReadTextMessageReplyQueue() ExeIN2PostIN wait Task[" + Queue_Id + "]: is interrapted: ");
+                                System.err.println(e.getMessage()); // .printStackTrace();
                             }
-                            //////////////////////////////////////
-                            try_count = try_count -1;
-                        } catch ( JMSException | InterruptedException e) { //
-                            Qconnection = null; // что-то не так с брокером, надо переходить на цикл с ожиданием sleep( 2 * 1000);
-                            MessegeReceive_Log.error("Message ReadTextMessageReplyQueue() ExeIN2PostIN wait Task[" + Queue_Id + "]: is interrapted: " + e.getMessage());
-                            System.err.println("Message ReadTextMessageReplyQueue() ExeIN2PostIN wait Task[" + Queue_Id + "]: is interrapted: ");
-                            System.err.println(e.getMessage()); // .printStackTrace();
-                        }
-                        if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                        MessegeReceive_Log.warn("[" + Queue_Id + "] Начинаем проверять в цикле периодически - готово ли OUT, try_count=" + String.valueOf(try_count) + " в течении " + time4wait + " секунд" );
+                            if (Message.MessageTemplate4Perform.getIsDebugged())
+                                MessegeReceive_Log.warn("[" + Queue_Id + "] Начинаем проверять в цикле периодически - готово ли OUT, try_count=" + String.valueOf(try_count) + " в течении " + time4wait + " секунд");
 
-                        isLink_Queue_Finish = MessageUtils.isLink_Queue_Finish(theadDataAccess, Link_Queue_Id, Message.MessageTemplate4Perform.getIsDebugged(),  MessegeReceive_Log);
-                        if (isLink_Queue_Finish) {
+                            isLink_Queue_Finish = MessageUtils.isLink_Queue_Finish(theadDataAccess, Link_Queue_Id, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
+                            if (isLink_Queue_Finish) {
 
-                            try_count = 0;
+                                try_count = 0;
+                            }
                         }
                     }
-                    // останавливаем jms.Connection !
+                    else {// is_NoWait4Sender == true !
+                        isLink_Queue_Finish = true;
+                    }
+                    // останавливаем jms-Connection !
                     performTextMessageJMSQueue.Stop_and_Close_MessageJMSQueue( Queue_Id,  MessegeReceive_Log );
 
                     if ( isLink_Queue_Finish)
                     { // Считаем, что как то готово готово
                        // MessegeReceive_Log.error("[" + Queue_Id + "] Считаем, что как то готово готово, " + "AckAnswXSLT: " + Message.MessageTemplate4Perform.getAckAnswXSLT());
-                        if (Message.MessageTemplate4Perform.getAckAnswXSLT() != null) // наличие секции AckAnswXSLT является признаком, что Confirmation из порожденного OUT
+                        if ( (!is_NoWait4Sender) && //на Типе сообщения НЕ стоит "NoWait4Sender" - следовательно, рассчитываем считать Confirmation из порожденного OUT
+                                (Message.MessageTemplate4Perform.getAckAnswXSLT() != null) // наличие секции AckAnswXSLT является признаком, что Confirmation из порожденного OUT
+                            )
                         {
                             // надо читать ответ из Confirmation порожденного OUT
                             if ( Message.MessageTemplate4Perform.getIsDebugged() )
@@ -757,6 +771,8 @@ public class PerfotmInputMessages {
                     }
 
                 }
+                // else !! TO_DO: надо придумать альтернативный способ отправки сообщения в Очередь - для ускорения !!! , но что бы не ждать завершения
+
 
                 // преобразовываем результат
                 if ( Message.MessageTemplate4Perform.getIsDebugged() )

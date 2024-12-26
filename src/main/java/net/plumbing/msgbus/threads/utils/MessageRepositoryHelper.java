@@ -170,6 +170,30 @@ public class MessageRepositoryHelper {
         return null;
     }
 
+    public static boolean isNoWaitSender4MessageTypeURL_SOAP_Ack_2_Operation(Integer pOperation_Id,  Logger messegeSend_log) {
+        // messegeSend_log.info("isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation[" + MessageType.AllMessageType.size() + "]:" + pOperation_Id);
+        MessageTypeVO messageTypeVO;
+        int Interface_Id=0;
+        for (int j = 0; j < MessageType.AllMessageType.size(); j++)
+        { // находим тип для текущей операции pOperation_Id
+            messageTypeVO = MessageType.AllMessageType.get(j);
+            if (messageTypeVO.getOperation_Id() == pOperation_Id ) // нашли обрабатывамую операцию
+            {
+                String isNoWait4Sender = messageTypeVO.getURL_SOAP_Ack();
+                if ( isNoWait4Sender != null ) {
+                    messegeSend_log.info("NoWait4Sender on MessageTypeURL_SOAP_Ack_2_Operation: found [" + isNoWait4Sender + "] for " + pOperation_Id);
+                    return isNoWait4Sender.equalsIgnoreCase("NoWait4Sender");
+                }
+                else {
+                    messegeSend_log.info("NoWait4Sender on MessageTypeURL_SOAP_Ack_2_Operation: found as NULL for Operation_Id=" + pOperation_Id);
+                    return false;
+                }
+            }
+        }
+        messegeSend_log.warn( "в MessageType.AllMessageType не нашли pOperation_Id=" +pOperation_Id );
+        // не нашли
+        return false;
+    }
     public static  boolean isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation(Integer pOperation_Id,  Logger messegeSend_log) {
         // messegeSend_log.info("isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation[" + MessageType.AllMessageType.size() + "]:" + pOperation_Id);
         MessageTypeVO messageTypeVO;
@@ -181,11 +205,11 @@ public class MessageRepositoryHelper {
             {
                 String isNoConfirmation = messageTypeVO.getURL_SOAP_Ack();
                 if ( isNoConfirmation != null ) {
-                    messegeSend_log.info("isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation: found [" + isNoConfirmation + "] for " + pOperation_Id);
+                  //  messegeSend_log.info("isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation: found [" + isNoConfirmation + "] for " + pOperation_Id);
                     return isNoConfirmation.equalsIgnoreCase("NoConfirmation");
                 }
                 else {
-                    messegeSend_log.info("isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation: found as NULL for Operation_Id=" + pOperation_Id);
+                   // messegeSend_log.info("isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation: found as NULL for Operation_Id=" + pOperation_Id);
                     return false;
                 }
             }
