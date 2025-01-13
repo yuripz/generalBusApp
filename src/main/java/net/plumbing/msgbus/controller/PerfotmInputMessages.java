@@ -409,12 +409,12 @@ public class PerfotmInputMessages {
                         is_NoConfirmation = // Признак на типе сообщения, что Confirmation формируется в памяти, messageDetails.XML_MsgConfirmation
                                 MessageRepositoryHelper.isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation(messageQueueVO.getOperation_Id(), MessegeReceive_Log);
                        if ( !is_NoConfirmation ) { // Если признака "NoConfirmation" на типе сообщения нет, значит положено читать из БД
-                           // ReadConfirmation очищает Message.XML_MsgConfirmation и помещает туда чстанный из БД Confirmation
+                           // ReadConfirmation очищает Message.XML_MsgConfirmation и помещает туда считанный из БД Confirmation
                         int ConfirmationRowNum = MessageUtils.ReadConfirmation(theadDataAccess, Queue_Id, Message, MessegeReceive_Log);
                         if (ConfirmationRowNum < 1) {
                             // Ругаемся, что обработчик не сформировал Confirmation
-                            Message.MsgReason.append("[" + Queue_Id + "] обработчик не сформировал Confirmation, нарушено соглашение о взаимодействии с Шиной");
-                            MessegeReceive_Log.error("[" + Queue_Id + "] " + Message.MsgReason);
+                            Message.MsgReason.append("[" + Queue_Id + "] прикладной обработчик входящего сообщения не сформировал Confirmation, нарушено соглашение о взаимодействии с Шиной");
+                            MessegeReceive_Log.error("[" + Queue_Id + "] {}",  Message.MsgReason);
                             theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, Message.MsgReason.toString(), 3245,
                                     MessegeReceive_Log);
                             return -38L;
@@ -423,7 +423,7 @@ public class PerfotmInputMessages {
                     } else {
                         // Ругаемся, что обработчик не выставил признак статус EXEIN
                         Message.MsgReason.append("[" + Queue_Id + "] обработчик не выставил признак статус EXEIN , нарушено соглашение о взаимодействии с Шиной");
-                        MessegeReceive_Log.error("[" + Queue_Id + "] " + Message.MsgReason);
+                        MessegeReceive_Log.error("[" + Queue_Id + "] {}", Message.MsgReason);
                         theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, Message.MsgReason.toString(), 3247,
                                 MessegeReceive_Log);
                         return -39L;
@@ -771,8 +771,6 @@ public class PerfotmInputMessages {
                     }
 
                 }
-                // else !! TO_DO: надо придумать альтернативный способ отправки сообщения в Очередь - для ускорения !!! , но что бы не ждать завершения
-
 
                 // преобразовываем результат
                 if ( Message.MessageTemplate4Perform.getIsDebugged() )
