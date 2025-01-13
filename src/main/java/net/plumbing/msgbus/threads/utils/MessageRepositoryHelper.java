@@ -43,7 +43,7 @@ public class MessageRepositoryHelper {
         if (MsgDirectionVO_4_Direction_Key >= 0 ) MsgDirectionVO_Key = MsgDirectionVO_4_Direction_Key;
         return  MsgDirectionVO_Key;
     }
-
+/*
     public static  int look4MessageDirectionsVO_2_Perform(int MessageMsgDirection_id, String MessageSubSys_cod, Logger messegeSend_log) {
         int MsgDirectionVO_Key=-1;
         int MsgDirectionVO_4_Direction_Key=-1;
@@ -70,7 +70,7 @@ public class MessageRepositoryHelper {
         if (MsgDirectionVO_4_Direction_SubSys_Id >= 0 ) MsgDirectionVO_Key = MsgDirectionVO_4_Direction_SubSys_Id;
         return  MsgDirectionVO_Key;
     }
-
+*/
     public static  int look4MessageTypeVO_by_Operation_Id(int BusOperationInterfaceId, int BusOperation_Id,   Logger messegeSend_log) {
         // messegeSend_log.info("look4MessageTypeVO_by_MesssageType [0-" + MessageType.AllMessageType.size() + "]: BusOperationInterfaceId=" +BusOperationInterfaceId + " for " + BusOperationMesssageType);
         for (int i = 0; i < MessageType.AllMessageType.size(); i++) {
@@ -173,7 +173,7 @@ public class MessageRepositoryHelper {
     public static boolean isNoWaitSender4MessageTypeURL_SOAP_Ack_2_Operation(Integer pOperation_Id,  Logger messegeSend_log) {
         // messegeSend_log.info("isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation[" + MessageType.AllMessageType.size() + "]:" + pOperation_Id);
         MessageTypeVO messageTypeVO;
-        int Interface_Id=0;
+        //int Interface_Id=0;
         for (int j = 0; j < MessageType.AllMessageType.size(); j++)
         { // находим тип для текущей операции pOperation_Id
             messageTypeVO = MessageType.AllMessageType.get(j);
@@ -197,7 +197,7 @@ public class MessageRepositoryHelper {
     public static  boolean isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation(Integer pOperation_Id,  Logger messegeSend_log) {
         // messegeSend_log.info("isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation[" + MessageType.AllMessageType.size() + "]:" + pOperation_Id);
         MessageTypeVO messageTypeVO;
-        int Interface_Id=0;
+        //int Interface_Id=0;
         for (int j = 0; j < MessageType.AllMessageType.size(); j++)
         { // находим тип для текущей операции  pOperation_Id
             messageTypeVO = MessageType.AllMessageType.get(j);
@@ -407,7 +407,7 @@ public class MessageRepositoryHelper {
                 //  MessegeSend_Log.info("[" + i + "] № операции (" + Operation_Id + ") совпали =[" + TemplateOperation_Id + "], " + messageTemplateVO.getTemplate_name() );
                 //  MessegeSend_Log.info("[" + i + "] Template_Id (" + messageTemplateVO.getTemplate_Id() + ") смотрим TemplateSubSys_Cod =[" + TemplateSubSys_Cod + "]" );
 
-                if ( (TemplateSubSys_Cod == null) || (TemplateSubSys_Cod).equals("0") || (TemplateSubSys_Cod).equals("") )
+                if ( (TemplateSubSys_Cod == null) || (TemplateSubSys_Cod).equals("0") || (TemplateSubSys_Cod).isEmpty())
                 { // в Шаблоне не заполнен код ПодСистемы : MESSAGE_templateS.dst_subcod == '0' OR MESSAGE_templateS.dst_subcod is NULL )
                     // сравниваем по коду сисмемы Шаблона MESSAGE_templateS.destin_id и сообщения MESSAGE_QUEUE.MsgDirection_Id
                     //     MessegeSend_Log.info("сравниваем по коду сисмемы Шаблона MESSAGE_templateS.destin_id " + TemplateMsgDirection_Id + " и сообщения MESSAGE_QUEUE.MsgDirection_Id");

@@ -268,26 +268,27 @@ public class PerfotmInputMessages {
 
                         }
                         // проверяем, есть ли Java-обрабочик - конкретный метод, отличный от ExecuteSQLincludedXML, указанный в PropJavaMethodName
-                        if ( Message.MessageTemplate4Perform.getPropJavaMethodName() == null)
-                        {   // специального класса нет -  используем XmlSQLStatement.ExecuteSQLincludedXML
+                        if ( Message.MessageTemplate4Perform.getPropJavaMethodName() == null) {   // специального класса нет -  используем XmlSQLStatement.ExecuteSQLincludedXML
                             if (Message.MessageTemplate4Perform.getIsDebugged())
                                 MessegeReceive_Log.info("[" + Queue_Id + "] try ExecuteSQLincludedXML (" + Passed_Envelope4XSLTExt + ")");
 
                             int resultSQL;
                             if (Message.MessageTemplate4Perform.getIsExtSystemAccess()) {
                                 ExtSystemDataConnection extSystemDataConnection = new ExtSystemDataConnection(Queue_Id, MessegeReceive_Log);
-                                if ( extSystemDataConnection.ExtSystem_Connection == null ){
+                                if (extSystemDataConnection.ExtSystem_Connection == null) {
                                     Message.MsgReason.append("Ошибка на приёме сообщения - нет соединения с внешней базой данных (extSystemDataConnection return NULL), обратитесь к системному администратору !");
                                     return -33L;
                                 }
-                                resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, true, extSystemDataConnection.ExtSystem_Connection ,
-                                                                                  Passed_Envelope4XSLTExt, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
-                                try {  extSystemDataConnection.ExtSystem_Connection.close(); } catch (SQLException e) {
+                                resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, true, extSystemDataConnection.ExtSystem_Connection,
+                                        Passed_Envelope4XSLTExt, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
+                                try {
+                                    extSystemDataConnection.ExtSystem_Connection.close();
+                                } catch (SQLException e) {
                                     MessegeReceive_Log.error("[" + Queue_Id + "] ExtSystem_Connection.close() fault:" + e.getMessage());
                                 }
-                            }
-                            else
-                            resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, false, null, Passed_Envelope4XSLTExt, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
+                            } else {
+                                     resultSQL = XmlSQLStatement.ExecuteSQLincludedXML(theadDataAccess, false, null, Passed_Envelope4XSLTExt, messageQueueVO, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
+                                    }
                             if (resultSQL != 0) {
                                 MessegeReceive_Log.error("[" + Queue_Id + "] Envelope4XSLTExt:" + ConvXMLuseXSLTerr);
                                 MessegeReceive_Log.error("[" + Queue_Id + "] Ошибка ExecuteSQLinXML:" + Message.MsgReason.toString());
@@ -365,7 +366,7 @@ public class PerfotmInputMessages {
                              catch (JSONException e) {
                             System.err.println("[" + Queue_Id + "] Не смогли преобразовать XML_Request_Method `" + Message.XML_Request_Method + "` в JSON: " + e);
                                  MessegeReceive_Log.error( "[" + Queue_Id + "] Не смогли преобразовать XML_Request_Method `" + Message.XML_Request_Method + "` в JSON: " + e.getMessage());
-                                 theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id,"Ошибка синхронного вызова обработчика: не смогли преобразовать XML в JSON:" + e.toString(), 3244,
+                                 theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id,"Ошибка синхронного вызова обработчика: не смогли преобразовать XML в JSON:" + sStackTrace.strInterruptedException(e), 3244,
                                          MessegeReceive_Log);
                                  return -38L;
                             }
@@ -380,8 +381,8 @@ public class PerfotmInputMessages {
                         System.err.println("[" + Queue_Id + "] Ошибка синхронного вызова обработчика "+ Message.MessageTemplate4Perform.getPropExeMetodExecute()+ "(" + EndPointUrl + ")" + e.getMessage() ); //e.printStackTrace();
                         // возмущаемся,
                         Message.MsgReason.append('[').append(Queue_Id ).append( "] Ошибка синхронного вызова REST обработчика (").append( EndPointUrl).append( "):" ).append( e );
-                        MessegeReceive_Log.error("["+ Queue_Id +"] Ошибка синхронного вызова REST обработчика "+ Message.MessageTemplate4Perform.getPropExeMetodExecute()+ "(" + EndPointUrl + "):" + e.toString() );
-                        theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id,"Ошибка синхронного вызова обработчика  "+ Message.MessageTemplate4Perform.getPropExeMetodExecute()+ "(" + EndPointUrl + "):" + e.toString(), 3244,
+                        MessegeReceive_Log.error("["+ Queue_Id +"] Ошибка синхронного вызова REST обработчика "+ Message.MessageTemplate4Perform.getPropExeMetodExecute()+ "(" + EndPointUrl + "):" + sStackTrace.strInterruptedException(e) );
+                        theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id,"Ошибка синхронного вызова обработчика  "+ Message.MessageTemplate4Perform.getPropExeMetodExecute()+ "(" + EndPointUrl + "):" + sStackTrace.strInterruptedException(e), 3244,
                                 MessegeReceive_Log);
                         try {
                             ApiRestHttpClient.close();
@@ -819,7 +820,7 @@ public class PerfotmInputMessages {
                     if ( Message.MessageTemplate4Perform.getPropExeMetodPostExec().equals(Message.MessageTemplate4Perform.JavaClassExeMetod) )
                     { // 2.1) Это JDBC-обработчик
                         if ( Message.MessageTemplate4Perform.getEnvelopeXSLTPost() != null ) { // 2) EnvelopeXSLTPost
-                            if ( Message.MessageTemplate4Perform.getEnvelopeXSLTPost().length() > 0 ) {
+                            if (!Message.MessageTemplate4Perform.getEnvelopeXSLTPost().isEmpty()) {
                                 if ( Message.MessageTemplate4Perform.getIsDebugged() )
                                     MessegeReceive_Log.info("["+ Queue_Id +"] Шаблон EnvelopeXSLTPost для пост-обработки(" + Message.MessageTemplate4Perform.getEnvelopeXSLTPost() + ")");
                                 if ( Message.MessageTemplate4Perform.getIsDebugged() )

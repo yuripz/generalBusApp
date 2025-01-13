@@ -3,7 +3,7 @@ package net.plumbing.msgbus.threads.utils;
 import net.plumbing.msgbus.common.ApplicationProperties;
 import net.plumbing.msgbus.model.MessageDetails;
 import net.plumbing.msgbus.model.MessageQueueVO;
-import net.plumbing.msgbus.model.MessageTemplate;
+//import net.plumbing.msgbus.model.MessageTemplate;
 import net.plumbing.msgbus.model.MessageTemplateVO;
 import net.plumbing.msgbus.telegramm.NotifyByChannel;
 import net.plumbing.msgbus.threads.TheadDataAccess;
@@ -38,16 +38,16 @@ import com.github.underscore.U;
 
 
 public class CustomJavaMethods {
-	private static final String  TagNameHead       = "SQLRequest";
-	private static final String  TagNameSQLStatement  = "SQLStatement";
-	private static final String  TagNameSubSelectStatement  = "SubSelectStatement";
-	private static final String  AttrNameStateType  = "type";
-	private static final String  AttrNameStateNum   = "snum";
-	private static final String  TagNamePSTMT      = "PSTMT";
-	private static final String  TagNameParam      = "Param";
-	private static final String  AttrNameParamNum  = "pnum";
-	private static final String  OperTypeSel     = "select";
-	private static final String  RowTag = "Record";
+	//private static final String  TagNameHead       = "SQLRequest";
+	//private static final String  TagNameSQLStatement  = "SQLStatement";
+	//private static final String  TagNameSubSelectStatement  = "SubSelectStatement";
+	//private static final String  AttrNameStateType  = "type";
+	//private static final String  AttrNameStateNum   = "snum";
+	//private static final String  TagNamePSTMT      = "PSTMT";
+	//private static final String  TagNameParam      = "Param";
+	//private static final String  AttrNameParamNum  = "pnum";
+	//private static final String  OperTypeSel     = "select";
+	//private static final String  RowTag = "Record";
 
 	public static int UserRequestExit(MessageQueueVO messageQueueVO, MessageDetails messageDetails,
 									  Logger Message_Log)  {
@@ -150,7 +150,7 @@ public class CustomJavaMethods {
 		Element elmtQueue_Id = xpathQueue_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
 		if ( elmtQueue_Id== null) {
 			messageDetails.MsgReason.setLength(0);
-			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе GetRequest_Body4Message не найден параметр Parametrs/QueryString/Queue_Id");
+			messageDetails.MsgReason.append( "[").append( messageQueueVO.getQueue_Id() ).append(" ] В запросе GetRequest_Body4Message не найден параметр Parametrs/QueryString/Queue_Id");
 			return -33;
 		}
 		String Queue_Id_Value= elmtQueue_Id.getText();
@@ -568,7 +568,7 @@ public class CustomJavaMethods {
 			return -36;
 		}
 
-		String contentEntry_4_Save  = elmtContentEntry_4_Save.getText();;
+		String contentEntry_4_Save  = elmtContentEntry_4_Save.getText();
 
 		try (
 			PreparedStatement stmtMsgTemplate = theadDataAccess.Hermes_Connection.prepareStatement(
@@ -880,7 +880,7 @@ public class CustomJavaMethods {
 		}
 
 		String Template_Id_Value= elmtTemplate_Id.getText();
-;
+
 		try {
 			PreparedStatement stmtMsgTemplate = theadDataAccess.Hermes_Connection.prepareStatement(
 					"select t.Conf_Text from " + dbSchema+ ".MESSAGE_TemplateS t where (1=1) and t.template_id =?"
