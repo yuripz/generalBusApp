@@ -99,6 +99,7 @@ public class MessageQueueVO {
 
     public  int  getRetry_Count() { return this.Retry_Count;  }
     public  long  getQueue_Id() { return this.Queue_Id; }
+    public void  setQueue_Id( long pQueue_Id) { this.Queue_Id = pQueue_Id; }
     public  String getOutQueue_Id() { return this.OutQueue_Id; } //!!
 
     public  int  getMsgDirection_Id() { return this.MsgDirection_Id; }

@@ -43,7 +43,7 @@ public class MessageRepositoryHelper {
         if (MsgDirectionVO_4_Direction_Key >= 0 ) MsgDirectionVO_Key = MsgDirectionVO_4_Direction_Key;
         return  MsgDirectionVO_Key;
     }
-/*
+
     public static  int look4MessageDirectionsVO_2_Perform(int MessageMsgDirection_id, String MessageSubSys_cod, Logger messegeSend_log) {
         int MsgDirectionVO_Key=-1;
         int MsgDirectionVO_4_Direction_Key=-1;
@@ -54,7 +54,7 @@ public class MessageRepositoryHelper {
             if ( messageDirectionsVO.getMsgDirection_Id() == MessageMsgDirection_id )
             { String DirectionsSubSys_Cod = messageDirectionsVO.getSubsys_Cod();
                 if (DirectionsSubSys_Cod == null) // дополнительное или ==0 неправильное, если система имеее суб-код 0, то проблемы     || (DirectionsSubSys_Cod).equals("0")
-                 //    if ( (DirectionsSubSys_Cod == null) || (DirectionsSubSys_Cod).equals("0") )
+                //    if ( (DirectionsSubSys_Cod == null) || (DirectionsSubSys_Cod).equals("0") )
                 {
                     //  заполнен код ПодСистемы : MESSAGE_DIRECTIONS.subsys_cod == '0' OR MESSAGE_DIRECTIONS.subsys_cod is NULL )
                     MsgDirectionVO_4_Direction_Key = j;
@@ -70,7 +70,7 @@ public class MessageRepositoryHelper {
         if (MsgDirectionVO_4_Direction_SubSys_Id >= 0 ) MsgDirectionVO_Key = MsgDirectionVO_4_Direction_SubSys_Id;
         return  MsgDirectionVO_Key;
     }
-*/
+
     public static  int look4MessageTypeVO_by_Operation_Id(int BusOperationInterfaceId, int BusOperation_Id,   Logger messegeSend_log) {
         // messegeSend_log.info("look4MessageTypeVO_by_MesssageType [0-" + MessageType.AllMessageType.size() + "]: BusOperationInterfaceId=" +BusOperationInterfaceId + " for " + BusOperationMesssageType);
         for (int i = 0; i < MessageType.AllMessageType.size(); i++) {

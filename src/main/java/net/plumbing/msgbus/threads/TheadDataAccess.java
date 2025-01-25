@@ -5,6 +5,8 @@ import com.zaxxer.hikari.HikariDataSource;
 // import oracle.jdbc.internal.OracleTypes;
 // import oracle.jdbc.internal.OracleRowId;
 // import oracle.sql.NUMBER;
+import net.plumbing.msgbus.common.XMLchars;
+import net.plumbing.msgbus.model.MessageQueueVO;
 import org.slf4j.Logger;
 //import net.plumbing.msgbus.common.XMLchars;
 
@@ -12,7 +14,11 @@ import org.slf4j.Logger;
 //import java.io.ByteArrayInputStream;
 //import java.io.ObjectInputStream;
 //import java.math.BigInteger;
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 //import static ClientIpHelper.toCamelCase;
 import static net.plumbing.msgbus.common.XMLchars.*;
@@ -25,6 +31,10 @@ public class TheadDataAccess {
     public PreparedStatement stmtMsgQueue=null;
     public PreparedStatement stmtMsgQueueConfirmationDet=null;
     public PreparedStatement stmtMsgQueueConfirmationTag = null;
+
+    private PreparedStatement stmtUPDATE_MessageQueue_Out2ErrorOUT;
+    private String UPDATE_MessageQueue_Out2ErrorOUT ;
+
     // private PreparedStatement stmtMsgQueueBody = null;
     //private PreparedStatement stmtMsgLastBodyTag = null;
     // private PreparedStatement stmtMsgQueueConfirmation ;
@@ -47,7 +57,7 @@ public class TheadDataAccess {
 
     // private PreparedStatement stmt_UPDATE_MessageQueue_Temp2ErrIN;
 
-    /*
+
     public PreparedStatement stmtUPDATE_MessageQueue_Queue_Date4Send;
     // HE-5481  Queue_Date = sysdate -> надо отображать дату первой попытки отправки
     public final String UPDATE_MessageQueue_Queue_Date4Send =
@@ -65,7 +75,7 @@ public class TheadDataAccess {
             ", q.Msg_Date= sysdate,  q.Msg_Status = 0, q.Retry_Count=1 " +
             ", q.Prev_Queue_Direction='OUT', q.Prev_Msg_Date=sysdate " +
             "where 1=1 and q.Queue_Id = ?  ";
-    */
+
     private PreparedStatement stmt_UPDATE_Message_In2ExeIn=null;
     private  String UPDATE_MessageQueue_In2ExeIn;
 
@@ -78,9 +88,16 @@ public class TheadDataAccess {
     private PreparedStatement stmtUPDATE_MessageQueue_ExeIN2PostIN;
     private String UPDATE_MessageQueue_ExeIN2PostIN;
 
+    public  String selectMessage4QueueIdSQL;
+    public PreparedStatement stmtMsgQueueVO_Query;
 
-    // private PreparedStatement stmtUPDATE_MessageQueue_Send2ErrorOUT;
+    private PreparedStatement stmt_UPDATE_MessageQueue_DirectionAsIS;
+    private  String UPDATE_MessageQueue_DirectionAsIS ;
+
+    private PreparedStatement stmtUPDATE_MessageQueue_Send2ErrorOUT;
     private String UPDATE_MessageQueue_Send2ErrorOUT;
+    private PreparedStatement stmtUPDATE_MessageQueue_Send2AttOUT;
+    private String UPDATE_MessageQueue_Send2AttOUT;
 /*
     public final String UPDATE_MessageQueue_SetMsg_Reason=
             "update " + dbSchema + ".MESSAGE_QUEUE Q " +
@@ -89,29 +106,13 @@ public class TheadDataAccess {
                     ", q.Prev_Queue_Direction='SEND', q.Prev_Msg_Date=q.Msg_Date " +
                     "where 1=1 and q.Queue_Id = ? ";
     public PreparedStatement stmtUPDATE_MessageQueue_SetMsg_Reason;
-
-    public PreparedStatement stmtUPDATE_MessageQueue_Send2AttOUT;
-    public final String UPDATE_MessageQueue_Send2AttOUT=
-            "update " + dbSchema + ".MESSAGE_QUEUE Q " +
-                    "set q.Queue_Direction = 'ATTOUT', q.Msg_Result = ?" +
-                    ", q.Msg_Date= sysdate,  q.Msg_Status = ?, q.Retry_Count= ? " +
-                    ", q.Prev_Queue_Direction='SEND', q.Prev_Msg_Date=q.Msg_Date " +
-                    "where 1=1 and q.Queue_Id = ?  ";
+*/
 
     public PreparedStatement stmt_UPDATE_MessageQueue_Send2finishedOUT;
-    public final String UPDATE_MessageQueue_Send2finishedOUT=
-            "update " + dbSchema + ".MESSAGE_QUEUE Q " +
-                    "set q.Queue_Direction = ?, q.Msg_Reason = ?" +
-                    ", q.Msg_Date= sysdate,  q.Msg_Status = ?, q.Retry_Count= ? " +
-                    ", q.Prev_Queue_Direction='SEND', q.Prev_Msg_Date=q.Msg_Date " +
-                    "where 1=1 and q.Queue_Id = ?  ";
+    public  String UPDATE_MessageQueue_Send2finishedOUT;
 
-    private PreparedStatement stmt_UPDATE_MessageQueue_DirectionAsIS;
-    private final String UPDATE_MessageQueue_DirectionAsIS=
-            "update " + dbSchema + ".MESSAGE_QUEUE " +
-                    "set Msg_Date= (current_timestamp + ? * interval '1' second), Msg_Reason = ?, Msg_Status = ?, Retry_Count= ?, " +
-                    " Prev_Msg_Date=Msg_Date " +
-                    "where 1=1 and Queue_Id = ?";
+    private String selectMESSAGE_QUEUE ;
+    private PreparedStatement stmtSelectMESSAGE_QUEUE;
 
     public PreparedStatement stmt_UPDATE_MessageQueue_after_FaultResponse;
     public PreparedStatement stmt_UPDATE_after_FaultGet;
@@ -121,10 +122,6 @@ public class TheadDataAccess {
 
     private final String SELECT_QUEUElog_Response="select Response from " + dbSchema + ".MESSAGE_QUEUElog where  ROWID = ?";
     private PreparedStatement stmt_SELECT_QUEUElog_Response;
-
-
-*/
-
 
     // private PreparedStatement stmt_DELETE_Message_Details;
     // private String DELETE_Message_Details;
@@ -142,7 +139,6 @@ public class TheadDataAccess {
 
     private String UPDATE_QUEUElog_Response;
     private PreparedStatement stmt_UPDATE_QUEUElog;
-
 
     // TODO 4_Postgre
      private  String INSERT_QUEUElog_Request;
@@ -289,12 +285,12 @@ public class TheadDataAccess {
             return null;
         }
 
-/*
-        if (  make_MessageConfirmation_Query(dataAccess_log) == null ) {
-            dataAccess_log.error( "make_MessageConfirmation_Query() fault");
+
+        if (   make_MessageVO_Query(  dataAccess_log ) == null ) {
+            dataAccess_log.error( "make_MessageVO_Query() fault");
             return null;
         }
-        */
+
 
         if (  make_Message_Update_In2ExeIn(dataAccess_log) == null ) {
             dataAccess_log.error( "make_MessageQueue_ExeIn2DelIN() fault");
@@ -303,6 +299,11 @@ public class TheadDataAccess {
 
         if (  make_Message_Update_ExeIN2PostIN(dataAccess_log) == null ) {
             dataAccess_log.error( "make_Message_Update_ExeIN2PostIN() fault");
+            return null;
+        }
+// make_Message_Update_Out2Send
+        if ( make_Message_Update_Out2Send(dataAccess_log) == null ) {
+            dataAccess_log.error( "make_Message_Update_Send2ErrorOUT() fault");
             return null;
         }
 /*
@@ -316,7 +317,7 @@ public class TheadDataAccess {
             dataAccess_log.error( "make_insert_Message_Details() fault");
             return null;
         }
-/*
+
         if ( make_Message_Update_Send2ErrorOUT(dataAccess_log) == null ) {
             dataAccess_log.error( "make_Message_Update_Send2ErrorOUT() fault");
             return null;
@@ -326,14 +327,14 @@ public class TheadDataAccess {
             dataAccess_log.error( "make_UPDATE_MessageQueue_Send2finishedOUT() fault");
             return null;
         }
-        */
 
-        /*
+
         if ( make_UPDATE_MessageQueue_Send2AttOUT(dataAccess_log) == null ) {
             dataAccess_log.error( "make_UPDATE_MessageQueue_Send2finishedOUT() fault");
             return null;
         }
-        */
+
+
         if ( make_DELETE_Message_Confirmation(dataAccess_log) == null ) {
             dataAccess_log.error( "make_DELETE_Message_Confirmation() fault");
             return null;
@@ -380,12 +381,12 @@ public class TheadDataAccess {
             dataAccess_log.error( "make_UPDATE_MessageQueue_In2Ok() fault");
             return null;
         }
-        /*
-        if ( make_UPDATE_MessageQueue_Temp2ErrIN( dataAccess_log) == null ) {
-            dataAccess_log.error( "make_UPDATE_MessageQueue_Temp2ErrIN() fault");
+
+        if ( make_Message_Update_Out2ErrorOUT( dataAccess_log) == null ) {
+            dataAccess_log.error( "make_Message_Update_Out2ErrorOUT() fault");
             return null;
         }
-        */
+
         if ( make_Message_Update_ExeIn2DelIN( dataAccess_log) == null ) {
             dataAccess_log.error( "make_Message_Update_ExeIn2DelIN() fault");
             return null;
@@ -431,6 +432,24 @@ public class TheadDataAccess {
         return  StmtMsg_Queue ;
     }
 
+    public PreparedStatement  make_Message_Update_Out2ErrorOUT( Logger dataAccess_log ) {
+        PreparedStatement StmtMsg_Queue;
+        UPDATE_MessageQueue_Out2ErrorOUT =
+                "update " + dbSchema + ".MESSAGE_QUEUE Q " +
+                        "set Queue_Direction = 'ERROUT', Msg_Reason = ?" +
+                        ", Msg_Date= current_timestamp, Msg_Status = 1030, Retry_Count=1 " + // 1030 = Ошибка преобразования из OUT в SEND
+                        ", Prev_Queue_Direction='OUT', Prev_Msg_Date=Msg_Date " +
+                        "where 1=1 and q.Queue_Id = ?";
+        try {
+            StmtMsg_Queue = (PreparedStatement)this.Hermes_Connection.prepareStatement(UPDATE_MessageQueue_Out2ErrorOUT );
+        } catch (Exception e) {
+            dataAccess_log.error( "UPDATE(" + UPDATE_MessageQueue_Out2ErrorOUT + ") fault: " + e.getMessage() );
+            e.printStackTrace();
+            return ( (PreparedStatement) null );
+        }
+        this.stmtUPDATE_MessageQueue_Out2ErrorOUT = StmtMsg_Queue;
+        return  StmtMsg_Queue ;
+    }
 
     private  PreparedStatement make_update_MESSAGE_Template_Param( String HrmsSchema, Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
@@ -546,6 +565,69 @@ public class TheadDataAccess {
 
         this.stmt_New_Queue_Prepare = StmtMsg_Queue;
         return  StmtMsg_Queue ;
+    }
+
+    public PreparedStatement make_SelectMESSAGE_QUEUE( Logger dataAccess_log ) {
+        PreparedStatement stmtSelectMESSAGE_QUEUE;
+        selectMESSAGE_QUEUE =
+                "select " +
+                        " Q.queue_id," +
+                        " Q.queue_direction," +
+                        " Q.queue_date Queue_Date, " +
+                        " Q.msg_status," +
+                        " Q.msg_date Msg_Date," +
+                        " Q.operation_id," +
+                        " to_Char(Q.outqueue_id, '9999999999999999') as outqueue_id," +
+                        " Q.msg_type," +
+                        " Q.msg_reason," +
+                        " Q.msgdirection_id," +
+                        " Q.msg_infostreamid," +
+                        " Q.msg_type_own," +
+                        " Q.msg_result," +
+                        " Q.subsys_cod," +
+                        " Q.prev_queue_direction," +
+                        " Q.prev_msg_date Prev_Msg_Date, " +
+                        " Q.Perform_Object_Id " +
+                        "from " + dbSchema + ".MESSAGE_QUEUE Q " +
+                        "where 1=1 and q.Queue_Id = ?  ";
+        try {
+            stmtSelectMESSAGE_QUEUE = (PreparedStatement)this.Hermes_Connection.prepareStatement( selectMESSAGE_QUEUE );
+        } catch (Exception e) {
+            dataAccess_log.error( e.getMessage() );
+            e.printStackTrace();
+            return (  null );
+        }
+        this.stmtSelectMESSAGE_QUEUE = stmtSelectMESSAGE_QUEUE;
+        return  stmtSelectMESSAGE_QUEUE ;
+    }
+
+    public int  do_SelectMESSAGE_QUEUE( MessageQueueVO messageQueueVO, Logger dataAccess_log ) {
+        long Queue_Id = messageQueueVO.getQueue_Id();
+        messageQueueVO.setMsg_Date( java.sql.Timestamp.valueOf( LocalDateTime.now( ZoneId.of( "Europe/Moscow" ) ) ) );
+        messageQueueVO.setPrev_Msg_Date( messageQueueVO.getMsg_Date() );
+        messageQueueVO.setPrev_Queue_Direction(messageQueueVO.getQueue_Direction());
+        try {
+            stmtSelectMESSAGE_QUEUE.setLong(1, Queue_Id);
+            ResultSet rs = stmtSelectMESSAGE_QUEUE.executeQuery();
+            while (rs.next()) {
+                messageQueueVO.setQueue_Direction( rs.getString("Queue_Direction") );
+                messageQueueVO.setMsg_Reason( rs.getString("Msg_Reason") );
+                messageQueueVO.setMsg_Status( rs.getInt("Msg_Status") );
+                messageQueueVO.setMsg_Result( rs.getString("Msg_Result") );
+
+                // dataAccess_log.info( "messageQueueVO.Queue_Id:" + rs.getLong("Queue_Id") +
+                //        " [ " + rs.getString("Msg_Type") + "] SubSys_Cod=" + rs.getString("SubSys_Cod"));
+                messageQueueVO.setMsg_Date( java.sql.Timestamp.valueOf( LocalDateTime.now( ZoneId.of( "Europe/Moscow" ) ) ) );
+
+            }
+            rs.close();
+        } catch (Exception e) {
+            dataAccess_log.error(e.getMessage());
+            e.printStackTrace();
+            dataAccess_log.error(  "[" + Queue_Id + "] do_SelectMESSAGE_QUEUE: что то пошло совсем не так...");
+            return -1;
+        }
+        return  0;
     }
 
     private PreparedStatement  make_insert_Message_Queue( Logger dataAccess_log ) {
@@ -945,9 +1027,13 @@ public class TheadDataAccess {
         }
         return 0;
     }
-/*
+
     public PreparedStatement  make_UPDATE_MessageQueue_DirectionAsIS( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
+        UPDATE_MessageQueue_DirectionAsIS =
+                "update " + dbSchema + ".MESSAGE_QUEUE Q " +
+                        "set Msg_Date= (current_timestamp + ? * interval '1' second) , Msg_Reason = ?, Msg_Status = ?, Retry_Count= ?, Prev_Msg_Date=Msg_Date " +
+                        "where 1=1 and q.Queue_Id = ?";
         try {
             StmtMsg_Queue = (PreparedStatement)this.Hermes_Connection.prepareStatement( UPDATE_MessageQueue_DirectionAsIS );
         } catch (Exception e) {
@@ -959,36 +1045,36 @@ public class TheadDataAccess {
         return  StmtMsg_Queue ;
     }
 
-    public  int doUPDATE_MessageQueue_DirectionAsIS(Long Queue_Id, int Retry_interval,
-                                                       String pMsg_Reason,
-                                                       int Msg_Status, int Retry_Count,
-                                                       Logger dataAccess_log ) {
-        dataAccess_log.info("[" + Queue_Id + "] try UPDATE_MessageQueue_DirectionAsIS : ["+ UPDATE_MessageQueue_DirectionAsIS + "]" );
-
+    public  int doUPDATE_MessageQueue_DirectionAsIS(@NotNull Long Queue_Id, int Retry_interval,
+                                                    String pMsg_Reason,
+                                                    int Msg_Status, int Retry_Count,
+                                                    Logger dataAccess_log ) {
         try {
             BigDecimal queueId = new BigDecimal( Queue_Id.toString() );
-            dataAccess_log.info("[" + Queue_Id + "] BigDecimal queueId =" + queueId.toString() );
-            stmt_UPDATE_MessageQueue_DirectionAsIS.setInt( 1, Retry_interval );
+            //dataAccess_log.info("[" + Queue_Id + "] try UPDATE_MessageQueue_DirectionAsIS : ["+ UPDATE_MessageQueue_DirectionAsIS + "]" );
+            //dataAccess_log.info("[" + Queue_Id + "] BigDecimal queueId =" + queueId.toString() );
+            stmt_UPDATE_MessageQueue_DirectionAsIS.setInt( 1,  Retry_interval );
             stmt_UPDATE_MessageQueue_DirectionAsIS.setString( 2, pMsg_Reason.length() > maxReasonLen ? pMsg_Reason.substring(0, maxReasonLen) : pMsg_Reason );
             stmt_UPDATE_MessageQueue_DirectionAsIS.setInt( 3, Msg_Status );
             stmt_UPDATE_MessageQueue_DirectionAsIS.setInt( 4, Retry_Count );
             stmt_UPDATE_MessageQueue_DirectionAsIS.setBigDecimal(5, queueId );
-                    // NUMBER.formattedTextToNumber( Queue_Id.toString())  ) ; //.setNUMBER( 5, NUMBER.formattedTextToNumber() );
+            // NUMBER.formattedTextToNumber( Queue_Id.toString())  ) ; //.setNUMBER( 5, NUMBER.formattedTextToNumber() );
             stmt_UPDATE_MessageQueue_DirectionAsIS.executeUpdate();
 
             Hermes_Connection.commit();
-            // dataAccess.do_Commit();
+            // dataAccess_log.info("[" + Queue_Id + "] doUPDATE_MessageQueue_DirectionAsIS commit:" + UPDATE_MessageQueue_DirectionAsIS + " = " + Queue_Id.toString() + " Retry_Count=" + Retry_Count );
 
         } catch (Exception e) {
 
-            dataAccess_log.error( "update ARTX_PROJ.MESSAGE_QUEUE for [" + Queue_Id+  "]: " + UPDATE_MessageQueue_DirectionAsIS + ") fault: " + e.getMessage() );
-            System.err.println( "update ARTX_PROJ.MESSAGE_QUEUE for [" + Queue_Id+  "]: " + UPDATE_MessageQueue_DirectionAsIS + ") fault: ");
+            dataAccess_log.error( "update " + dbSchema + ".MESSAGE_QUEUE for [" + Queue_Id+  "]: " + UPDATE_MessageQueue_DirectionAsIS + ") fault: " + e.getMessage() );
+            System.err.println( "update " + dbSchema + ".MESSAGE_QUEUE for [" + Queue_Id+  "]: " + UPDATE_MessageQueue_DirectionAsIS + ") fault: ");
             e.printStackTrace();
             return -1;
         }
         return 0;
     }
-*/
+
+
 private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
         PreparedStatement StmtMsg_QueueH;
@@ -1051,7 +1137,7 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
     }
 */
 
-/*
+
     public PreparedStatement  make_Message_Update_Queue_Queue_Date4Send( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
         try {
@@ -1100,35 +1186,45 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
 
     }
 
-    public  int doUPDATE_MessageQueue_Out2Send( long Queue_Id,  String pMsg_Reason, Logger dataAccess_log ) {
-        dataAccess_log.info( "[" + Queue_Id + "] doUPDATE_MessageQueue_Out2Send:" + pMsg_Reason );
+    public  int doUPDATE_MessageQueue_Out2Send(  MessageQueueVO  messageQueueVO,  String pMsg_Reason, Logger dataAccess_log ) {
+        long Queue_Id = messageQueueVO.getQueue_Id();
+        // устанавливаем признак "SEND"
+        messageQueueVO.setMsg_Date( java.sql.Timestamp.valueOf( LocalDateTime.now( ZoneId.of( "Europe/Moscow" ) ) ) );
+        messageQueueVO.setPrev_Msg_Date( messageQueueVO.getMsg_Date() );
+        messageQueueVO.setPrev_Queue_Direction(messageQueueVO.getQueue_Direction());
+
+        messageQueueVO.setQueue_Direction(XMLchars.DirectSEND);
         try {
+            dataAccess_log.info( "[" + Queue_Id + "] doUPDATE_MessageQueue_Out2Send:" + pMsg_Reason );
+
             stmtUPDATE_MessageQueue_Out2Send.setString( 1, pMsg_Reason.length() > maxReasonLen ? pMsg_Reason.substring(0, maxReasonLen) : pMsg_Reason );
             stmtUPDATE_MessageQueue_Out2Send.setLong( 2, Queue_Id );
             stmtUPDATE_MessageQueue_Out2Send.executeUpdate();
 
+            dataAccess_log.info( "[" + Queue_Id + "] commit doUPDATE_MessageQueue_Out2Send:"  );
             Hermes_Connection.commit();
-            // dataAccess.do_Commit();
 
         } catch (Exception e) {
+            messageQueueVO.setMsg_Reason("UPDATE(\" + UPDATE_MessageQueue_Out2Send + \") fault: \" + e.getMessage()");
             dataAccess_log.error( "[" + Queue_Id + "] UPDATE(" + UPDATE_MessageQueue_Out2Send + ") fault: " + e.getMessage() );
             System.err.println( "[" + Queue_Id + "] UPDATE(" + UPDATE_MessageQueue_Out2Send + ") fault: " );
-                    e.printStackTrace();
+            e.printStackTrace();
             return -1;
         }
         return 0;
     }
-*/
-/*
+
+
     public PreparedStatement  make_Message_Update_Send2ErrorOUT( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
+        UPDATE_MessageQueue_Send2ErrorOUT =
+                "update " + dbSchema + ".MESSAGE_QUEUE Q " +
+                        "set Queue_Direction = 'ERROUT', Msg_Reason = ?" +
+                        ", Msg_Date= current_timestamp,  Msg_Status = ?, Retry_Count= ? " +
+                        ", Prev_Queue_Direction='SEND', Prev_Msg_Date=Msg_Date " +
+                        "where 1=1 and q.Queue_Id = ?  ";
         try {
-            UPDATE_MessageQueue_Send2ErrorOUT=
-                    "update " + dbSchema + ".MESSAGE_QUEUE " +
-                            "set Queue_Direction = 'ERROUT', Msg_Reason = ?" +
-                            ", Msg_Date= current_timestamp,  Msg_Status = ?, Retry_Count= ? " +
-                            ", Prev_Queue_Direction='SEND', Prev_Msg_Date=Msg_Date " +
-                            "where Queue_Id = ? ";
+
             StmtMsg_Queue = (PreparedStatement)this.Hermes_Connection.prepareStatement(UPDATE_MessageQueue_Send2ErrorOUT );
         } catch (Exception e) {
             dataAccess_log.error( "UPDATE(" + UPDATE_MessageQueue_Send2ErrorOUT + ") fault: " + e.getMessage() );
@@ -1139,8 +1235,17 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
         return  StmtMsg_Queue ;
     }
 
-    public int doUPDATE_MessageQueue_Send2ErrorOUT(Long Queue_Id, String pMsg_Reason, int pMsgStatus, int pMsgRetryCount,  Logger dataAccess_log) {
+    public int doUPDATE_MessageQueue_Send2ErrorOUT( MessageQueueVO  messageQueueVO,  String pMsg_Reason, int pMsgStatus, int pMsgRetryCount,  Logger dataAccess_log) {
         // dataAccess_log.info( "doUPDATE_MessageQueue_Send2ErrorOUT:" + pMsg_Reason );
+        long Queue_Id = messageQueueVO.getQueue_Id();
+
+        messageQueueVO.setMsg_Date( java.sql.Timestamp.valueOf( LocalDateTime.now( ZoneId.of( "Europe/Moscow" ) ) ) );
+        messageQueueVO.setPrev_Msg_Date( messageQueueVO.getMsg_Date() );
+        messageQueueVO.setPrev_Queue_Direction(messageQueueVO.getQueue_Direction());
+        messageQueueVO.setMsg_Status(pMsgStatus);
+        messageQueueVO.setMsg_Reason(pMsg_Reason);
+        messageQueueVO.setQueue_Direction(XMLchars.DirectERROUT);
+
         try {
             stmtUPDATE_MessageQueue_Send2ErrorOUT.setString( 1,  pMsg_Reason.length() > maxReasonLen ? pMsg_Reason.substring(0, maxReasonLen) : pMsg_Reason  );
             stmtUPDATE_MessageQueue_Send2ErrorOUT.setInt( 2, pMsgStatus );
@@ -1149,7 +1254,7 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
             stmtUPDATE_MessageQueue_Send2ErrorOUT.executeUpdate();
 
             Hermes_Connection.commit();
-            // dataAccess.do_Commit();
+            dataAccess_log.info( "[" + Queue_Id + "] UPDATE(" + UPDATE_MessageQueue_Send2ErrorOUT + ") commit, Retry_Count=" + pMsgRetryCount);
 
         } catch (Exception e) {
             dataAccess_log.error( "[" + Queue_Id + "] UPDATE(" + UPDATE_MessageQueue_Send2ErrorOUT + ") fault: " + e.getMessage() );
@@ -1160,9 +1265,14 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
         return 0;
     }
 
-
     public PreparedStatement  make_UPDATE_MessageQueue_Send2AttOUT( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
+        UPDATE_MessageQueue_Send2AttOUT =
+                "update " + dbSchema + ".MESSAGE_QUEUE Q " +
+                        "set Queue_Direction = 'ATTOUT', Msg_Result = ?" +
+                        ", Msg_Date= current_timestamp,  Msg_Status = ?, Retry_Count= ? " +
+                        ", Prev_Queue_Direction='SEND', Prev_Msg_Date=Msg_Date " +
+                        "where 1=1 and q.Queue_Id = ?  ";
         try {
 
             StmtMsg_Queue = (PreparedStatement)this.Hermes_Connection.prepareStatement(UPDATE_MessageQueue_Send2AttOUT );
@@ -1175,8 +1285,16 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
         return  StmtMsg_Queue ;
     }
 
-    public int doUPDATE_MessageQueue_Send2AttOUT(Long Queue_Id, String pMsg_Reason, int pMsgStatus, int pMsgRetryCount,  Logger dataAccess_log) {
+
+    public int doUPDATE_MessageQueue_Send2AttOUT(MessageQueueVO  messageQueueVO, String pMsg_Reason, int pMsgStatus, int pMsgRetryCount,  Logger dataAccess_log) {
         // dataAccess_log.info( "doUPDATE_MessageQueue_Send2ErrorOUT:" + pMsg_Reason );
+        long Queue_Id = messageQueueVO.getQueue_Id();
+        messageQueueVO.setMsg_Date( java.sql.Timestamp.valueOf( LocalDateTime.now( ZoneId.of( "Europe/Moscow" ) ) ) );
+        messageQueueVO.setPrev_Msg_Date( messageQueueVO.getMsg_Date() );
+        messageQueueVO.setPrev_Queue_Direction(messageQueueVO.getQueue_Direction());
+        messageQueueVO.setMsg_Status(pMsgStatus);
+        messageQueueVO.setMsg_Reason(pMsg_Reason);
+        messageQueueVO.setQueue_Direction(XMLchars.DirectATTNOUT);
         try {
             stmtUPDATE_MessageQueue_Send2AttOUT.setString( 1, pMsg_Reason.length() > maxReasonLen ? pMsg_Reason.substring(0, maxReasonLen) : pMsg_Reason );
             stmtUPDATE_MessageQueue_Send2AttOUT.setInt( 2, pMsgStatus );
@@ -1185,7 +1303,7 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
             stmtUPDATE_MessageQueue_Send2AttOUT.executeUpdate();
 
             Hermes_Connection.commit();
-            // dataAccess.do_Commit();
+            dataAccess_log.info( "[" + Queue_Id + "] UPDATE(" + UPDATE_MessageQueue_Send2AttOUT + ") commit, Retry_Count=" + pMsgRetryCount );
 
         } catch (Exception e) {
             dataAccess_log.error( "[" + Queue_Id + "] UPDATE(" + UPDATE_MessageQueue_Send2AttOUT + ") fault: " + e.getMessage() );
@@ -1195,8 +1313,51 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
         }
         return 0;
     }
-    */
 
+    public PreparedStatement  make_UPDATE_MessageQueue_Send2finishedOUT( Logger dataAccess_log ) {
+        PreparedStatement StmtMsg_Queue;
+        UPDATE_MessageQueue_Send2finishedOUT =
+                "update " + dbSchema + ".MESSAGE_QUEUE Q " +
+                        "set Queue_Direction = ?, Msg_Reason = ?" +
+                        ", Msg_Date= current_timestamp,  Msg_Status = ?, Retry_Count= ? " +
+                        ", Prev_Queue_Direction='SEND', Prev_Msg_Date=Msg_Date " +
+                        "where 1=1 and q.Queue_Id = ?  ";
+        try {
+
+            StmtMsg_Queue = (PreparedStatement)this.Hermes_Connection.prepareStatement( UPDATE_MessageQueue_Send2finishedOUT );
+        } catch (Exception e) {
+            dataAccess_log.error( e.getMessage() );
+            e.printStackTrace();
+            return ( (PreparedStatement) null );
+        }
+        this.stmt_UPDATE_MessageQueue_Send2finishedOUT = StmtMsg_Queue;
+        return  StmtMsg_Queue ;
+    }
+
+    public  int doUPDATE_MessageQueue_Send2finishedOUT(@NotNull Long Queue_Id, String Queue_Direction,
+                                                       String pMsg_Reason,
+                                                       int Msg_Status, int Retry_Count,
+                                                       Logger dataAccess_log ) {
+        try {
+            stmt_UPDATE_MessageQueue_Send2finishedOUT.setString( 1, Queue_Direction );
+            stmt_UPDATE_MessageQueue_Send2finishedOUT.setString( 2, pMsg_Reason.length() > maxReasonLen ? pMsg_Reason.substring(0, maxReasonLen) : pMsg_Reason );
+            stmt_UPDATE_MessageQueue_Send2finishedOUT.setInt( 3, Msg_Status );
+            stmt_UPDATE_MessageQueue_Send2finishedOUT.setInt( 4, Retry_Count );
+            stmt_UPDATE_MessageQueue_Send2finishedOUT.setLong( 5, Queue_Id );
+            stmt_UPDATE_MessageQueue_Send2finishedOUT.executeUpdate();
+
+            Hermes_Connection.commit();
+            dataAccess_log.info( "[" + Queue_Id + "] commit: doUPDATE_MessageQueue_Send2finishedOUT: " + UPDATE_MessageQueue_Send2finishedOUT +  "; Retry_Count=" + Retry_Count);
+
+        } catch (Exception e) {
+
+            dataAccess_log.error( "update " + dbSchema + ".MESSAGE_QUEUE for [" + Queue_Id+  "]: " + UPDATE_MessageQueue_Send2finishedOUT + ") fault: " + e.getMessage() );
+            System.err.println( "update " + dbSchema + ".MESSAGE_QUEUE for [" + Queue_Id+  "]: " + UPDATE_MessageQueue_Send2finishedOUT + ") fault: ");
+            e.printStackTrace();
+            return -1;
+        }
+        return 0;
+    }
     /*
     public PreparedStatement  make_UPDATE_MessageQueue_SetMsg_Reason( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
@@ -1296,7 +1457,7 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
     }
 
     public int doUPDATE_MessageQueue_In2ErrorIN(Long Queue_Id, String pMsg_Reason, Integer pMsg_Status, Logger dataAccess_log) {
-         // dataAccess_log.warn( "["+ Queue_Id + "] doUPDATE_MessageQueue_Out2ErrorOUT:" + pMsg_Reason );
+         // dataAccess_log.warn( "["+ Queue_Id + "] doUPDATE_MessageQueue_In2ErrorIN:" + pMsg_Reason );
         try {
             stmtUPDATE_MessageQueue_In2ErrorIN.setString( 1, pMsg_Reason.length() > maxReasonLen ? pMsg_Reason.substring(0, maxReasonLen) : pMsg_Reason );
             stmtUPDATE_MessageQueue_In2ErrorIN.setInt( 2, pMsg_Status );
@@ -1313,6 +1474,31 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
                 dataAccess_log.error( "[" + Queue_Id + "] rollback(" + UPDATE_MessageQueue_In2ErrorIN + ") fault: " + SQLe.getMessage() );
                 System.err.println( "[" + Queue_Id + "] rollback (" + UPDATE_MessageQueue_In2ErrorIN + ") fault: " + SQLe.getMessage()  );
             }
+            e.printStackTrace();
+            return -1;
+        }
+        return 0;
+    }
+
+    public int doUPDATE_MessageQueue_Out2ErrorOUT(MessageQueueVO messageQueueVO , String pMsg_Reason, Logger dataAccess_log) {
+        // dataAccess_log.info( "doUPDATE_MessageQueue_Out2ErrorOUT:" + pMsg_Reason );
+        long Queue_Id= messageQueueVO.getQueue_Id();
+        messageQueueVO.setMsg_Reason(pMsg_Reason);
+        messageQueueVO.setPrev_Msg_Date( messageQueueVO.getMsg_Date() );
+        messageQueueVO.setMsg_Date( java.sql.Timestamp.valueOf( LocalDateTime.now( ZoneId.of( "Europe/Moscow" ) ) ) );
+        messageQueueVO.setPrev_Queue_Direction(messageQueueVO.getQueue_Direction());
+        messageQueueVO.setQueue_Direction(XMLchars.DirectERROUT );
+        try {
+            stmtUPDATE_MessageQueue_Out2ErrorOUT.setString( 1, pMsg_Reason.length() > maxReasonLen ? pMsg_Reason.substring(0, maxReasonLen) : pMsg_Reason );
+            stmtUPDATE_MessageQueue_Out2ErrorOUT.setLong( 2, Queue_Id );
+            stmtUPDATE_MessageQueue_Out2ErrorOUT.executeUpdate();
+
+            Hermes_Connection.commit();
+            dataAccess_log.info( "[" + Queue_Id + "] UPDATE(" + UPDATE_MessageQueue_Out2ErrorOUT + ") commit ");
+
+        } catch (Exception e) {
+            dataAccess_log.error( "[" + Queue_Id + "] UPDATE(" + UPDATE_MessageQueue_Out2ErrorOUT + ") fault: " + e.getMessage() );
+            System.err.println( "[" + Queue_Id + "] UPDATE(" + UPDATE_MessageQueue_Out2ErrorOUT + ") fault: " );
             e.printStackTrace();
             return -1;
         }
@@ -1486,25 +1672,43 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
         return 0;
     }
 
-/*
-    public PreparedStatement  make_MessageConfirmation_Query( Logger dataAccess_log ) {
+
+    public PreparedStatement make_MessageVO_Query( Logger dataAccess_log ) {
         PreparedStatement StmtMsgQueueDet;
+        if (rdbmsVendor.equals("oracle") )
+            selectMessage4QueueIdSQL= """
+                        select q.ROWID, Q.queue_id, Q.queue_direction, COALESCE(Q.queue_date, Current_TimeStamp - Interval '1' Minute) as Queue_Date,
+                        Q.msg_status, Q.msg_date Msg_Date, Q.operation_id, to_Char(Q.outqueue_id, '999999999999999') as outqueue_id,
+                        Q.msg_type, Q.msg_reason, Q.msgdirection_id, Q.msg_infostreamid,
+                        Q.msg_type_own,Q.msg_result, Q.subsys_cod,
+                        COALESCE(Q.retry_count, 0) as Retry_Count, Q.prev_queue_direction, Q.prev_msg_date Prev_Msg_Date,
+                        COALESCE(Q.queue_create_date, COALESCE(Q.queue_date, Current_timeStamp - Interval '1' Minute )) as Queue_Create_Date,
+                        Q.Perform_Object_Id
+                        from
+                        """ + " " + dbSchema + ".MESSAGE_QUEUE q where q.queue_id=?";
+            // """ + " " + HrmsSchema + ".MESSAGE_QUEUE q where q.ROWID=? ";
+        else // для PostGree используем псевдостолбец CTID с типом ::tid
+            selectMessage4QueueIdSQL= """
+                        select CTID::varchar as ROWID, Q.queue_id, Q.queue_direction, COALESCE(Q.queue_date, clock_timestamp() AT TIME ZONE 'Europe/Moscow' - Interval '1' Minute) as Queue_Date,
+                        Q.msg_status, Q.msg_date Msg_Date, Q.operation_id, to_Char(Q.outqueue_id, '999999999999999') as outqueue_id,
+                        Q.msg_type, Q.msg_reason, Q.msgdirection_id, Q.msg_infostreamid,
+                        Q.msg_type_own,Q.msg_result, Q.subsys_cod,
+                        COALESCE(Q.retry_count, 0) as Retry_Count, Q.prev_queue_direction, Q.prev_msg_date Prev_Msg_Date,
+                        COALESCE(Q.queue_create_date, COALESCE(Q.queue_date, clock_timestamp() AT TIME ZONE 'Europe/Moscow' - Interval '1' Minute )) as Queue_Create_Date,
+                        Q.Perform_Object_Id
+                        from
+                        """ + " " + dbSchema + ".MESSAGE_QUEUE q where q.queue_id=?";
         try {
-            StmtMsgQueueDet = this.Hermes_Connection.prepareStatement(
-                    "select d.Tag_Id, d.Tag_Value, d.Tag_Num, d.Tag_Par_Num from " + dbSchema + ".message_queuedet D" +
-                            " where (1=1)" +
-                            " and d.QUEUE_ID = ? and d.Tag_Id >= ? " +
-                            " order by   Tag_Par_Num, Tag_Num "
-            );
+            StmtMsgQueueDet = this.Hermes_Connection.prepareStatement(selectMessage4QueueIdSQL );
         } catch (Exception e) {
             dataAccess_log.error( e.getMessage() );
             e.printStackTrace();
             return ( (PreparedStatement) null );
         }
-        this.stmtMsgQueueConfirmation = StmtMsgQueueDet;
+        this.stmtMsgQueueVO_Query = StmtMsgQueueDet;
         return  StmtMsgQueueDet ;
     }
-*/
+
 private PreparedStatement make_Message_Query(  Logger dataAccess_log ) {
     PreparedStatement stmtMsgQueue;
 

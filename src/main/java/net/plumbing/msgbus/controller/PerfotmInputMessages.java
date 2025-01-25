@@ -4,11 +4,9 @@ package net.plumbing.msgbus.controller;
 import net.plumbing.msgbus.common.json.JSONException;
 import net.plumbing.msgbus.common.json.JSONObject;
 import net.plumbing.msgbus.common.json.XML;
-import net.plumbing.msgbus.model.MessageDetails;
-import net.plumbing.msgbus.model.MessageQueueVO;
-import net.plumbing.msgbus.model.MessageTemplate;
-import net.plumbing.msgbus.model.MessageTemplate4Perform;
+import net.plumbing.msgbus.model.*;
 import net.plumbing.msgbus.threads.ExtSystemDataConnection;
+import net.plumbing.msgbus.threads.PerformQueueMessages4Send;
 import net.plumbing.msgbus.threads.TheadDataAccess;
 import net.plumbing.msgbus.threads.utils.*;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +31,8 @@ import javax.net.ssl.SSLContext;
 import javax.xml.transform.TransformerException;
 
 import net.plumbing.msgbus.threads.utils.MessageHttpSend;
+
+import net.plumbing.msgbus.threads.utils.MessageUtils;
 
 
 public class PerfotmInputMessages {
@@ -559,7 +559,7 @@ public class PerfotmInputMessages {
                         {
                             // надо читать ответ из Confirmation порожденного OUT
                             if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                            MessegeReceive_Log.warn("[" + Queue_Id + "] AckAnswXSLT: " + Message.MessageTemplate4Perform.getAckAnswXSLT());
+                            MessegeReceive_Log.warn("[" + Queue_Id + "] for XSLT Confirmation Link_Queue={} use AckAnswXSLT: {}", Link_Queue_Id , Message.MessageTemplate4Perform.getAckAnswXSLT());
                             // ReadConfirmation очищает Message.XML_MsgConfirmation и помещает туда чстанный из БД Confirmation
                             int ConfirmationRowNum = MessageUtils.ReadConfirmation(theadDataAccess, Link_Queue_Id, Message, MessegeReceive_Log);
                             if (ConfirmationRowNum < 1) {
@@ -569,7 +569,7 @@ public class PerfotmInputMessages {
                                 if (( Link_Queue_Direction != null ) && (!Message.XML_MsgConfirmation.isEmpty()) )
                                     switch ( Link_Queue_Direction )
                                     { case XMLchars.DirectERROUT:
-                                        Message.MsgReason.append("[" + Queue_Id + "] при взаимодействии с внешней система на событие (" + Link_Queue_Id + ") произошёл сбой " + Message.XML_MsgConfirmation );
+                                        Message.MsgReason.append("[" + Queue_Id + "] при взаимодействии с внешней система на событие (" + Link_Queue_Id + ") произошёл сбой {}").append( Message.XML_MsgConfirmation );
                                             break;
                                         case XMLchars.DirectATTNOUT:
                                         case XMLchars.DirectDELOUT:
@@ -756,8 +756,6 @@ public class PerfotmInputMessages {
                                 // Устанавливаеи признак завершения работы
                                 theadDataAccess.doUPDATE_MessageQueue_ExeIn2DelIN(Queue_Id, MessegeReceive_Log);
                                 return  0L;
-
-
                             /////////////////////////////////////////////////
                         }
                     }
@@ -908,6 +906,57 @@ public class PerfotmInputMessages {
                                       MessegeReceive_Log);
                             return -105L;
                         }
+                    }
+                    else {
+                        // if NOT ( Message.MessageTemplate4Perform.getPropExeMetodPostExec().equals(Message.MessageTemplate4Perform.JavaClassExeMetod) )
+                        // значит, либо WebJsonExeMetod, либо WebRestExeMetod
+                        if ( ( Message.MessageTemplate4Perform.getPropExeMetodPostExec().equals(Message.MessageTemplate4Perform.WebJsonExeMetod)) ||
+                                ( Message.MessageTemplate4Perform.getPropExeMetodPostExec().equals(Message.MessageTemplate4Perform.WebRestExeMetod))
+                        )
+                        {
+                            if ( Link_Queue_Id != null) // Обрабатываем порожденное сообщение
+                            { // перечитываем по Link_Queue_Id
+                              // и выполняем всё то, что делает Sender c исходящим
+                                PerformQueueMessages4Send performQueueMessage4Send = new PerformQueueMessages4Send();
+
+                                MessageDetails4Send Message_4_Send = new MessageDetails4Send();
+                                MessageQueueVO message_4_SendQueueVO = new MessageQueueVO();
+                                message_4_SendQueueVO.setQueue_Id( Link_Queue_Id );
+
+                                if ( is_NoWait4Sender )  //isNoWaitSender4MessageTypeURL_SOAP_Ack_2_Operation
+                                { long reading_Queue_Id =
+                                    MessageUtils.readMessage_QueueVO( Link_Queue_Id, message_4_SendQueueVO, Message_4_Send, theadDataAccess, Message.MessageTemplate4Perform.getIsDebugged() , MessegeReceive_Log );
+                                    if ( reading_Queue_Id < 0 )
+                                    {   // Не найдена запись Link_Queue= - надо орать!
+                                        MessegeReceive_Log.error("["+ Queue_Id +"]  для пост-обработки " + Message.MessageTemplate4Perform.getPropExeMetodPostExec() + " не найдена запись Link_Queue=" + Link_Queue_Id );
+                                        theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(messageQueueVO.getQueue_Id(),
+                                                "для пост-обработки " + Message.MessageTemplate4Perform.getPropExeMetodPostExec() + " не найдена запись Link_Queue=" + Link_Queue_Id, 1236,
+                                                MessegeReceive_Log);
+                                        return -107L;
+                                    }
+
+                                    try {
+                                        MessegeReceive_Log.warn( "Queue_Id:[" + messageQueueVO.getQueue_Id() + "] performQueueMessage4Send:" + messageQueueVO.getQueue_Id() + " record  locked, Msg_InfoStreamId=" + messageQueueVO.getMsg_InfoStreamId()  );
+                                        performQueueMessage4Send.performMessage( Message_4_Send, message_4_SendQueueVO, theadDataAccess, MessegeReceive_Log);
+                                    } catch (Exception e) {
+                                        System.err.println("performMessage Exception Queue_Id:[" + messageQueueVO.getQueue_Id() + "] for Link_Queue=" + Link_Queue_Id.toString() + " :" + e.getMessage());
+                                        e.printStackTrace();
+                                        MessegeReceive_Log.error("Queue_Id:[" + messageQueueVO.getQueue_Id() + "] performMessage Exception for Link_Queue={}: {}" , Link_Queue_Id.toString()  , e.getMessage());
+                                        MessegeReceive_Log.error("Queue_Id:[" + messageQueueVO.getQueue_Id() + "] performMessage Exception for Link_Queue=" + Link_Queue_Id.toString() +"что то пошло совсем не так...");
+                                    }
+                                }
+                                else {
+                                    MessegeReceive_Log.error("["+ Queue_Id +"]  для пост-обработки " + Message.MessageTemplate4Perform.getPropExeMetodPostExec() + " не установлен признак is_NoWait4Sender=" + is_NoWait4Sender );
+                                    theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(messageQueueVO.getQueue_Id(),
+                                            "для пост-обработки " + Message.MessageTemplate4Perform.getPropExeMetodPostExec() + " не найдена запись Link_Queue=" + Link_Queue_Id, 1237,
+                                            MessegeReceive_Log);
+                                    return -108L;
+                                }
+                            }
+
+                        }
+
+
                     }
                 }
                 // Устанавливаеи признак завершения работы
