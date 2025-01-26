@@ -39,15 +39,24 @@ public class InitMessageRepository {
         String selectMsgTypeReRead;
         if ( DataAccess.rdbmsVendor.equalsIgnoreCase("oracle"))
             //  Oracle date - YYYY-MM-DD HH24:MI:SS
-            selectMsgTypeReRead = "select t.interface_id, " +
-                    "t.operation_id, t.msg_type, t.msg_type_own, t.msg_typedesc, t.msg_direction, " +
-                    "t.msg_handler, t.url_soap_send, t.url_soap_ack, t.max_retry_count, t.max_retry_time " +
-                    "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS t " +
-                        "where (1=1) and t.msg_direction like '%IN%' " +
-                        "and t.LAST_UPDATE_DT > ( sysDate  -  ( 180 + " + intervalReInit + " )/(24*3600)  )" +
-                        "order by t.interface_id, t.operation_id";
+            selectMsgTypeReRead =
+                    """        
+                     select t.interface_id,
+                            t.operation_id, t.msg_type, t.msg_type_own, t.msg_typedesc, t.msg_direction,
+                            t.msg_handler, t.url_soap_send, t.url_soap_ack, t.max_retry_count, t.max_retry_time
+                            from\040
+                    """ + DataAccess.HrmsSchema +  """
+                            ".MESSAGE_typeS t\040
+                        where (1=1) and t.msg_direction like '%IN%'\040
+                        and t.LAST_UPDATE_DT > (sysDate - (180 +
+                        """ + intervalReInit + """
+                            )/(24*3600) )\040
+                        order by t.interface_id, t.operation_id
+                        """
+                        ;
         else //  PostGree
-            selectMsgTypeReRead = "select t.interface_id, " +
+            selectMsgTypeReRead =
+                    "select t.interface_id, " +
                     "t.operation_id, t.msg_type, t.msg_type_own, t.msg_typedesc, t.msg_direction, " +
                     "t.msg_handler, t.url_soap_send, t.url_soap_ack, t.max_retry_count, t.max_retry_time " +
                     "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS t " +
@@ -341,7 +350,7 @@ public class InitMessageRepository {
            return MessageDirections.RowNum;
     }
 
-    public static  int SelectMsgTypes( Logger AppThead_log )  {
+    public static int SelectMsgTypes( Logger AppThead_log )  {
         PreparedStatement stmtMsgType = null;
         ResultSet rs = null;
         Logger log = AppThead_log;
@@ -351,21 +360,40 @@ public class InitMessageRepository {
 
         if ( DataAccess.Hermes_Connection != null )
             try {
-                stmtMsgType = DataAccess.Hermes_Connection.prepareStatement("select t.interface_id, " +
-                        "t.operation_id, " +
-                        "t.msg_type, " +
-                        "t.msg_type_own, " +
-                        "t.msg_typedesc, " +
-                        "t.msg_direction, " +
-                        "t.msg_handler, " +
-                        "t.url_soap_send, " +
-                        "t.url_soap_ack, " +
-                        "t.max_retry_count, " +
-                        "t.max_retry_time " +
-                        "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS t " +
+
+                String select_MESSAGE_typeS =
+             "select i.interface_id, " +
+                        "i.operation_id, " +
+                        "i.msg_type, " +
+                        "i.msg_type_own, " +
+                        "i.msg_typedesc, " +
+                        "i.msg_direction, " +
+                        "i.msg_handler, " +
+                        "i.url_soap_send, " +
+                        "i.url_soap_ack, " +
+                        "i.max_retry_count, " +
+                        "i.max_retry_time " +
+                        "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS i " +
                         "where (1=1) " +
-                        "and t.msg_direction like '%IN%' " +
-                        "order by t.interface_id, t.operation_id");
+                        "and i.msg_direction like '%IN%' " +
+                     "union all " +
+                "select o.interface_id, " +
+                     "o.operation_id, " +
+                     "o.msg_type, " +
+                     "o.msg_type_own, " +
+                     "o.msg_typedesc, " +
+                     "o.msg_direction, " +
+                     "o.msg_handler, " +
+                     "o.url_soap_send, " +
+                     "o.url_soap_ack, " +
+                     "o.max_retry_count, " +
+                     "o.max_retry_time " +
+                     "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS o " +
+                     "where (1=1) " +
+                     "and o.msg_direction like '%OUT%' and o.operation_id=7512 " + //отправить запрос на поднесение карты к считывателю SKUD_Action_CARD_READ
+                     "order by 1, 2";
+                log.info(" select_MESSAGE_typeS=`{}`" , select_MESSAGE_typeS  );
+                stmtMsgType = DataAccess.Hermes_Connection.prepareStatement(select_MESSAGE_typeS );
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -414,7 +442,6 @@ public class InitMessageRepository {
         PreparedStatement stmtMsgTemplate;
         ResultSet rs;
         Logger log = AppThead_log;
-        //MessageTemplateVO messageTemplateVO = new MessageTemplateVO();
         MessageTemplate.AllMessageTemplate.clear();
         MessageTemplate.RowNum = 0;
 
@@ -437,8 +464,26 @@ public class InitMessageRepository {
                                 "t.lastmaker, " +
                                 "to_char(t.lastdate,'YYYY.MM.DD HH24:MI:SS') LastDate " +
                         "from " + DataAccess.HrmsSchema +  ".MESSAGE_TemplateS t " +
-                        "where (1=1) and t.template_dir like '%IN%' " +
-                                "order by t.interface_id, t.operation_id, t.destin_id, t.dst_subcod");
+                        "where (1=1) and t.template_dir like '%IN%' "
+                + " union all " +
+                        "select t.template_id, " +
+                                "t.interface_id, " +
+                                "t.operation_id, " + // 3
+                                "t.msg_type, " +
+                                "t.msg_type_own, " +
+                                "t.template_name, " +
+                                "t.template_dir, " +
+                                "t.source_id, " +  //8
+                                "t.destin_id, " + //9
+                                "t.conf_text, " +
+                                "t.src_subcod, " + //11
+                                "t.dst_subcod, " + //12
+                                "t.lastmaker, " +
+                                "to_char(t.lastdate,'YYYY.MM.DD HH24:MI:SS') LastDate " +
+                                "from " + DataAccess.HrmsSchema +  ".MESSAGE_TemplateS t " +
+                                "where (1=1) and t.template_dir like '%OUT%' and t.operation_id= 7512 " + //TO_DO: отправить запрос на поднесение карты к считывателю SKUD_Action_CARD_READ
+                                "order by 2, 3, 9, 11, 8 , 12"
+                );
 
             } catch (Exception e) {
                 e.printStackTrace();
