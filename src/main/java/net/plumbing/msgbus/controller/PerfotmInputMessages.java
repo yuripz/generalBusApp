@@ -448,46 +448,55 @@ public class PerfotmInputMessages {
                 }
                 if ( Link_Queue_Id != null) // Обрабатываем порожденное сообщение
                 { // Проверяем в цикле периодически - спорадически готово ли OUT
-                    if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                    MessegeReceive_Log.warn("[" + Queue_Id + "] Проверяем в цикле периодически - готово ли OUT Link_Queue_Id=" + Link_Queue_Id );
-                    theadDataAccess.doUPDATE_MessageQueue_ExeIN2PostIN(  Queue_Id, "Ожидаем завершения обработки Q=" + Link_Queue_Id.toString() , MessegeReceive_Log);
-
-                    int theadNum  = MessageUtils.get_SelectLink_msg_InfostreamId(theadDataAccess, Link_Queue_Id, Message.MessageTemplate4Perform.getIsDebugged(),  MessegeReceive_Log);
-                    ////////////////////////////////
-                    /// Посылаем сообщение в Очередь - для ускорения !!!
-                    String MessageDirectionsCode = null;
-                    PerformTextMessageJMSQueue performTextMessageJMSQueue = new PerformTextMessageJMSQueue();
                     javax.jms.Connection Qconnection = null;
-                    if ( theadNum > 0 ) {
-                        MessageDirectionsCode = MessageRepositoryHelper.look4MessageDirectionsCode_4_Num_Thread(theadNum, MessegeReceive_Log);
+                    PerformTextMessageJMSQueue performTextMessageJMSQueue =null;
 
-                        //PerformTextMessageJMSQueue.JMSQueueContext QueueContext;
-                        try {
-                            if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                            MessegeReceive_Log.info("[" + Queue_Id + "] Пробуем отправить сообщение QUEUE_ID: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN'");
+                    if (!is_NoWait4Sender) { // признака НЕ-ждать-связанного сообщения нет, надо дождаться окончания от Sener-а, ибо данный вызов внешней системы синхолнный
+                        if (Message.MessageTemplate4Perform.getIsDebugged())
+                            MessegeReceive_Log.warn("[" + Queue_Id + "] Проверяем в цикле периодически - готово ли OUT Link_Queue_Id=" + Link_Queue_Id);
+                        theadDataAccess.doUPDATE_MessageQueue_ExeIN2PostIN(Queue_Id, "Ожидаем завершения обработки Q=" + Link_Queue_Id.toString(), MessegeReceive_Log);
 
-                            Qconnection = performTextMessageJMSQueue.SendTextMessageJMSQueue(
+                        int theadNum = MessageUtils.get_SelectLink_msg_InfostreamId(theadDataAccess, Link_Queue_Id, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
+                        ////////////////////////////////
+                        /// Посылаем сообщение в Очередь - для ускорения !!!
+                        String MessageDirectionsCode = null;
+                        performTextMessageJMSQueue = new PerformTextMessageJMSQueue();
+
+                        if (theadNum > 0) {
+                            MessageDirectionsCode = MessageRepositoryHelper.look4MessageDirectionsCode_4_Num_Thread(theadNum, MessegeReceive_Log);
+
+                            //PerformTextMessageJMSQueue.JMSQueueContext QueueContext;
+                            try {
+                                if (Message.MessageTemplate4Perform.getIsDebugged())
+                                    MessegeReceive_Log.info("[" + Queue_Id + "] Пробуем отправить сообщение QUEUE_ID: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN'");
+
+                                Qconnection = performTextMessageJMSQueue.SendTextMessageJMSQueue(
                                         "{ \"QUEUE_ID\": \"" + Link_Queue_Id.toString() + "\" }",
-                                            "Q." + MessageDirectionsCode + ".IN",
-                                                        StoreMQpooledConnectionFactory.MQpooledConnectionFactory
-                            );
-                        } catch (JMSException e) {
-                            MessegeReceive_Log.warn("[" + Queue_Id + "] НЕ удалось отправить сообщение Link_Queue_Id: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN', fault:" + e.getMessage());
-                            Message.MsgReason.append(" НЕ удалось отправить сообщение Link_Queue_Id: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN':" + e.getMessage());
-                           // return Queue_Id;
-                            Qconnection = null;
-                        }
-                        if (Qconnection != null)
-                        {if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                            MessegeReceive_Log.info("[" + Queue_Id + "] Отправили сообщение Link_Queue_Id: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN'");
+                                        "Q." + MessageDirectionsCode + ".IN",
+                                        StoreMQpooledConnectionFactory.MQpooledConnectionFactory
+                                );
+                            } catch (JMSException e) {
+                                MessegeReceive_Log.warn("[" + Queue_Id + "] НЕ удалось отправить сообщение Link_Queue_Id: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN', fault:" + e.getMessage());
+                                Message.MsgReason.append(" НЕ удалось отправить сообщение Link_Queue_Id: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN':" + e.getMessage());
+                                // return Queue_Id;
+                                Qconnection = null;
                             }
+                            if (Qconnection != null) {
+                                if (Message.MessageTemplate4Perform.getIsDebugged())
+                                    MessegeReceive_Log.info("[" + Queue_Id + "] Отправили сообщение Link_Queue_Id: " + Link_Queue_Id + " в очередь сообщений ActiveMQ 'Q." + MessageDirectionsCode + ".IN'");
+                            }
+                        }
+                    }
+                    else {
+                        if ( Message.MessageTemplate4Perform.getIsDebugged() )
+                            MessegeReceive_Log.warn("[" + Queue_Id + "] выставлен is_NoWait4Sender: отправка OUT Link_Queue_Id={} должна быть произведена при `ExeMetod=web-json` в секции ConfigPostExec.prop", + Link_Queue_Id );
                     }
 
                     boolean isLink_Queue_Finish=false;
                     // # hermes.api-rest-wait-time=1200
                     int try_count = 0; // вынесли, что бы печаталось
                     int time4wait = 0;
-                    if (!is_NoWait4Sender) { // признака НЕ-ждать-связанного сообщения нет, надо дождаться окончания от Sener-а ибо данный вызов внешней системы синхолнный
+                    if (!is_NoWait4Sender) { // признака НЕ-ждать-связанного сообщения нет, надо дождаться окончания от Sener-а, ибо данный вызов внешней системы синхолнный
 
                         //int time4waitMessageReplyQueue=0; // Несльзя ждать весь тайм-аут на jms-QUEUE, т.к. запрос межет взять нет тот Sender, который прочимал сообщение)
                         Integer ShortRetryCountPostExec = Message.MessageTemplate4Perform.getShortRetryCountPostExec();
@@ -543,12 +552,13 @@ public class PerfotmInputMessages {
                                 try_count = 0;
                             }
                         }
+                        // останавливаем jms-Connection !
+                         performTextMessageJMSQueue.Stop_and_Close_MessageJMSQueue( Queue_Id,  MessegeReceive_Log );
                     }
                     else {// is_NoWait4Sender == true !
                         isLink_Queue_Finish = true;
                     }
-                    // останавливаем jms-Connection !
-                    performTextMessageJMSQueue.Stop_and_Close_MessageJMSQueue( Queue_Id,  MessegeReceive_Log );
+
 
                     if ( isLink_Queue_Finish)
                     { // Считаем, что как то готово готово

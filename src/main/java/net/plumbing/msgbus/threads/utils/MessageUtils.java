@@ -78,7 +78,7 @@ public class MessageUtils {
 
         if ( messageDetailVO.Tag_Num != 0 ) { // Tag_Num Всегда начинается с 1 для сообщения! ( проверка на всякий случай )
 
-            messageDetails.XML_MsgResponse.append(XMLchars.OpenTag ); messageDetails.XML_MsgResponse.append( messageDetailVO.Tag_Id);
+            messageDetails.XML_MsgOUT.append(XMLchars.OpenTag ); messageDetails.XML_MsgOUT.append( messageDetailVO.Tag_Id);
 
             MessageDetailVO messageChildVO;
             ArrayList<Integer> ChildVO_ArrayList =  messageDetails.MessageIndex_by_Tag_Par_Num.get( messageDetailVO.Tag_Num );
@@ -93,18 +93,18 @@ public class MessageUtils {
                                 (messageChildVO.Tag_Num == 0))  // это атрибут элемента, у которого нет потомков
                         {
                             if (messageChildVO.Tag_Value != null) { // фармирукм Attribute="Value"
-                                messageDetails.XML_MsgResponse.append(XMLchars.Space);
-                                messageDetails.XML_MsgResponse.append(messageChildVO.Tag_Id);
-                                messageDetails.XML_MsgResponse.append(XMLchars.Equal);
-                                messageDetails.XML_MsgResponse.append(XMLchars.Quote);
-                                messageDetails.XML_MsgResponse.append(messageChildVO.Tag_Value);
-                                messageDetails.XML_MsgResponse.append(XMLchars.Quote);
+                                messageDetails.XML_MsgOUT.append(XMLchars.Space);
+                                messageDetails.XML_MsgOUT.append(messageChildVO.Tag_Id);
+                                messageDetails.XML_MsgOUT.append(XMLchars.Equal);
+                                messageDetails.XML_MsgOUT.append(XMLchars.Quote);
+                                messageDetails.XML_MsgOUT.append(messageChildVO.Tag_Value);
+                                messageDetails.XML_MsgOUT.append(XMLchars.Quote);
                             } else {  // фармирукм Attribute=""
-                                messageDetails.XML_MsgResponse.append(XMLchars.Space);
-                                messageDetails.XML_MsgResponse.append(messageChildVO.Tag_Id);
-                                messageDetails.XML_MsgResponse.append(XMLchars.Equal);
-                                messageDetails.XML_MsgResponse.append(XMLchars.Quote);
-                                messageDetails.XML_MsgResponse.append(XMLchars.Quote);
+                                messageDetails.XML_MsgOUT.append(XMLchars.Space);
+                                messageDetails.XML_MsgOUT.append(messageChildVO.Tag_Id);
+                                messageDetails.XML_MsgOUT.append(XMLchars.Equal);
+                                messageDetails.XML_MsgOUT.append(XMLchars.Quote);
+                                messageDetails.XML_MsgOUT.append(XMLchars.Quote);
                             }
                         }
                     }
@@ -118,9 +118,9 @@ public class MessageUtils {
                         throw new NullPointerException( messageException);
                     }
                 }
-                messageDetails.XML_MsgResponse.append(XMLchars.CloseTag); // + ">" );
+                messageDetails.XML_MsgOUT.append(XMLchars.CloseTag); // + ">" );
                 if ( messageDetailVO.Tag_Value != null )
-                    messageDetails.XML_MsgResponse.append(messageDetailVO.getTag_Value());
+                    messageDetails.XML_MsgOUT.append(messageDetailVO.getTag_Value());
 
                 Iterator<Integer> ChildVO_ElementIterator = ChildVO_ArrayList.iterator();
                 // 2й проход, достаём дочерние элементы
@@ -146,15 +146,15 @@ public class MessageUtils {
                 }
 
             } else { // вложенных элементов нет, чисто значение
-                messageDetails.XML_MsgResponse.append(XMLchars.CloseTag); // + ">" );
+                messageDetails.XML_MsgOUT.append(XMLchars.CloseTag); // + ">" );
                 if ( messageDetailVO.Tag_Value != null )
-                    messageDetails.XML_MsgResponse.append(messageDetailVO.getTag_Value());
+                    messageDetails.XML_MsgOUT.append(messageDetailVO.getTag_Value());
             }
 
-            messageDetails.XML_MsgResponse.append(XMLchars.OpenTag ); // <\Tag_Id>
-            messageDetails.XML_MsgResponse.append( XMLchars.EndTag );
-            messageDetails.XML_MsgResponse.append( messageDetailVO.Tag_Id );
-            messageDetails.XML_MsgResponse.append( XMLchars.CloseTag);
+            messageDetails.XML_MsgOUT.append(XMLchars.OpenTag ); // <\Tag_Id>
+            messageDetails.XML_MsgOUT.append( XMLchars.EndTag );
+            messageDetails.XML_MsgOUT.append( messageDetailVO.Tag_Id );
+            messageDetails.XML_MsgOUT.append( XMLchars.CloseTag);
             return 1; //XML_Tag;
         } else {
             // !было: StringBuilder XML_Tag = new StringBuilder(XMLchars.Space);
@@ -965,43 +965,43 @@ public class MessageUtils {
                 // MessegeSend_Log.info( "Tag_Id:" + rs.getString("Tag_Id") + " [" + rs.getString("Tag_Value") + "]");
             }
         } catch (SQLException e) {
-            MessegeSend_Log.error("Queue_Id=[" + Queue_Id + "] :" + sStackTrace.strInterruptedException(e));
+            MessegeSend_Log.error("Queue_Id=[" + Queue_Id + "] ReadMessageDetai4Send:" + sStackTrace.strInterruptedException(e));
             System.err.println("["+ Queue_Id +"] select  from MESSAGE_QUEUEdet  fault: " + e.getMessage());
             e.printStackTrace();
             return messageDetails.MessageRowNum;
         }
-        MessegeSend_Log.info( "["+ Queue_Id +"] считали из БД фрагменты XML, " + messageDetails.MessageRowNum + " записей" );
+        MessegeSend_Log.info( "["+ Queue_Id +"] ReadMessageDetai4Send:считали из БД фрагменты XML,{} записей",messageDetails.MessageRowNum );
 
         if ( messageDetails.MessageRowNum > 0 )
             try {
                 XML_Current_Tags4Send( messageDetails, 0);
             } catch ( NullPointerException e ) {
                 // NPE случилось, печатаем диагностику
-                MessegeSend_Log.warn("[" + Queue_Id + "] проверяем вторчный индекс MessageIndex_by_Tag_Par_Num, потому как получили NullPointerException на подготовке XML" );
+                MessegeSend_Log.warn("[" + Queue_Id + "] ReadMessageDetai4Send: проверяем вторчный индекс MessageIndex_by_Tag_Par_Num, потому как получили NullPointerException на подготовке XML" );
                 Set<Integer> MessageIndexSet = messageDetails.MessageIndex_by_Tag_Par_Num.keySet();
                 Iterator MessageIndexIterator = MessageIndexSet.iterator();
                 while (MessageIndexIterator.hasNext()) {
                     Integer i = (Integer) MessageIndexIterator.next();
-                    MessegeSend_Log.warn("[" + Queue_Id + "] MessageIndex_by_Tag_Par_Num[" + i + "]" +
+                    MessegeSend_Log.warn("[" + Queue_Id + "] ReadMessageDetai4Send: MessageIndex_by_Tag_Par_Num[" + i + "]" +
                             messageDetails.MessageIndex_by_Tag_Par_Num.get(i).toString());
                 }
                 MessageIndexSet = messageDetails.Message.keySet();
                 Iterator messageDetailsIterator = MessageIndexSet.iterator();
                 while (messageDetailsIterator.hasNext()) {
                     Integer i = (Integer) messageDetailsIterator.next();
-                    MessegeSend_Log.warn("[" + Queue_Id + "] messageDetails.Message[" + i + "] <" +
+                    MessegeSend_Log.warn("[" + Queue_Id + "] ReadMessageDetai4Send: messageDetails.Message[" + i + "] <" +
                             messageDetails.Message.get(i).Tag_Id + ">" +
                             messageDetails.Message.get(i).Tag_Value +
                             "; Tag_Num=" + messageDetails.Message.get(i).Tag_Num +
                             "; Tag_Par_Num=" + messageDetails.Message.get(i).Tag_Par_Num
                     );
                 }
-                MessegeSend_Log.info( "["+ Queue_Id +"] тело XML тело XML не получено из БД , остановлено на " + messageDetails.XML_MsgResponse.length() + " символов" );
+                MessegeSend_Log.info( "["+ Queue_Id +"] ReadMessageDetai4Send: тело XML тело XML не получено из БД , остановлено на " + messageDetails.XML_MsgOUT.length() + " символов" );
             }
 
-        MessegeSend_Log.info( "["+ Queue_Id +"] получили из БД тело XML, " + messageDetails.XML_MsgResponse.length() + " символов" );
+        MessegeSend_Log.info( "["+ Queue_Id +"] ReadMessageDetai4Send: получили из БД тело XML, " + messageDetails.XML_MsgOUT.length() + " символов" );
         if (IsDebugged ) {
-            MessegeSend_Log.info("["+ Queue_Id +"] полученное из БД тело XML `" + messageDetails.XML_MsgResponse.toString() + "`");
+            MessegeSend_Log.info("["+ Queue_Id +"] ReadMessageDetai4Send: полученное из БД тело XML `" + messageDetails.XML_MsgOUT.toString() + "`");
         }
         return messageDetails.MessageRowNum;
     }
@@ -1061,7 +1061,7 @@ public class MessageUtils {
 
                 messageDetails.MessageRowNum += 1;
                 if ( messageDetails.MessageRowNum % 10000 == 0)
-                    MessegeSend_Log.info( "["+ Queue_Id +"] читаем из БД тело XML, " + messageDetails.MessageRowNum + " записей" );
+                    MessegeSend_Log.info( "["+ Queue_Id +"] чReadMessage: итаем из БД тело XML{} записей", messageDetails.MessageRowNum  );
                 // MessegeSend_Log.info( "Tag_Id:" + rs.getString("Tag_Id") + " [" + rs.getString("Tag_Value") + "]");
             }
         } catch (SQLException e) {
@@ -1070,14 +1070,14 @@ public class MessageUtils {
             e.printStackTrace();
             return messageDetails.MessageRowNum;
         }
-        MessegeSend_Log.info( "["+ Queue_Id +"] считали из БД фрагменты XML, " + messageDetails.MessageRowNum + " записей" );
+        MessegeSend_Log.info( "["+ Queue_Id +"] ReadMessage: считали из БД фрагменты XML {} записей", messageDetails.MessageRowNum );
 
         if ( messageDetails.MessageRowNum > 0 )
             try {
                 XML_Current_Tags( messageDetails, 0);
             } catch ( NullPointerException e ) {
                 // NPE случилось, печатаем диагностику
-                MessegeSend_Log.warn("[" + Queue_Id + "] проверяем вторчный индекс MessageIndex_by_Tag_Par_Num, потому как получили NullPointerException на подготовке XML" );
+                MessegeSend_Log.warn("[" + Queue_Id + "] ReadMessage: проверяем вторчный индекс MessageIndex_by_Tag_Par_Num, потому как получили NullPointerException на подготовке XML" );
                 Set<Integer> MessageIndexSet = messageDetails.MessageIndex_by_Tag_Par_Num.keySet();
                 Iterator MessageIndexIterator = MessageIndexSet.iterator();
                 while (MessageIndexIterator.hasNext()) {
@@ -1096,12 +1096,12 @@ public class MessageUtils {
                             "; Tag_Par_Num=" + messageDetails.Message.get(i).Tag_Par_Num
                     );
                 }
-                MessegeSend_Log.info( "["+ Queue_Id +"] тело XML тело XML не получено из БД , остановлено на " + messageDetails.XML_MsgResponse.length() + " символов" );
+                MessegeSend_Log.info( "["+ Queue_Id +"] ReadMessage: тело XML тело XML не получено из БД , остановлено на " + messageDetails.XML_MsgResponse.length() + " символов" );
             }
 
-        MessegeSend_Log.info( "["+ Queue_Id +"] получили из БД тело XML, " + messageDetails.XML_MsgResponse.length() + " символов" );
+        MessegeSend_Log.info( "["+ Queue_Id +"] ReadMessage: получили из БД тело XML, " + messageDetails.XML_MsgResponse.length() + " символов" );
         if (IsDebugged ) {
-            MessegeSend_Log.info("["+ Queue_Id +"] полученное из БД тело XML `" + messageDetails.XML_MsgResponse.toString() + "`");
+            MessegeSend_Log.info("["+ Queue_Id +"] ReadMessage: полученное из БД тело XML `{}`",  messageDetails.XML_MsgResponse.toString() );
         }
         return messageDetails.MessageRowNum;
     }
