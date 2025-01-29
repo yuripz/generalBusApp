@@ -62,6 +62,7 @@ public  class DataAccess {
                 PreparedStatement stmt_SetTimeZone = Target_Connection.prepareStatement("set SESSION time zone 3; set enable_bitmapscan to off;");//.nativeSQL( "set SESSION time zone 3" );
                 stmt_SetTimeZone.execute();
                 stmt_SetTimeZone.close();
+                Target_Connection.commit();
             }
             else
             { // используем DUAL
@@ -85,6 +86,7 @@ public  class DataAccess {
             rs.close();
             stmtCurrentTimeDateRead.close();
             stmtCurrentTimeDateRead = null;
+            DataAccess.Hermes_Connection.commit();
             // stmtInitTimeDateRead.close();
         } catch (Exception e) {
             dataAccess_log.error( "Make RDBMS getConnection: " + connectionUrl + " as " + db_userid + " fault:" + sStackTrace.strInterruptedException(e));
@@ -120,6 +122,7 @@ public  class DataAccess {
             }
             rs.close();
             stmtCurrentTimeStringRead.close();
+            DataAccess.Hermes_Connection.commit();
             dataAccess_log.info( "Hermes CurrentTime: LocalDate ="+ CurrentTime );
         } catch (Exception e) {
             dataAccess_log.error("getCurrentTimeString fault: " +  sStackTrace.strInterruptedException(e));
@@ -140,6 +143,7 @@ public  class DataAccess {
             }
             rs.close();
             stmtCurrentTimeDateRead.close();
+            DataAccess.Hermes_Connection.commit();
             stmtCurrentTimeDateRead = null;
             if ( CurrentTime != null)
                 dataAccess_log.info( "Hermes CurrentTime: LocalDate ="+ CurrentTime.toString() + " getTime=" + CurrentTime.getTime()  + " mSec., " + dateFormat.format( CurrentTime )  );
@@ -153,6 +157,9 @@ public  class DataAccess {
                 }  catch (SQLException SQLe) {
                     dataAccess_log.error("stmtCurrentTimeDateRead.close() 4 executeQuery(" + SQLCurrentTimeDateRead + " fault: " + sStackTrace.strInterruptedException(e));
                 }
+            try { DataAccess.Hermes_Connection.rollback(); }  catch (SQLException SQLe) {
+                dataAccess_log.error("Connection.rollback() 4 executeQuery(" + SQLCurrentTimeDateRead + " fault: " + sStackTrace.strInterruptedException(e));
+            }
             return null;
         }
     }
@@ -181,6 +188,9 @@ public  class DataAccess {
                 dataAccess_log.error(", SQLException callableStatement.execute(" + pSQL_function + " ):=" + e.toString());
                 callableStatement.close();
                 callableStatement =null;
+                try { DataAccess.Hermes_Connection.rollback(); }  catch (SQLException SQLe) {
+                    dataAccess_log.error("Connection.rollback() 4 executeCall(" + pSQL_function + " fault: " + sStackTrace.strInterruptedException(e));
+                }
                 return -3;
             }
 
@@ -196,6 +206,9 @@ public  class DataAccess {
                 try {callableStatement.close();} catch (SQLException SQLe) {
                     dataAccess_log.error("callableStatement.close() 4 executeCall(" + pSQL_function + " fault: " + sStackTrace.strInterruptedException(e));
                 }
+            try { DataAccess.Hermes_Connection.rollback(); }  catch (SQLException SQLe) {
+                dataAccess_log.error("Connection.rollback() 4 executeCall(" + pSQL_function + " fault: " + sStackTrace.strInterruptedException(e));
+            }
             return -4;
         }
 

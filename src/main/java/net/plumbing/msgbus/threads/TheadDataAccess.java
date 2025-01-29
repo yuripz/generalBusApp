@@ -169,7 +169,7 @@ public class TheadDataAccess {
         } else {
             rdbmsVendor = "postgresql";
         }
-        dataAccess_log.info( "Try(thead) MessegeDB getConnection: " + connectionUrl + " as " + db_userid );
+        dataAccess_log.info( "Try(thead) MessageDB getConnection: " + connectionUrl + " as " + db_userid );
 
         try {
             Hermes_Connection = dataSource.getConnection();
@@ -186,7 +186,7 @@ public class TheadDataAccess {
             e.printStackTrace();
             return (  null );
         }
-        dataAccess_log.info( "Hermes(thead) getConnection: " + connectionUrl + " as " + db_userid + " done" );
+        dataAccess_log.info( "MessageDB(thead) getConnection: " + connectionUrl + " as " + db_userid + " done" );
         Target_Connection = Hermes_Connection;
         return Target_Connection;
     }
@@ -206,14 +206,14 @@ public class TheadDataAccess {
         } else {
             rdbmsVendor = "postgresql";
         }
-        dataAccess_log.info( "Try(thead) Hermes getConnection: " + connectionUrl + " as " + db_userid + " rdbmsVendor=" + rdbmsVendor);
+        dataAccess_log.info( "Try(thead) own MessageDB getConnection: " + connectionUrl + " as " + db_userid + " rdbmsVendor=" + rdbmsVendor);
 
         if ( Hermes_Connection == null)
         try {
         Hermes_Connection = dataSource.getConnection();
         Hermes_Connection.setAutoCommit(false);
         } catch (SQLException e) {
-            dataAccess_log.error( "make_Hikari_Connection: `" + connectionUrl + "` fault:" + e.getMessage() );
+            dataAccess_log.error( "make_Hikari_Connection 2 MessageDB : `" + connectionUrl + "` fault:" + e.getMessage() );
             if ( Hermes_Connection != null)
                 try {
                     Hermes_Connection.close();
