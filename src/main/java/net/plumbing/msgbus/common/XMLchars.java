@@ -1,7 +1,5 @@
 package net.plumbing.msgbus.common;
 
-//import javax.validation.constraints.NotNull;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.slf4j.Logger;
@@ -66,7 +64,7 @@ public class XMLchars {
     public static final String TagNext ="Next";
 
     public static final String NameTagResult       = "Result";
-    public static final String NameTagHttpStatusCode    = "HttpStatusCode";
+    public static final String NameTagHttpStatusCode= "HttpStatusCode";
     public static final String NameTagResultText   = "Text";
 
     public static final String NameTagFaultResult  = "ResultCode";
@@ -93,20 +91,21 @@ public class XMLchars {
     final public static String DirectIN  = "IN";
     final public static String DirectPOSTIN = "POSTIN";
 
-
     public static final String Envelope_noNS_Begin="<Envelope>";
     public static final String Envelope_noNS_End="</Envelope>";
     public static final String EmptyHeader="<Header/>";
-    public static final String Header_4BusOperationId_Begin="<Header>\n" +
-            "<Context>\n" +
-            "  <EventInitiator>GET.HRMS</EventInitiator>\n" +
-            "  <EventKey>-1</EventKey>\n" +
-            "  <Source>GET.HRMS</Source>\n" +
-            "  <Destination>HRMS</Destination>\n" +
-            "  <BusOperationId>";
-    public static final String Header_4BusOperationId_End="</BusOperationId>\n" +
-            " </Context>\n" +
-            "</Header>";
+    public static final String Header_4BusOperationId_Begin= """
+            <Header>
+            <Context>
+              <EventInitiator>GET.HRMS</EventInitiator>
+              <EventKey>-1</EventKey>
+              <Source>GET.HRMS</Source>
+              <Destination>HRMS</Destination>
+              <BusOperationId>""";
+    public static final String Header_4BusOperationId_End= """
+            </BusOperationId>
+             </Context>
+            </Header>""";
     public static final String Header_noNS_Begin="<Header>";
     public static final String Header_noNS_End="</Header>";
     public static final String MsgId_Begin="<MsgId>";
@@ -166,16 +165,11 @@ public class XMLchars {
       public static final String nanXSLT_Result ="<nan/>";
 
         // TODO  for Oracle it must be 3992
-    final public static int MAX_TAG_VALUE_BYTE_SIZE= 3992; // TODO  for PostGreSQL 32778;
+    final public static int MAX_TAG_VALUE_BYTE_SIZE= 32778; // TODO  for PostGreSQL 32778;
 
     public static byte @NotNull [] cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE(@NotNull String s)  {
         byte[] utf8;
-        try {
-            utf8 = s.getBytes("UTF-8");
-        }
-        catch ( UnsupportedEncodingException e) {
-            utf8 = s.getBytes();
-        }
+        utf8 = s.getBytes(StandardCharsets.UTF_8);
         if (utf8.length <= MAX_TAG_VALUE_BYTE_SIZE) {
             return utf8;
         }

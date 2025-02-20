@@ -46,7 +46,7 @@ public class InitMessageRepository {
                             t.msg_handler, t.url_soap_send, t.url_soap_ack, t.max_retry_count, t.max_retry_time
                             from\040
                     """ + DataAccess.HrmsSchema +  """
-                            ".MESSAGE_typeS t\040
+                        .MESSAGE_typeS t\040
                         where (1=1) and t.msg_direction like '%IN%'\040
                         and t.LAST_UPDATE_DT > (sysDate - (180 +
                         """ + intervalReInit + """
@@ -390,7 +390,7 @@ public class InitMessageRepository {
                      "o.max_retry_time " +
                      "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS o " +
                      "where (1=1) " +
-                     "and o.msg_direction like '%OUT%' and o.operation_id=7512 " + //отправить запрос на поднесение карты к считывателю SKUD_Action_CARD_READ
+                     "and o.msg_direction like '%OUT%' and o.operation_id in (7512,7513) " + //  TODO: отправить запрос на поднесение карты к считывателю SKUD_Action_CARD_READ & SKUD_Request_ACCESS_Point
                      "order by 1, 2";
                 log.info(" select_MESSAGE_typeS=`{}`" , select_MESSAGE_typeS  );
                 stmtMsgType = DataAccess.Hermes_Connection.prepareStatement(select_MESSAGE_typeS );
@@ -481,7 +481,7 @@ public class InitMessageRepository {
                                 "t.lastmaker, " +
                                 "to_char(t.lastdate,'YYYY.MM.DD HH24:MI:SS') LastDate " +
                                 "from " + DataAccess.HrmsSchema +  ".MESSAGE_TemplateS t " +
-                                "where (1=1) and t.template_dir like '%OUT%' and t.operation_id= 7512 " + //TO_DO: отправить запрос на поднесение карты к считывателю SKUD_Action_CARD_READ
+                                "where (1=1) and t.template_dir like '%OUT%' and t.operation_id in (7512,7513) " + //TO_DO: отправить запрос на поднесение карты к считывателю SKUD_Action_CARD_READ
                                 "order by 2, 3, 9, 11, 8 , 12"
                 );
 

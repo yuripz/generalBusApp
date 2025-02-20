@@ -10,13 +10,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import org.springframework.boot.CommandLineRunner;
 import javax.jms.JMSException;
-
-//import org.springframework.context.ApplicationContext;
-//import org.springframework.context.annotation.Bean;
-//import org.springframework.context.annotation.Configuration;
-//import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-//import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-//import org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -44,11 +37,6 @@ import java.sql.SQLException;
 // import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-//import de.codecentric.boot.admin.server.config.EnableAdminServer;
-//import de.codecentric.boot.admin.client.registration.ApplicationRegistrator;
-//import de.codecentric.boot.admin.client.registration.Application;
-//import de.codecentric.boot.admin.client.registration.DefaultApplicationFactory;
-
 @SpringBootApplication
 //@SpringBootApplication(exclude = { SecurityAutoConfiguration.class, SecurityFilterAutoConfiguration.class })
 // --- ! @EnableAdminServer
@@ -67,7 +55,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.5.01.28o";
+    public static final String ApplicationName="*Receiver_BUS* v.5.02.20";
     public static String propJDBC;
     public static String propExtJDBC;
 
@@ -120,15 +108,15 @@ public class ServletApplication implements CommandLineRunner {
 
         AppThead_log.warn(dbLoggingProperties.toString());
         AppThead_log.warn(connectionProperties.toString());
-        String propLongRetryCount = connectionProperties.getlongRetryCount();
-        if (propLongRetryCount == null) propLongRetryCount = "12";
-        String propShortRetryCount = connectionProperties.getshortRetryCount();
-        if (propShortRetryCount == null) propShortRetryCount = "3";
+        //String propLongRetryCount = connectionProperties.getlongRetryCount();
+        //if (propLongRetryCount == null) propLongRetryCount = "12";
+        //String propShortRetryCount = connectionProperties.getshortRetryCount();
+        //if (propShortRetryCount == null) propShortRetryCount = "3";
 
-        String propLongRetryInterval = connectionProperties.getlongRetryInterval();
-        if (propLongRetryInterval == null) propLongRetryInterval = "600";
-        String propShortRetryInterval = connectionProperties.getshortRetryInterval();
-        if (propShortRetryInterval == null) propShortRetryInterval = "30";
+        //String propLongRetryInterval = connectionProperties.getlongRetryInterval();
+        //if (propLongRetryInterval == null) propLongRetryInterval = "600";
+        //String propShortRetryInterval = connectionProperties.getshortRetryInterval();
+        //if (propShortRetryInterval == null) propShortRetryInterval = "30";
 
         int ShortRetryCount = Integer.parseInt(connectionProperties.getshortRetryCount() );
         ApplicationProperties.ShortRetryCount = ShortRetryCount;
@@ -140,7 +128,7 @@ public class ServletApplication implements CommandLineRunner {
         ApplicationProperties.LongRetryInterval = LongRetryInterval;
         int WaitTimeBetweenScan = Integer.parseInt( connectionProperties.getwaitTimeScan() );
         ApplicationProperties.WaitTimeBetweenScan = WaitTimeBetweenScan;
-        int NumMessageInScan = Integer.parseInt( connectionProperties.getnumMessageInScan() );
+        //int NumMessageInScan = Integer.parseInt( connectionProperties.getnumMessageInScan() );
         int ApiRestWaitTime = Integer.parseInt( connectionProperties.getapiRestWaitTime() );
         ApplicationProperties.ApiRestWaitTime = ApiRestWaitTime;
         ApplicationProperties.HrmsSchema =  connectionProperties.gethrmsDbSchema() ;
@@ -243,7 +231,7 @@ public class ServletApplication implements CommandLineRunner {
         }
         // AppThead_log.warn("Подключились к брокеру сообщений ActiveMQ!"  );System.exit(-11);
 
-        // Установаливем "техническое соединение" , что бы считать конфигурацию из БД в public static HashMap'Z
+        // Установаливем "техническое соединение", что бы считать конфигурацию из БД в public static HashMap'Z
 
         DataAccess.make_Hermes_Connection( ApplicationProperties.HrmsSchema, ApplicationProperties.dataSource.getConnection(),
                 connectionProperties.gethrmsPoint(),
@@ -267,7 +255,7 @@ public class ServletApplication implements CommandLineRunner {
         //   System.exit(-22);
         //AppThead_log.info("keysAllMessageDirections: " + MessageDirections.AllMessageDirections.get(1).getMsgDirection_Desc() );
 
-        Long TotalTimeTasks = Long.parseLong( connectionProperties.gettotalTimeTasks());
+        //Long TotalTimeTasks = Long.parseLong( connectionProperties.gettotalTimeTasks());
         Long intervalReInit = Long.parseLong( connectionProperties.getintervalReInit());
 
         InitMessageRepository.SelectMsgTypes( AppThead_log );
@@ -277,10 +265,10 @@ public class ServletApplication implements CommandLineRunner {
         AppThead_log.info("Read MessageTemplates: " + MessageTemplate.AllMessageTemplate.size() + " done" );
 
 
-        // 1й проход, получаем количество потоков, которые задействованы в  JMS  систем.
+        // 1-й проход, получаем количество потоков, которые задействованы в JMS систем.
         int TotalNumTasks=0; int TotalNumJMS_System=0;
         int MessageDirections_BrokerId=0;
-        if (jmsReceiveTaskEnabled) { // Если признак hermes.jms-receive-task-enabled=tru , то тогда и только тогда реально всё запускается
+        if (jmsReceiveTaskEnabled) { // Если признак hermes.jms-receive-task-enabled=tru, то тогда и только тогда реально всё запускается
         for (i = 0; i < MessageDirections.AllMessageDirections.size(); i++) {
             if (MessageDirections.AllMessageDirections.get(i).getType_Connect() == 6) {
                 TotalNumTasks += MessageDirections.AllMessageDirections.get(i).getNum_Thread();
@@ -312,7 +300,7 @@ public class ServletApplication implements CommandLineRunner {
         Thread[] JMSReceiveThread = new Thread[TotalNumTasks];
 
 
-        // 2-й проход, инициализируем коннекты для каждой из систем, в которой задействованы в  JMS  систем.
+        // 2-й проход, инициализируем коннекты для каждой из систем, в которой задействованы в JMS систем.
 
         int CurrentTasksIndex = 0;
         int NumTasksInsystem;
