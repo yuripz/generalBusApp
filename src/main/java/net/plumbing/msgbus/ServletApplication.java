@@ -55,7 +55,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.5.02.20";
+    public static final String ApplicationName="*Receiver_BUS* v.5.02.26";
     public static String propJDBC;
     public static String propExtJDBC;
 
@@ -72,7 +72,12 @@ public class ServletApplication implements CommandLineRunner {
         // ApplicationRegistrator myApplicationRegistrator = new ApplicationRegistrator();
 
         AppThead_log.info("Hellow for ServletApplication ");
+
+        NotifyByChannel.Telegram_setHttpProxyHost( telegramProperties.gethttpProxyHost() , AppThead_log );
+        NotifyByChannel.Telegram_setHttpProxyPort( telegramProperties.gethttpProxyPort() , AppThead_log );
         NotifyByChannel.Telegram_setChatBotUrl( telegramProperties.getchatBotUrl() , AppThead_log );
+        NotifyByChannel.Telegram_buildHttpClient(  AppThead_log );
+
          propJDBC = connectionProperties.gethrmsPoint();
         if ( propJDBC == null)  propJDBC = "jdbc UNKNOWN ! ";
         else {

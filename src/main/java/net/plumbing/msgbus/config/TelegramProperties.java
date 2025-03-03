@@ -13,4 +13,20 @@ public class TelegramProperties {
     public void setchatBotUrl(String chatBotUrl) {
         this.chatBotUrl = chatBotUrl;
     }
+
+    private String httpProxyHost;
+    public String gethttpProxyHost() {
+        return httpProxyHost;
+    }
+    public void sethttpProxyHost(String httpProxyHost) {
+        this.httpProxyHost = httpProxyHost;
+    }
+
+    private String httpProxyPort;
+    public String gethttpProxyPort() {
+        return httpProxyPort;
+    }
+    public void sethttpProxyPort(String httpProxyPort) {
+        this.httpProxyPort = httpProxyPort;
+    }
 }

@@ -198,7 +198,7 @@ public void run()   {
     // Установаливем " соединение" , что бы зачитывать очередь
     //  theadDataAccess.setDbSchema( ApplicationProperties.HrmsSchema ); - перенесён в make_Hikari_Connection(), что бы не забылось нигде!
     if ( isDebugged )
-        JMSReceiveTask_Log.info("Установаливем 'соединение' , что бы зачитывать очередь: [" +
+                JMSReceiveTask_Log.info("Установаливем 'соединение' , что бы зачитывать очередь: [" +
                 ApplicationProperties.HrmsPoint + "] user:" + ApplicationProperties.hrmsDbLogin +
                 "; passwd:" + ApplicationProperties.hrmsDbPasswd + ".");
             theadDataAccess.make_Hikari_Connection(
