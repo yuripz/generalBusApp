@@ -1,6 +1,7 @@
 package net.plumbing.msgbus;
 
 //import net.plumbing.msgbus.mq.JMS_MessageDirection_MQConnectionFactory;
+import net.plumbing.msgbus.common.*;
 import net.plumbing.msgbus.telegramm.NotifyByChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,17 +14,12 @@ import javax.jms.JMSException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import net.plumbing.msgbus.common.ApplicationProperties;
-import net.plumbing.msgbus.common.HikariDataAccess;
-import net.plumbing.msgbus.common.ExtSystemDataAccess;
 import net.plumbing.msgbus.config.ConnectionProperties;
 import net.plumbing.msgbus.config.DBLoggingProperties;
-import net.plumbing.msgbus.common.sStackTrace;
 
 import net.plumbing.msgbus.config.Receiver_AppConfig;
 import net.plumbing.msgbus.config.TelegramProperties;
 import net.plumbing.msgbus.init.InitMessageRepository;
-import net.plumbing.msgbus.common.DataAccess;
 import net.plumbing.msgbus.model.MessageDirections;
 import net.plumbing.msgbus.model.MessageTemplate;
 import net.plumbing.msgbus.model.MessageType;
@@ -55,7 +51,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.5.02.26";
+    public static final String ApplicationName="*Receiver_BUS* v.5.03.172";
     public static String propJDBC;
     public static String propExtJDBC;
 
@@ -139,6 +135,7 @@ public class ServletApplication implements CommandLineRunner {
         ApplicationProperties.HrmsSchema =  connectionProperties.gethrmsDbSchema() ;
         AppThead_log.info("hrmsDbSchema = " + ApplicationProperties.HrmsSchema );
         ApplicationProperties.HrmsPoint =  connectionProperties.gethrmsPoint() ;
+
         ApplicationProperties.hrmsDbLogin = connectionProperties.gethrmsDbLogin();
         ApplicationProperties.hrmsDbPasswd =  connectionProperties.gethrmsDbPasswd();
         ApplicationProperties.ConnectMsgBus = connectionProperties.getconnectMsgBus();

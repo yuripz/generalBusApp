@@ -26,9 +26,14 @@ public class HikariDataAccess {
             connectionUrl = JdbcUrl;
         }
         String ClassforName;
-        if ( connectionUrl.indexOf("oracle") > 0 )
+        if ( connectionUrl.indexOf("oracle") > 0 ) {
             ClassforName = "oracle.jdbc.driver.OracleDriver";
-        else ClassforName = "org.postgresql.Driver";
+            XMLchars.MAX_TAG_VALUE_BYTE_SIZE = 3992; // for Oracle, it must be 3992
+        }
+        else {
+            ClassforName = "org.postgresql.Driver";
+            XMLchars.MAX_TAG_VALUE_BYTE_SIZE= 32778; //  for PostGreSQL 32778;
+        }
 
 //        hikariConfig.setDriverClassName("oracle.jdbc.driver.OracleDriver");
 //        hikariConfig.setJdbcUrl( "jdbc:oracle:thin:@"+ JdbcUrl); //("jdbc:oracle:thin:@//10.242.36.8:1521/hermes12");
