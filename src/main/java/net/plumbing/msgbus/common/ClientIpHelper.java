@@ -439,12 +439,14 @@ public class ClientIpHelper {
             try {
                 JSONObject RestResponseJSON = new JSONObject(ClearParamElement);
                 XML.setMessege_Log( Controller_log );
+                //Character Russ_N='№';
 
                 XML_Request_Method.append( XML.toString(RestResponseJSON, XMLchars.NameRootTagContentJsonResponse ) );
+                //Controller_log.warn("XML_Request_Method.append( `{}` ) ==> {} , Russ_N {}=={}" , ClearParamElement , XML.toString(RestResponseJSON, XMLchars.NameRootTagContentJsonResponse ), Russ_N.toString() ,  (int)Russ_N);
 
             } catch (Exception e) {
                 XML_Request_Method.append(ClearParamElement);
-                Controller_log.error("add2XML_Request_Method_CustomTags on `" + XML_Request_Method + "` fault: " + sStackTrace.strInterruptedException(e));
+                Controller_log.error("add2XML_Request_Method_CustomTags on `{}` fault: {}" , XML_Request_Method , sStackTrace.strInterruptedException(e));
                 return;
             }
         }
