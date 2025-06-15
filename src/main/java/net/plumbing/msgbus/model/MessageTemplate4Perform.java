@@ -193,7 +193,8 @@ public class MessageTemplate4Perform {
                         "PostExecShortRetryInterval:" + ShortRetryIntervalPostExec + ", " +
                         "PostExecLongRetryCount:" + LongRetryCountPostExec + ", " +
                         "getPropJavaMethodName:" + PropJavaMethodName + ", " +
-                        "AckXSLT_xslt30Transformer: `" + AckXSLT_xslt30Transformer.toString() + "`"
+                        "AckXSLT_xslt30Transformer: `" +
+                        ( (AckXSLT_xslt30Transformer != null) ? AckXSLT_xslt30Transformer.toString() :"null") + "`"
         ;
     }
     public MessageTemplate4Perform( MessageTemplateVO messageTemplateVO,
