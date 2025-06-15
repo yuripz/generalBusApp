@@ -1,5 +1,9 @@
 package net.plumbing.msgbus.model;
 
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.Xslt30Transformer;
+import net.sf.saxon.s9api.XsltCompiler;
+import net.sf.saxon.s9api.XsltExecutable;
 import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
@@ -33,17 +37,15 @@ public class MessageTemplate4Perform {
     private String EnvelopeInXSLT;
     private String EnvelopeXSLTPost;
     private String EnvelopeNS;
-    private String fixMessageNS;
     private String MessageAck;
     private String MsgAnswXSLT;
     private String MessageAnswAck;
     private String MessageAnswerXSD;
     private String MessageAnswMsgXSLT;
-    private String MessageAnswHdXSLT;
+
     private String AckXSD;
     private String AckXSLT;
     private String AckAnswXSLT;
-    private String AnswAckHdXSLT;
     private String ErrTransXSLT;
     private String ErrTransXSD;
     private String HeaderXSD;
@@ -132,7 +134,38 @@ public class MessageTemplate4Perform {
                         SOAP_ACTION_12 = "action=";
 
     private Logger MessageTemplate4Perform_Log;
+    // AckAnswXSLT
+    private Processor AckAnswXSLT_processor; // = new Processor(false);
+    private XsltCompiler AckAnswXSLT_xsltCompiler; // = processor.newXsltCompiler();
+    private Xslt30Transformer AckAnswXSLT_xslt30Transformer;
+    // HeaderInXSLT
+    private Processor HeaderInXSLT_processor; // = new Processor(false);
+    private XsltCompiler HeaderInXSLT_xsltCompiler; // = processor.newXsltCompiler();
+    private XsltExecutable HeaderInXSLT_xsltStylesheet;
+    private Xslt30Transformer HeaderInXSLT_xslt30Transformer;
 
+    private Xslt30Transformer HeaderXSLT_xslt30Transformer;
+    private Xslt30Transformer MessageXSLT_xslt30Transformer;
+    private Xslt30Transformer MsgAnswXSLT_xslt30Transformer;
+    private Xslt30Transformer AckXSLT_xslt30Transformer;
+    private Xslt30Transformer EnvelopeXSLTPost_xslt30Transformer;
+    private Xslt30Transformer EnvelopeXSLTExt_xslt30Transformer;
+    private Xslt30Transformer ErrTransXSLT_xslt30Transformer;
+
+    private Processor ErrTransXSLT_processor; // = new Processor(false);
+    private XsltCompiler ErrTransXSLT_xsltCompiler; // = processor.newXsltCompiler();
+    private Processor EnvelopeXSLTExt_processor; // = new Processor(false);
+    private XsltCompiler EnvelopeXSLTExt_xsltCompiler; // = processor.newXsltCompiler();
+    private Processor EnvelopeXSLTPost_processor; // = new Processor(false);
+    private XsltCompiler EnvelopeXSLTPost_xsltCompiler; // = processor.newXsltCompiler();
+    private Processor AckXSLT_processor; // = new Processor(false);
+    private XsltCompiler AckXSLT_xsltCompiler; // = processor.newXsltCompiler();
+    private Processor MessageXSLT_processor; // = new Processor(false);
+    private XsltCompiler MessageXSLT_xsltCompiler; // = processor.newXsltCompiler();
+    private Processor MsgAnswXSLT_processor; // = new Processor(false);
+    private XsltCompiler MsgAnswXSLT_xsltCompiler; // = processor.newXsltCompiler();
+    private Processor HeaderXSLT_processor; // = new Processor(false);
+    private XsltCompiler HeaderXSLT_xsltCompiler; // = processor.newXsltCompiler();
     private String EndPointUrl;
     private String Type_Connection = null;
     public String printMessageTemplate4Perform() {
@@ -159,7 +192,8 @@ public class MessageTemplate4Perform {
                         "PostExecShortRetryCount:" + ShortRetryCountPostExec + ", " +
                         "PostExecShortRetryInterval:" + ShortRetryIntervalPostExec + ", " +
                         "PostExecLongRetryCount:" + LongRetryCountPostExec + ", " +
-                        "getPropJavaMethodName:" + PropJavaMethodName
+                        "getPropJavaMethodName:" + PropJavaMethodName + ", " +
+                        "AckXSLT_xslt30Transformer: `" + AckXSLT_xslt30Transformer.toString() + "`"
         ;
     }
     public MessageTemplate4Perform( MessageTemplateVO messageTemplateVO,
@@ -201,6 +235,38 @@ public class MessageTemplate4Perform {
             this.AckAnswXSLT = messageTemplateVO.getAckAnswXSLT();
             this.isPreemptivePostExec =false;
             this.isPreemptive =false;
+
+        this.AckAnswXSLT_processor = messageTemplateVO.getAckAnswXSLT_processor();
+        this.AckAnswXSLT_xsltCompiler = messageTemplateVO.getAckAnswXSLT_xsltCompiler();
+        this.AckAnswXSLT_xslt30Transformer = messageTemplateVO.getAckAnswXSLT_xslt30Transformer();
+        // HeaderInXSLT
+        this.HeaderInXSLT_processor = messageTemplateVO.getHeaderInXSLT_processor() ; // = new Processor(false);
+        this.HeaderInXSLT_xsltCompiler = messageTemplateVO.getHeaderInXSLT_xsltCompiler() ; // = processor.newXsltCompiler();
+        this.HeaderInXSLT_xslt30Transformer = messageTemplateVO.getHeaderInXSLT_xslt30Transformer();
+
+        this.HeaderXSLT_xslt30Transformer = messageTemplateVO.getHeaderXSLT_xslt30Transformer();
+        this.MessageXSLT_xslt30Transformer = messageTemplateVO.getMessageXSLT_xslt30Transformer();
+        this.MsgAnswXSLT_xslt30Transformer = messageTemplateVO.getMsgAnswXSLT_xslt30Transformer();
+        this.AckXSLT_xslt30Transformer = messageTemplateVO.getAckXSLT_xslt30Transformer();
+        this.EnvelopeXSLTPost_xslt30Transformer = messageTemplateVO.getEnvelopeXSLTPost_xslt30Transformer();
+        this.EnvelopeXSLTExt_xslt30Transformer = messageTemplateVO.getEnvelopeXSLTExt_xslt30Transformer();
+        this.ErrTransXSLT_xslt30Transformer = messageTemplateVO.getErrTransXSLT_xslt30Transformer();
+        this.ErrTransXSLT_processor = messageTemplateVO.getErrTransXSLT_processor() ;
+        this.ErrTransXSLT_xsltCompiler = messageTemplateVO.getErrTransXSLT_xsltCompiler()  ;
+        this.EnvelopeXSLTExt_processor = messageTemplateVO.getEnvelopeXSLTExt_processor() ;
+        this.EnvelopeXSLTExt_xsltCompiler = messageTemplateVO.getEnvelopeXSLTExt_xsltCompiler()  ;
+        this.EnvelopeXSLTPost_processor = messageTemplateVO.getEnvelopeXSLTPost_processor() ;
+        this.EnvelopeXSLTPost_xsltCompiler = messageTemplateVO.getEnvelopeXSLTPost_xsltCompiler()  ;
+
+        this.AckXSLT_processor = messageTemplateVO.getMAckXSLT_processor() ;
+        this.AckXSLT_xsltCompiler = messageTemplateVO.getAckXSLT_xsltCompiler()  ;
+
+        this.MessageXSLT_processor = messageTemplateVO.getMessageXSLT_processor() ;
+        this.MessageXSLT_xsltCompiler = messageTemplateVO.getMessageXSLT_xsltCompiler()  ;
+        this.MsgAnswXSLT_processor = messageTemplateVO.getMsgAnswXSLT_processor() ;
+        this.MsgAnswXSLT_xsltCompiler = messageTemplateVO.getMsgAnswXSLT_xsltCompiler()  ;
+        this.HeaderXSLT_processor = messageTemplateVO.getHeaderXSLT_processor() ;
+        this.HeaderXSLT_xsltCompiler = messageTemplateVO.getHeaderXSLT_xsltCompiler()  ;
 
             this.ConfigExecute = messageTemplateVO.getConfigExecute();
             if (this.ConfigExecute != null) {
@@ -360,7 +426,35 @@ public class MessageTemplate4Perform {
             this.MsgAnswXSLT = messageTemplateVO.getMsgAnswXSLT();
             this.MessageXSD = messageTemplateVO.getMessageXSD();
     }
-public String getPropJavaMethodName() { return  this.PropJavaMethodName; }
+
+    public Xslt30Transformer getAckAnswXSLT_xslt30Transformer() {return AckAnswXSLT_xslt30Transformer;}
+    public Processor getAckAnswXSLT_processor() {return AckAnswXSLT_processor;}
+    public XsltCompiler getAckAnswXSLT_xsltCompiler() {return AckAnswXSLT_xsltCompiler;}
+
+    public Xslt30Transformer getEnvelopeXSLTExt_xslt30Transformer() {return EnvelopeXSLTExt_xslt30Transformer;}
+    public Xslt30Transformer getEnvelopeXSLTPost_xslt30Transformer() {return EnvelopeXSLTPost_xslt30Transformer;}
+    public Xslt30Transformer getAckXSLT_xslt30Transformer() {return AckXSLT_xslt30Transformer;}
+    public Xslt30Transformer getMessageXSLT_xslt30Transformer() {return MessageXSLT_xslt30Transformer;}
+    public Xslt30Transformer getMsgAnswXSLT_xslt30Transformer() {return MsgAnswXSLT_xslt30Transformer;}
+    public Xslt30Transformer getHeaderXSLT_xslt30Transformer() {return HeaderXSLT_xslt30Transformer;}
+    public Xslt30Transformer getErrTransXSLT_xslt30Transformer() {return ErrTransXSLT_xslt30Transformer;}
+
+    public Processor getHeaderXSLT_processor() {return HeaderXSLT_processor;}
+    public XsltCompiler getHeaderXSLT_xsltCompiler() {return HeaderXSLT_xsltCompiler;}
+    public Processor getMsgAnswXSLT_processor() {return MsgAnswXSLT_processor;}
+    public XsltCompiler getMsgAnswXSLT_xsltCompiler() {return MsgAnswXSLT_xsltCompiler;}
+    public Processor getMessageXSLT_processor() {return MessageXSLT_processor;}
+    public XsltCompiler getMessageXSLT_xsltCompiler() {return MessageXSLT_xsltCompiler;}
+    public Processor getAckXSLT_processor() {return AckXSLT_processor;}
+    public XsltCompiler getAckXSLT_xsltCompiler() {return AckXSLT_xsltCompiler;}
+    public Processor getEnvelopeXSLTPost_processor() {return EnvelopeXSLTPost_processor;}
+    public XsltCompiler getEnvelopeXSLTPost_xsltCompiler() {return EnvelopeXSLTPost_xsltCompiler;}
+    public Processor getEnvelopeXSLTExt_processor() {return EnvelopeXSLTExt_processor;}
+    public XsltCompiler getEnvelopeXSLTExt_xsltCompiler() {return EnvelopeXSLTExt_xsltCompiler;}
+    public Processor getErrTransXSLT_processor() {return ErrTransXSLT_processor;}
+    public XsltCompiler getErrTransXSLT_xsltCompiler() {return ErrTransXSLT_xsltCompiler;}
+
+    public String getPropJavaMethodName() { return  this.PropJavaMethodName; }
     public  String getEnvelopeXSLTExt() { return this.EnvelopeXSLTExt; }
     public  String getEnvelopeInXSLT() { return this.EnvelopeInXSLT; }
     public  String getPropReplacement() { return this.PropReplacement; }
@@ -487,11 +581,11 @@ public String getPropJavaMethodName() { return  this.PropJavaMethodName; }
     public void setMessageAnswAck (String MessageAnswAck) { this.MessageAnswAck = MessageAnswAck ; }
     public void setMessageAnswerXSD (String MessageAnswerXSD) { this.MessageAnswerXSD = MessageAnswerXSD ; }
     public void setMessageAnswMsgXSLT (String MessageAnswMsgXSLT) { this.MessageAnswMsgXSLT = MessageAnswMsgXSLT ; }
-    public void setMessageAnswHdXSLT (String MessageAnswHdXSLT) { this.MessageAnswHdXSLT = MessageAnswHdXSLT ; }
+
     public void setAckXSD (String AckXSD) { this.AckXSD =  AckXSD; }
     public void setAckXSLT (String AckXSLT) { this.AckXSLT = AckXSLT ; }
     public void setAckAnswXSLT (String AnswAckXSLT) { this.AckAnswXSLT = AnswAckXSLT ; }
-    public void setAnswAckHdXSLT (String AnswAckHdXSLT) { this.AnswAckHdXSLT = AnswAckHdXSLT ; }
+
     public void setErrTransXSLT (String ErrTransXSLT) { this.ErrTransXSLT =  ErrTransXSLT ; }
     public void setErrTransXSD (String ErrTransXSD) { this.ErrTransXSD = ErrTransXSD ; }
     public void setHeaderXSD (String ErrTransXSD) { this.ErrTransXSD = ErrTransXSD ; }

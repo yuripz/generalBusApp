@@ -54,7 +54,7 @@ public  class SecurityPermitAllConfig // extends WebSecurityConfigurerAdapter
 
     }
     @Bean
-    @Autowired
+    //@Autowired
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
                 // .csrf().disable not recommended in prod environment

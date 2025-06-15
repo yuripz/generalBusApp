@@ -1,12 +1,12 @@
 package net.plumbing.msgbus.mq;
 
 // import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.pool.PooledConnectionFactory;
+//import org.apache.activemq.ActiveMQConnectionFactory;
+//import org.apache.activemq.pool.PooledConnectionFactory;
 
-import org.slf4j.Logger;
-import javax.jms.JMSException;
-import java.net.InetAddress;
+//import org.slf4j.Logger;
+//import jakarta.jms.JMSException;
+//import java.net.InetAddress;
 
 // JMS_MessageDirection_MQConnectionFactory вынесен в поток jmsReceiveTask
 public class JMS_MessageDirection_MQConnectionFactory {

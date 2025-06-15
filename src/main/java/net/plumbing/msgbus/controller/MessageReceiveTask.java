@@ -10,6 +10,10 @@ import net.plumbing.msgbus.model.MessageTemplate;
 import net.plumbing.msgbus.threads.TheadDataAccess;
 import net.plumbing.msgbus.threads.utils.MessageUtils;
 import net.plumbing.msgbus.threads.utils.XMLutils;
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.Xslt30Transformer;
+import net.sf.saxon.s9api.XsltCompiler;
 import org.jdom2.input.JDOMParseException;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -70,16 +74,16 @@ public class MessageReceiveTask
         }
         // MessageTemplateVOkey - Шаблон интерфейса (на основе входного URL)
         if ( isDebugged )
-        MessegeReceive_Log.info("ProcessInputMessage:  MessageTemplateVOkey 4 getEnvelopeInXSLT()=" + MessageTemplateVOkey );
+            MessegeReceive_Log.info("ProcessInputMessage: check content of Interface Template by MessageTemplateVOkey 4 getEnvelopeInXSLT(`{}`)", MessageTemplateVOkey);
         try {
             if ( MessageTemplateVOkey >= 0 )
             // Парсим входной запрос и формируем XML-Document !
-            XMLutils.makeClearRequest(Message, MessageTemplate.AllMessageTemplate.get( MessageTemplateVOkey ).getEnvelopeInXSLT(),
-                    XSLTErrorListener, ConvXMLuseXSLTerr, isDebugged,
+            XMLutils.makeClearRequest(Message, MessageTemplateVOkey,
+                        ConvXMLuseXSLTerr, isDebugged,
                     MessegeReceive_Log);
             else
-                XMLutils.makeClearRequest(Message, null,
-                        XSLTErrorListener, ConvXMLuseXSLTerr, isDebugged,
+                XMLutils.makeClearRequest(Message, -1,
+                        ConvXMLuseXSLTerr, isDebugged,
                         MessegeReceive_Log);
         }
         catch (Exception e) {
@@ -94,12 +98,12 @@ public class MessageReceiveTask
 
         }
         if ( isDebugged )
-        MessegeReceive_Log.info("Clear request: `" + Message.XML_MsgClear.toString()+ "` MessageTemplateVOkey 4 getEnvelopeInXSLT()=" + MessageTemplateVOkey );
+            MessegeReceive_Log.info("Clear request: `{}` MessageTemplateVOkey 4 getEnvelopeInXSLT()={}", Message.XML_MsgClear.toString(), MessageTemplateVOkey);
 
         // Создаем запись в таблице-очереди  select ARTX_PROJ.MESSAGE_QUEUE_SEQ.NEXTVAL ...
         Queue_Id = MessageUtils.MakeNewMessage_Queue( messageQueueVO, theadDataAccess, MessegeReceive_Log );
         if ( Queue_Id == null ){
-            Message.MsgReason.append("Ошибка на приёме сообщения, не удалось сохранить заголовок сообщения в БД - MakeNewMessage_Queue return: " + Queue_Id );
+            Message.MsgReason.append("Ошибка на приёме сообщения, не удалось сохранить заголовок сообщения в БД - MakeNewMessage_Queue return: ").append(Queue_Id);
             return -3L;
         }
         // MessegeReceive_Log.info(" isDebugged ?:(" + isDebugged + ") theadDataAccess.doINSERT_QUEUElog(" + Queue_Id.toString() + ") ");
@@ -112,21 +116,25 @@ public class MessageReceiveTask
         {  // Получаем Шаблон формирования заголовка для этого интерфейса HeaderInXSLT
             String MessageXSLT_4_HeaderIn = MessageTemplate.AllMessageTemplate.get( MessageTemplateVOkey ).getHeaderInXSLT();
             if ( isDebugged )
-                MessegeReceive_Log.info(Queue_Direction + " [" + Queue_Id + "] MessageXSLT_4_HeaderIn= MessageTemplate.AllMessageTemplate.get{" + MessageXSLT_4_HeaderIn+ "}");
-            // При наличии в шаблоне  интерфейса файла преобразования HeaderInXSLT,
+                MessegeReceive_Log.info(" [{}] {} MessageXSLT_4_HeaderIn= MessageTemplate.AllMessageTemplate.get{{}}", Queue_Id, Queue_Direction  ,MessageXSLT_4_HeaderIn);
+            // При наличии в шаблоне интерфейса файла преобразования HeaderInXSLT,
             //  к исходному запросу(SOAP-Envelope) с удаленной информацией о NameSpace
             //  применяется преобразование HeaderInXSLT и полученный результат
             //  заменяет SOAP-Header запроса, вне зависимости от того был он или нет.
-            if ( MessageXSLT_4_HeaderIn != null )
+            if ( (MessageXSLT_4_HeaderIn != null) && (!MessageXSLT_4_HeaderIn.isEmpty()) )
             {
+                Processor xslt30Processor = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getHeaderInXSLT_processor();
+                XsltCompiler XsltCompiler = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getHeaderInXSLT_xsltCompiler();
+                Xslt30Transformer Xslt30Transformer = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getHeaderInXSLT_xslt30Transformer();
                 ConvXMLuseXSLTerr.setLength(0); ConvXMLuseXSLTerr.trimToSize();
                 try {
-                    Message.Soap_HeaderRequest.append(XMLutils.ConvXMLuseXSLT(Queue_Id,
+                    Message.Soap_HeaderRequest.append(XMLutils.ConvXMLuseXSLT30(Queue_Id,
                             Message.XML_MsgClear.toString(),
+                            xslt30Processor, XsltCompiler, Xslt30Transformer,
                             MessageXSLT_4_HeaderIn,
                             Message.MsgReason,
                             ConvXMLuseXSLTerr,
-                            XSLTErrorListener,
+                            // XSLTErrorListener,
                             MessegeReceive_Log,
                             isDebugged
                             ).substring(XMLchars.xml_xml.length()) // берем после <?xml version="1.0" encoding="UTF-8"?>
@@ -141,7 +149,7 @@ public class MessageReceiveTask
                         return -5L;
                     }
 
-                } catch (TransformerException exception) {
+                } catch (SaxonApiException exception) {
                     MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLT-преобразователь тела:{" + MessageXSLT_4_HeaderIn + "}");
                     MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] fault " + ConvXMLuseXSLTerr.toString() + " после XSLT=:{" + Message.Soap_HeaderRequest.toString() + "}");
                     MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
@@ -233,77 +241,15 @@ public class MessageReceiveTask
         }
 
         Message.XML_MsgResponse.setLength(0); Message.XML_MsgResponse.trimToSize();
-            /* создание Http-клиента перенеено в PerfotmInputMessagesюperformMessage()
-            int ReadTimeoutInMillis = ApplicationProperties.ApiRestWaitTime * 1000;
-            int ConnectTimeoutInMillis = 5 * 1000;
+            // создание Http-клиента перенеено в PerfotmInputMessagesюperformMessage()
 
-            SSLContext sslContext = MessageHttpSend.getSSLContext( Message.MsgReason );
-            if ( sslContext == null ) {
-                MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "]" + "SSLContextBuilder fault: (" +  Message.MsgReason.toString() + ")");
-                Message.MsgReason.append("Внутренняя Ошибка SSLContextBuilder fault: (" +  Message.MsgReason.toString() + ")" ) ;
-
-                MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
-                        "Внутренняя Ошибка SSLContextBuilder fault: (" +  Message.MsgReason.toString() + ")",
-                        null, MessegeReceive_Log);
-                return -7L;
-            }
-
-            PoolingHttpClientConnectionManager syncConnectionManager = new PoolingHttpClientConnectionManager();
-            syncConnectionManager.setMaxTotal((Integer) 4);
-            syncConnectionManager.setDefaultMaxPerRoute((Integer) 2);
-            //externalConnectionManager = new ThreadSafeClientConnManager();
-            //externalConnectionManager.setMaxTotal((Integer) 99);
-            //externalConnectionManager.setDefaultMaxPerRoute((Integer) 99);
-            RequestConfig rc;
-
-            rc = RequestConfig.custom()
-                    .setConnectionRequestTimeout(ConnectTimeoutInMillis)
-                    .setConnectTimeout(ConnectTimeoutInMillis)
-                    .setSocketTimeout( ReadTimeoutInMillis)
-                    .build();
-
-            HttpClientBuilder httpClientBuilder = HttpClientBuilder.create()
-                    .disableDefaultUserAgent()
-                    .disableRedirectHandling()
-                    .disableAutomaticRetries()
-                    .setUserAgent("Mozilla/5.0")
-                    .setSSLContext(sslContext)
-                    .disableAuthCaching()
-                    .disableConnectionState()
-                    .disableCookieManagement()
-                    // .useSystemProperties() // HE-5663  https://stackoverflow.com/questions/5165126/without-changing-code-how-to-force-httpclient-to-use-proxy-by-environment-varia
-                    .setConnectionManager(syncConnectionManager)
-                    .setSSLHostnameVerifier(new NoopHostnameVerifier())
-            .setConnectionTimeToLive( ApplicationProperties.ApiRestWaitTime + 5, TimeUnit.SECONDS)
-            .evictIdleConnections((long) (ApplicationProperties.ApiRestWaitTime + 5)*2, TimeUnit.SECONDS);
-            httpClientBuilder.setDefaultRequestConfig(rc);
-
-            CloseableHttpClient
-                    ApiRestHttpClient = httpClientBuilder.build();
-            if ( ApiRestHttpClient == null) {
-                try {
-                    syncConnectionManager.shutdown();
-                    syncConnectionManager.close();
-                } catch ( Exception e) {
-                    MessegeReceive_Log.error( "Внутренняя ошибка - httpClientBuilder.build() не создал клиента. И ещё проблема с syncConnectionManager.shutdown()...");
-                    e.printStackTrace();
-                }
-                MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "]" + "httpClientBuilder.build() fault");
-                Message.MsgReason.append("Внутренняя Ошибка httpClientBuilder.build() fault");
-
-                MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
-                        "Внутренняя Ошибка httpClientBuilder.build() fault",
-                        null, MessegeReceive_Log);
-                return -9L;
-            }
-            */
         PerfotmInputMessages Perfotmer = new PerfotmInputMessages();
         Message.ReInitMessageDetails() ; // sslContext, httpClientBuilder, null, ApiRestHttpClient );
             try {
 
                 // Обрабатываем сообщение!
                 Function_Result = Perfotmer.performMessage(Message, messageQueueVO, theadDataAccess,
-                                                           XSLTErrorListener,  ConvXMLuseXSLTerr,  MessegeReceive_Log );
+                                                             ConvXMLuseXSLTerr,  MessegeReceive_Log );
 
         }
         catch (Exception e) {

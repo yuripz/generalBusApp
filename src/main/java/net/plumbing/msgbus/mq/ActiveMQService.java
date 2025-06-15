@@ -1,6 +1,6 @@
 package net.plumbing.msgbus.mq;
 
-import javax.jms.*;
+import jakarta.jms.*;
 //import javax.validation.constraints.NotNull;
 
 import net.plumbing.msgbus.common.ApplicationProperties;
@@ -18,18 +18,19 @@ import java.net.UnknownHostException;
 public class ActiveMQService {
     //private PooledConnectionFactory  MQpooledConnectionFactory=null;
     private ActiveMQConnectionFactory MQconnectionFactory=null;
-    private TopicConnection JMSTopicConnection=null;
-    private Connection JMSQueueConnection=null;
+    //private TopicConnection JMSTopicConnection=null;
+    //private Connection JMSQueueConnection=null;
 
     private static final String DESTINATION_NAME = "Q.Sender.OUT";
     private static final String SenderDESTINATION_NAME= "Q.Sender.IN";
     private static final Logger ActiveMQService_Log = LoggerFactory.getLogger(ActiveMQService.class);
 
 
-   public Connection  StartJMSQueueConnection( String TextMessageSring) throws JMSException, UnknownHostException {
+   public String  StartJMSQueueConnection( String TextMessageSring) throws JMSException, UnknownHostException, jakarta.jms.JMSException {
        Long pid = ProcessHandle.current().pid();
-       Connection Qconnection = StoreMQpooledConnectionFactory.MQpooledConnectionFactory.createConnection();
-       Qconnection.setClientID("JMS.Receiver." + pid.toString() + "-" + InetAddress.getLocalHost().getHostAddress() );
+       jakarta.jms.Connection  Qconnection = StoreMQpooledConnectionFactory.MQpooledConnectionFactory.createConnection();
+       String sClientID = "JMS.Receiver." + pid.toString() + "-" + InetAddress.getLocalHost().getHostAddress();
+       Qconnection.setClientID( sClientID );
        Qconnection.start();
        Session Qsession = Qconnection.createSession(false,
                Session.AUTO_ACKNOWLEDGE);
@@ -46,7 +47,7 @@ public class ActiveMQService {
        Qconnection.stop();
        Qconnection.close();
        //this.JMSQueueConnection = Qconnection;
-       return Qconnection;
+       return sClientID;
    }
 /*
     public  Connection SendTextMessageJMSQueue( String TextMessageSring, String QueueName ) throws JMSException {
@@ -88,12 +89,13 @@ public class ActiveMQService {
         {ActiveMQService_Log.warn( "InetAddress.getLocalHost().getHostAddress(): " + e.getMessage());
             localHostAddress = "xxx";
         }
+        String sClientID= "JMS.Interlal." + pid.toString() + "-" + localHostAddress;
         ActiveMQService_Log.info("ActiveMQConnectionFactory MsgBus preSet");
         ActiveMQService_Log.info("ActiveMQConnectionFactory MsgBus TCP connect: [" + ApplicationProperties.ConnectMsgBus + "]");
 
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerURL);
         connectionFactory.setAlwaysSyncSend(true);
-        connectionFactory.setClientID("JMS.Interlal." + pid.toString() + "-" + localHostAddress);
+        connectionFactory.setClientID( sClientID );
         connectionFactory.setClientIDPrefix("ReceiverI");
         connectionFactory.setMaxThreadPoolSize(50);
         connectionFactory.setAlwaysSyncSend(true);

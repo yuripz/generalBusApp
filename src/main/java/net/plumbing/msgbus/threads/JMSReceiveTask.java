@@ -11,6 +11,10 @@ import net.plumbing.msgbus.controller.PerfotmInputMessages;
 import net.plumbing.msgbus.model.MessageDetails;
 //import net.plumbing.msgbus.mq.JMS_MessageDirection_MQConnectionFactory;
 import net.plumbing.msgbus.telegramm.NotifyByChannel;
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.Xslt30Transformer;
+import net.sf.saxon.s9api.XsltCompiler;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.jdom2.input.JDOMParseException;
 //import org.jdom2.input.JDOMParseException;
@@ -25,7 +29,7 @@ import net.plumbing.msgbus.threads.utils.MessageUtils;
 import net.plumbing.msgbus.threads.utils.XMLutils;
 
 
-import javax.jms.*;
+import jakarta.jms.*;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 import java.net.InetAddress;
@@ -434,12 +438,12 @@ public void run()   {
         try {
             if ( MessageTemplateVOkey >= 0 )
                 // Парсим входной запрос и формируем XML-Document !
-                XMLutils.makeClearRequest(Message, MessageTemplate.AllMessageTemplate.get( MessageTemplateVOkey ).getEnvelopeInXSLT(),
-                        XSLTErrorListener, ConvXMLuseXSLTerr, isDebugged,
+                XMLutils.makeClearRequest(Message, MessageTemplateVOkey,
+                         ConvXMLuseXSLTerr, isDebugged,
                         MessegeReceive_Log);
             else
-                XMLutils.makeClearRequest(Message, null,
-                        XSLTErrorListener, ConvXMLuseXSLTerr, isDebugged,
+                XMLutils.makeClearRequest(Message, -1,
+                         ConvXMLuseXSLTerr, isDebugged,
                         MessegeReceive_Log);
         }
         catch (Exception e) {
@@ -477,23 +481,26 @@ public void run()   {
             //  к исходному запросу(SOAP-Envelope) с удаленной информацией о NameSpace
             //  применяется преобразование HeaderInXSLT и полученный результат
             //  заменяет SOAP-Header запроса, вне зависимости от того был он или нет.
-            if ( MessageXSLT_4_HeaderIn != null )
+            if ( (MessageXSLT_4_HeaderIn != null) && (!MessageXSLT_4_HeaderIn.isEmpty()) )
             {
+                Processor xslt30Processor = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getHeaderInXSLT_processor();
+                XsltCompiler xsltCompiler = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getHeaderInXSLT_xsltCompiler();
+                Xslt30Transformer xslt30Transformer = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getHeaderInXSLT_xslt30Transformer();
                 ConvXMLuseXSLTerr.setLength(0); ConvXMLuseXSLTerr.trimToSize();
                 try {
-                    Message.Soap_HeaderRequest.append(XMLutils.ConvXMLuseXSLT(Queue_Id,
+                    Message.Soap_HeaderRequest.append(XMLutils.ConvXMLuseXSLT30(Queue_Id,
                             Message.XML_MsgClear.toString(),
+                            xslt30Processor, xsltCompiler, xslt30Transformer,
                             MessageXSLT_4_HeaderIn,
                             Message.MsgReason,
                             ConvXMLuseXSLTerr,
-                            XSLTErrorListener,
                             MessegeReceive_Log,
                             isDebugged
                             ).substring(XMLchars.xml_xml.length()) // берем после <?xml version="1.0" encoding="UTF-8"?>
                     );
                     //if ( Message.MessageTemplate4Perform.getIsDebugged() )
                     if ( isDebugged )
-                        MessegeReceive_Log.info(Queue_Direction + " [" + Queue_Id + "] после XSLT=:{" + Message.Soap_HeaderRequest.toString() + "}");
+                        MessegeReceive_Log.info( "[{}] {} после XSLT=:{{}}", Queue_Id, Queue_Direction, Message.Soap_HeaderRequest.toString());
                     if ( Message.Soap_HeaderRequest.toString().equals(XMLchars.nanXSLT_Result) ) {
                         MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess, "В результате XSLT преобразования получен пустой заголовок из (" + Message.XML_MsgClear.toString() + ")",
                                 null, MessegeReceive_Log);
@@ -501,13 +508,13 @@ public void run()   {
                         return -5L;
                     }
 
-                } catch (TransformerException exception) {
-                    MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLT-преобразователь тела:{" + MessageXSLT_4_HeaderIn + "}");
-                    MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] fault " + ConvXMLuseXSLTerr.toString() + " после XSLT=:{" + Message.Soap_HeaderRequest.toString() + "}");
+                } catch (SaxonApiException exception) {
+                    MessegeReceive_Log.error("[{}] {} XSLT-преобразователь тела:{{}}", Queue_Id, Queue_Direction, MessageXSLT_4_HeaderIn);
+                    MessegeReceive_Log.error( "[{}] {} fault {} после XSLT=:{{}}", Queue_Id, Queue_Direction, ConvXMLuseXSLTerr.toString(), Message.Soap_HeaderRequest.toString());
                     MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                             "Ошибка построенния заголовка при XSLT-преобразовании из сообщения: " + ConvXMLuseXSLTerr + Message.XML_MsgClear.toString() + " on " + MessageXSLT_4_HeaderIn,
                             null, MessegeReceive_Log);
-                    Message.MsgReason.append("Ошибка построенния заголовка при XSLT-преобразовании из сообщения: " +  ConvXMLuseXSLTerr);
+                    Message.MsgReason.append("Ошибка построенния заголовка при XSLT-преобразовании из сообщения: ").append(ConvXMLuseXSLTerr);
                     // Считаем, что виноват клиент
                     return 5L;
                 }
@@ -519,8 +526,8 @@ public void run()   {
                 catch (Exception e) {
                     System.err.println( "Queue_Id["+ messageQueueVO.getQueue_Id() + "]  Exception" );
                     e.printStackTrace();
-                    MessegeReceive_Log.error(Queue_Direction + "fault: [" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: " + sStackTrace.strInterruptedException(e));
-                    Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения: " + Message.XML_MsgClear.toString() + ", fault: " + sStackTrace.strInterruptedException(e));
+                    MessegeReceive_Log.error("[{}] {} fault: Soap_HeaderRequest2messageQueueVO: {}", messageQueueVO.getQueue_Id(), Queue_Direction, sStackTrace.strInterruptedException(e));
+                    Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения: ").append(Message.XML_MsgClear.toString()).append(", fault: ").append(sStackTrace.strInterruptedException(e));
 
                     MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                             "Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения: " + Message.XML_MsgClear.toString(),
@@ -538,7 +545,7 @@ public void run()   {
                         System.err.println("Queue_Id [" + messageQueueVO.getQueue_Id() + "]  Exception");
                         e.printStackTrace();
                         MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: (" +  Message.XML_MsgClear.toString() + ") fault " + sStackTrace.strInterruptedException(e));
-                        Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, полученного в сообщении: " + Queue_Direction + ", fault: " + sStackTrace.strInterruptedException(e));
+                        Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, полученного в сообщении: " + Queue_Direction + ", fault: ").append(sStackTrace.strInterruptedException(e));
 
                         MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                                 "Ошибка при получении необходимых значений из заголовка, полученного в сообщении: " + Message.XML_MsgClear.toString(),
@@ -584,7 +591,7 @@ public void run()   {
             }
             else {
                 MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "]" + "Soap_XMLDocument2messageQueueVO: (" +  Message.XML_MsgClear.toString() + ") fault " );
-                Message.MsgReason.append("Не был найдет элемент 'Context' - Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения (: " + Message.XML_MsgClear.toString() + ")" );
+                Message.MsgReason.append("Не был найдет элемент 'Context' - Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения (: ").append(Message.XML_MsgClear.toString()).append(")");
 
                 MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                         "Не был найдет элемент 'Context' - Ошибка при получении необходимых значений из заголовка, полученного в сообщении: " + Message.XML_MsgClear.toString(),
@@ -602,13 +609,13 @@ public void run()   {
 
             // Обрабатываем сообщение!
             Function_Result = Perfotmer.performMessage(Message, messageQueueVO, theadDataAccess,
-                    XSLTErrorListener,  ConvXMLuseXSLTerr,  MessegeReceive_Log );
+                                                       ConvXMLuseXSLTerr,  MessegeReceive_Log );
 
         }
         catch (Exception e) {
             System.err.println( "performMessage Exception Queue_Id:[" + messageQueueVO.getQueue_Id() + "] " +e.getMessage());
             e.printStackTrace();
-            MessegeReceive_Log.error("performMessage Exception Queue_Id:[" + messageQueueVO.getQueue_Id() + "] " +e.getMessage());
+            MessegeReceive_Log.error("performMessage Exception Queue_Id:[{}] {}", messageQueueVO.getQueue_Id(), e.getMessage());
             MessegeReceive_Log.error( "что то пошло совсем не так...");
             MessageUtils.ProcessingIn2ErrorIN(  messageQueueVO, Message,  theadDataAccess,
                     "Perfotmer.performMessage fault:"  + e.getMessage() + ", " + Message.XML_MsgClear.toString()  ,

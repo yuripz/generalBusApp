@@ -3,7 +3,7 @@ package net.plumbing.msgbus.mq;
 import org.apache.activemq.pool.PooledConnectionFactory;
 import org.slf4j.Logger;
 
-import javax.jms.*;
+import jakarta.jms.*;
 
 public class PerformTextMessageJMSQueue {
     private Connection Qconnection;

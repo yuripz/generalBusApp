@@ -94,8 +94,12 @@ public class MessageQueueVO {
     public  void  setMsg_Status( int Msg_Status ) { this.Msg_Status = Msg_Status; }
     public  void  setQueue_Direction( String Queue_Direction ) { this.Queue_Direction = Queue_Direction; }
     public  void  setPrev_Queue_Direction( String Prev_Queue_Direction ) { this.Prev_Queue_Direction = Prev_Queue_Direction; }
+    public  void  setMsgDirection_Id( int msgDirection_Id ) { this.MsgDirection_Id = msgDirection_Id; }
+    public  void  setSubSys_Cod( String subSys_Cod ) { this.SubSys_Cod = subSys_Cod; }
+
     public  void  setMsg_Date( java.sql.Timestamp Msg_Date ) { this.Msg_Date = Msg_Date; }
     public  void  setPrev_Msg_Date( java.sql.Timestamp Prev_Msg_Date ) { this.Prev_Msg_Date = Prev_Msg_Date; }
+    public  void setMsg_InfoStreamId(int Msg_InfoStreamId) { this.Msg_InfoStreamId = Msg_InfoStreamId; }
 
     public  int  getRetry_Count() { return this.Retry_Count;  }
     public  long  getQueue_Id() { return this.Queue_Id; }

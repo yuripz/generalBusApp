@@ -15,7 +15,7 @@ import javax.xml.validation.Validator;
 import java.io.*;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
+//import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
@@ -51,11 +51,11 @@ public class PerformQueueMessages4Send {
         XSLTErrorListener = new xlstErrorListener();
         XSLTErrorListener.setXlstError_Log( MessageSend_Log );
 
-        MessageSend_Log.info(Queue_Direction + " [" + Queue_Id + "] ищем Шаблон под оперрацию (" + Operation_Id + "), с учетом системы приёмника MsgDirection_Id=" + MsgDirection_Id + ", SubSys_Cod =" + SubSys_Cod);
+        MessageSend_Log.info("{} [{}] ищем Шаблон под оперрацию ({}), с учетом системы приёмника MsgDirection_Id={}, SubSys_Cod ={}", Queue_Direction, Queue_Id, Operation_Id, MsgDirection_Id, SubSys_Cod);
 
         // ищем Шаблон под оперрацию, с учетом системы приёмника MessageRepositoryHelper.look4MessageTemplateVO_2_Perform
         int Template_Id = MessageRepositoryHelper.look4MessageTemplateVO_2_Perform(Operation_Id, MsgDirection_Id, SubSys_Cod, MessageSend_Log);
-        MessageSend_Log.info(Queue_Direction + " [" + Queue_Id + "]  Шаблон под оперрацию =" + Template_Id);
+        MessageSend_Log.info("{} [{}]  Шаблон под оперрацию ={}", Queue_Direction, Queue_Id, Template_Id);
 
         if ( Template_Id < 0 ) {
             theadDataAccess.doUPDATE_MessageQueue_Out2ErrorOUT(messageQueueVO , "Не нашли шаблон обработки сообщения для комбинации: Идентификатор системы[" + MsgDirection_Id + "] Код подсистемы[" + SubSys_Cod + "]", MessageSend_Log);
@@ -65,7 +65,7 @@ public class PerformQueueMessages4Send {
 
         int messageTypeVO_Key = MessageRepositoryHelper.look4MessageTypeVO_2_Perform( Operation_Id, MessageSend_Log );
         if ( messageTypeVO_Key < 0  ) {
-            MessageSend_Log.error( "[" + Queue_Id + "] MessageRepositoryHelper.look4MessageTypeVO_2_Perform: Не нашли тип сообщения для Operation_Id=[" + Operation_Id + "]");
+            MessageSend_Log.error("[{}] MessageRepositoryHelper.look4MessageTypeVO_2_Perform: Не нашли тип сообщения для Operation_Id=[{}]", Queue_Id, Operation_Id);
             theadDataAccess.doUPDATE_MessageQueue_Out2ErrorOUT(messageQueueVO, "Не нашли тип сообщения для Operation_Id=[" + Operation_Id + "]", MessageSend_Log);
             // ConcurrentQueue.addMessageQueueVO2queue(  messageQueueVO, messageQueueVO.getMsg_Type(), String.valueOf(messageQueueVO.getQueue_Id()),  monitoringQueueVO, MessageSend_Log);
             return -11L;
@@ -75,9 +75,7 @@ public class PerformQueueMessages4Send {
         int MsgDirectionVO_Key = MessageRepositoryHelper.look4MessageDirectionsVO_2_Perform(MsgDirection_Id, SubSys_Cod, MessageSend_Log);
 
         if ( MsgDirectionVO_Key >= 0 )
-            MessageSend_Log.info(
-                    "[" + Queue_Id + "] MsgDirectionVO  getDb_pswd=" + MessageDirections.AllMessageDirections.get(MsgDirectionVO_Key).getDb_pswd() +
-                            MessageDirections.AllMessageDirections.get(MsgDirectionVO_Key).LogMessageDirections());
+            MessageSend_Log.info("[{}] MsgDirectionVO  getDb_pswd={}{}", Queue_Id, MessageDirections.AllMessageDirections.get(MsgDirectionVO_Key).getDb_pswd(), MessageDirections.AllMessageDirections.get(MsgDirectionVO_Key).LogMessageDirections());
         else {
             MessageSend_Log.error(Queue_Direction +" ["+ Queue_Id +"] Не нашли систему-приёмник для пары[" + MsgDirection_Id + "][" + SubSys_Cod + "]" );
             if ( theadDataAccess.doUPDATE_MessageQueue_Out2ErrorOUT(messageQueueVO, "Не нашли систему-приёмник для пары[" + MsgDirection_Id + "][" + SubSys_Cod + "]", MessageSend_Log) < 0 )
@@ -101,18 +99,18 @@ public class PerformQueueMessages4Send {
                 Queue_Id,
                 MessageSend_Log
         );
-        MessageSend_Log.info("[" + Queue_Id + "] MessageTemplate4Perform[" + Message.MessageTemplate4Perform.printMessageTemplate4Perform() );
+        MessageSend_Log.info("[{}] MessageTemplate4Perform[{}", Queue_Id, Message.MessageTemplate4Perform.printMessageTemplate4Perform());
 
         switch (Queue_Direction){
             case XMLchars.DirectOUT:
                 // читаем их БД тело XML
-                MessageSend_Log.info(Queue_Direction +" ["+ Queue_Id +"] зачитывем из БД тело XML, IsDebugged=" + Message.MessageTemplate4Perform.getIsDebugged() );
+                MessageSend_Log.info("{} [{}] зачитывем из БД тело XML, IsDebugged={}", Queue_Direction, Queue_Id, Message.MessageTemplate4Perform.getIsDebugged());
                 MessageUtils.ReadMessageDetai4Send( theadDataAccess, Queue_Id, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessageSend_Log);
                 if ( Message.MessageTemplate4Perform.getMessageXSD() != null )
                 { boolean is_Message_OUT_Valid;
                     is_Message_OUT_Valid = TestXMLByXSD( Message.XML_MsgOUT.toString(), Message.MessageTemplate4Perform.getMessageXSD(), Message.MsgReason, MessageSend_Log );
                     if ( ! is_Message_OUT_Valid ) {
-                        MessageSend_Log.error(" ["+ Queue_Id +"] validateXMLSchema: message\n" + Message.XML_MsgOUT.toString() + "\n is not valid for XSD\n" + Message.MessageTemplate4Perform.getMessageXSD());
+                        MessageSend_Log.error(" [{}] validateXMLSchema: message\n{}\n is not valid for XSD\n{}", Queue_Id, Message.XML_MsgOUT.toString(), Message.MessageTemplate4Perform.getMessageXSD());
                         MessageUtils.ProcessingOut2ErrorOUT(  messageQueueVO,   Message,  theadDataAccess,
                                 "validateXMLSchema: message {" + Message.XML_MsgOUT.toString() + "} is not valid for XSD {" + Message.MessageTemplate4Perform.getMessageXSD() + "}" ,
                                 null ,  MessageSend_Log);
@@ -124,7 +122,7 @@ public class PerformQueueMessages4Send {
                 if ( MessageXSLT_4_OUT_2_SEND != null ) {
                     String XML_4_XSLT;
                     if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                    MessageSend_Log.info(Queue_Direction + " [" + Queue_Id + "] XSLT-преобразователь тела:{" + MessageXSLT_4_OUT_2_SEND +"}");
+                        MessageSend_Log.info("[{}] {} XSLT-преобразователь тела:{{}}",  Queue_Id, Queue_Direction, MessageXSLT_4_OUT_2_SEND);
                         // если в ConfigExecute SearchString и Replacement заданы, то заменяем!
                     if (( Message.MessageTemplate4Perform.getPropSearchString() != null ) && ( Message.MessageTemplate4Perform.getPropReplacement() != null ))
                     {
@@ -146,11 +144,11 @@ public class PerformQueueMessages4Send {
                                 MessageSend_Log, Message.MessageTemplate4Perform.getIsDebugged()
                         ).substring(XMLchars.xml_xml.length());// берем после <?xml version="1.0" encoding="UTF-8"?>
                         if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                            MessageSend_Log.info(Queue_Direction + " [" + Queue_Id + "] после XSLT=:{" + Message.XML_MsgSEND + "}");
+                            MessageSend_Log.info("{} [{}] после XSLT=:{{}}", Queue_Direction, Queue_Id, Message.XML_MsgSEND);
                     } catch ( TransformerException  exception ) {
-                        MessageSend_Log.error(Queue_Direction + " [" + Queue_Id + "] ConvXMLuseXSLT fault: " + exception.getMessage() );
+                        MessageSend_Log.error("{} [{}] ConvXMLuseXSLT fault: {}", Queue_Direction, Queue_Id, exception.getMessage());
                         MessageSend_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLT-преобразователь тела:{" + MessageXSLT_4_OUT_2_SEND +"}");
-                        MessageSend_Log.error(Queue_Direction + " [" + Queue_Id + "] после XSLT=:{" + Message.XML_MsgSEND +"}");
+                        MessageSend_Log.error("{} [{}] после XSLT=:{{}}", Queue_Direction, Queue_Id, Message.XML_MsgSEND);
                         MessageUtils.ProcessingOut2ErrorOUT(  messageQueueVO,   Message,  theadDataAccess,
                                 "XSLT fault: message=`" + ConvXMLuseXSLTerr + "` XSLT=`" + XML_4_XSLT+ "` on " + MessageXSLT_4_OUT_2_SEND ,
                                 null ,  MessageSend_Log);
@@ -159,7 +157,7 @@ public class PerformQueueMessages4Send {
                     }
                     if ( Message.XML_MsgSEND.equals(XMLchars.nanXSLT_Result) ) {
                         MessageSend_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLT-преобразователь тела:{" + MessageXSLT_4_OUT_2_SEND +"}");
-                        MessageSend_Log.error(Queue_Direction + " [" + Queue_Id + "] после XSLT=:`" + Message.XML_MsgSEND +"`");
+                        MessageSend_Log.error("{} [{}] после XSLT=:`{}`", Queue_Direction, Queue_Id, Message.XML_MsgSEND);
                         MessageUtils.ProcessingOut2ErrorOUT(  messageQueueVO,   Message,  theadDataAccess,
                                 "XSLT fault message: " + ConvXMLuseXSLTerr + XML_4_XSLT + " on " + MessageXSLT_4_OUT_2_SEND ,
                                 null ,  MessageSend_Log);
@@ -200,13 +198,13 @@ public class PerformQueueMessages4Send {
             case XMLchars.DirectSEND:
                 if ( !Queue_Direction.equals("OUT") ) {
                     // надо читать из БД
-                    MessageSend_Log.info(Queue_Direction +"-> SEND ["+ Queue_Id +"] читаем SEND БД тело XML" );
+                    MessageSend_Log.info("{}-> SEND [{}] читаем SEND БД тело XML", Queue_Direction, Queue_Id);
                     MessageUtils.ReadMessageDetai4Send( theadDataAccess, Queue_Id, Message, Message.MessageTemplate4Perform.getIsDebugged(), MessageSend_Log);
                     if ( Message.MessageRowNum <= 0 ) {
-                        MessageSend_Log.error(Queue_Direction +"-> SEND ["+ Queue_Id +"] тело XML для SEND в БД пустое !" );
+                        MessageSend_Log.error("{}-> SEND [{}] тело XML для SEND в БД пустое !", Queue_Direction, Queue_Id);
                         MessageUtils.ProcessingOutError(  messageQueueVO,   Message,  theadDataAccess,
                                 Queue_Direction +"-> SEND ["+ Queue_Id +"] тело XML для SEND в БД пустое !" ,
-                                null ,  MessageSend_Log);;
+                                null ,  MessageSend_Log);
                         return -3L;
                     }
 
@@ -220,13 +218,8 @@ public class PerformQueueMessages4Send {
 
                 // вызов внешней системы
                 // провевяем , вдруг это REST
-                MessageSend_Log.info("doSEND ["+ Queue_Id +"] getPropWebMetod=" + Message.MessageTemplate4Perform.getPropWebMetod() +
-                        " EndPointUrl=" + Message.MessageTemplate4Perform.getEndPointUrl() +
-                        " PropTimeout_Conn=" + Message.MessageTemplate4Perform.getPropTimeout_Conn() +
-                        " PropTimeout_Read=" + Message.MessageTemplate4Perform.getPropTimeout_Read() +
-                        " Type_Connection=" + Message.MessageTemplate4Perform.getType_Connection() +
-                        " ShortRetryCount=" + Message.MessageTemplate4Perform.getShortRetryCount() +
-                        " LongRetryCount=" + Message.MessageTemplate4Perform.getLongRetryCount());
+                MessageSend_Log.info("doSEND [{}] getPropWebMetod={} EndPointUrl={} PropTimeout_Conn={} PropTimeout_Read={} Type_Connection={} ShortRetryCount={} LongRetryCount={}",
+                                      Queue_Id, Message.MessageTemplate4Perform.getPropWebMetod(), Message.MessageTemplate4Perform.getEndPointUrl(), Message.MessageTemplate4Perform.getPropTimeout_Conn(), Message.MessageTemplate4Perform.getPropTimeout_Read(), Message.MessageTemplate4Perform.getType_Connection(), Message.MessageTemplate4Perform.getShortRetryCount(), Message.MessageTemplate4Perform.getLongRetryCount());
 
                 if ((Message.MessageTemplate4Perform.getPropExeMetodExecute() != null) &&
                     (Message.MessageTemplate4Perform.getPropExeMetodExecute().equals(Message.MessageTemplate4Perform.JavaClassExeMetod)) )
@@ -234,7 +227,7 @@ public class PerformQueueMessages4Send {
                   // 2.1) Это JDBC-обработчик. Используется для организации SQL запроса к "чужой" БД через дополнительный пулл
                   //----------------------------------------------------------------------------
                  // Тут JDBC-обработчик не поддерживается с Envelope4XSLTExt - надо орать!
-                        MessageSend_Log.error("["+ Queue_Id +"] Тут JDBC-обработчик не поддерживается.В шаблоне для " + Message.MessageTemplate4Perform.getTemplate_name() + " прописан Envelope4XSLTExt для XSLTExt-обработки");
+                    MessageSend_Log.error("[{}] Тут JDBC-обработчик не поддерживается.В шаблоне для {} прописан Envelope4XSLTExt для XSLTExt-обработки", Queue_Id, Message.MessageTemplate4Perform.getTemplate_name());
                         theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT( messageQueueVO,
                                 "JDBC-обработчик не поддерживается. В шаблоне для " + Message.MessageTemplate4Perform.getTemplate_name() + " прописан Envelope4XSLTExt для XSLTExt-обработки", 3233,
                                 messageQueueVO.getRetry_Count(), MessageSend_Log);
@@ -251,8 +244,8 @@ public class PerformQueueMessages4Send {
                             Message.MessageTemplate4Perform.getHeaderXSLT().length() > 10) // Есть чем преобразовывать HeaderXSLT
                         {
                             if (Message.MessageTemplate4Perform.getIsDebugged()) {
-                                MessageSend_Log.info(Queue_Direction + " [" + Queue_Id + "] XSLT-преобразователь заголовка (чем):`" + Message.MessageTemplate4Perform.getHeaderXSLT() + "`");
-                                MessageSend_Log.info(Queue_Direction + " [" + Queue_Id + "] XSLT-преобразователь заголовка (что):`" + Message.XML_MsgOUT + "`");
+                                MessageSend_Log.info("{} [{}] XSLT-преобразователь заголовка (чем):`{}`", Queue_Direction, Queue_Id, Message.MessageTemplate4Perform.getHeaderXSLT());
+                                MessageSend_Log.info("{} [{}] XSLT-преобразователь заголовка (что):`{}`", Queue_Direction, Queue_Id, Message.XML_MsgOUT);
                             }
                             try {
                                 Message.Soap_HeaderRequest.append(
@@ -282,7 +275,7 @@ public class PerformQueueMessages4Send {
                                 String AckXSLT_4_make_JSON = Message.MessageTemplate4Perform.getAckXSLT() ; // получили XSLT-для
                                 if ( AckXSLT_4_make_JSON != null ) {
                                     if (Message.MessageTemplate4Perform.getIsDebugged())
-                                        MessageSend_Log.info("[" + Queue_Id + "] PropWebMetod is `post`, AckXSLT_4_make_JSON (" + AckXSLT_4_make_JSON + ")");
+                                        MessageSend_Log.info("[{}] PropWebMetod is `post`, AckXSLT_4_make_JSON ({})", Queue_Id, AckXSLT_4_make_JSON);
                                     try {
                                         String make_JSON =
                                                 ConvXMLuseXSLT(messageQueueVO.getQueue_Id(),
@@ -293,11 +286,10 @@ public class PerformQueueMessages4Send {
                                                 );
                                         Message.XML_MsgSEND = make_JSON; // сохраняем для отправки результат преобразования
                                         if (Message.MessageTemplate4Perform.getIsDebugged())
-                                            MessageSend_Log.info("[" + Queue_Id + "] PropWebMetod is `post`as JSON (" + Message.XML_MsgResponse + ")");
+                                            MessageSend_Log.info("[{}] PropWebMetod is `post`as JSON ({})", Queue_Id, Message.XML_MsgResponse);
 
                                     } catch (TransformerException exception) {
-                                        MessageSend_Log.error("SEND [" + messageQueueVO.getQueue_Id() + "] XSLT-преобразователь для JSON :{"
-                                                + AckXSLT_4_make_JSON + "}");
+                                        MessageSend_Log.error("SEND [{}] XSLT-преобразователь для JSON :`{}`", messageQueueVO.getQueue_Id(), AckXSLT_4_make_JSON);
 
                                         theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT(messageQueueVO,
                                                 "Header XSLT fault: " + ConvXMLuseXSLTerr + " for " + AckXSLT_4_make_JSON, 1244,
@@ -305,7 +297,7 @@ public class PerformQueueMessages4Send {
 
                                         System.err.println("[" + messageQueueVO.getQueue_Id() + "] TransformerException ");
                                         exception.printStackTrace();
-                                        MessageSend_Log.error("[" + messageQueueVO.getQueue_Id() + "] from XML `" + Message.XML_MsgSEND + "` XSLT: `" + AckXSLT_4_make_JSON + "` JSON fault:" + exception);
+                                        MessageSend_Log.error("[{}] from XML `{}` XSLT: `{}` JSON fault:{}", messageQueueVO.getQueue_Id(), Message.XML_MsgSEND, AckXSLT_4_make_JSON, exception.getMessage());
                                         Message.MsgReason.append(" XSLT-преобразователь для JSON `").append(AckXSLT_4_make_JSON).append("` fault: ").append(sStackTrace.strInterruptedException(exception));
                                         MessageUtils.ProcessingSendError(messageQueueVO, Message, theadDataAccess,
                                                 "XSLT-преобразователь для JSON", true, exception, MessageSend_Log);

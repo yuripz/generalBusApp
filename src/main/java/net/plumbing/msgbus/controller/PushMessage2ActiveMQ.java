@@ -9,7 +9,7 @@ import net.plumbing.msgbus.threads.utils.MessageRepositoryHelper;
 import net.plumbing.msgbus.mq.StoreMQpooledConnectionFactory;
 import net.plumbing.msgbus.mq.PerformTextMessageJMSQueue;
 
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -84,7 +84,7 @@ public class PushMessage2ActiveMQ {
             return Queue_Id;
         }
         PerformTextMessageJMSQueue performTextMessageJMSQueue = new PerformTextMessageJMSQueue();
-        javax.jms.Connection Qconnection = null;
+        jakarta.jms.Connection Qconnection = null;
         try {
             MessegeReceive_Log.info("[" + pQueue_ID +"] Пробуем отправить сообщение QUEUE_ID: "+ Queue_Id + " в очередь сообщений ActiveMQ \'Q." + MessageDirectionsCode + ".IN'");
              Qconnection = performTextMessageJMSQueue.SendTextMessageJMSQueue(

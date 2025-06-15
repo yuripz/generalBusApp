@@ -43,7 +43,7 @@ public class InitMessageRepository {
                     """        
                      select t.interface_id,
                             t.operation_id, t.msg_type, t.msg_type_own, t.msg_typedesc, t.msg_direction,
-                            t.msg_handler, t.url_soap_send, t.url_soap_ack, t.max_retry_count, t.max_retry_time
+                            t.msg_handler, t.url_soap_send, t.url_soap_ack, t.max_retry_count, t.max_retry_time, t.Last_Update_Dt
                             from\040
                     """ + DataAccess.HrmsSchema +  """
                         .MESSAGE_typeS t\040
@@ -58,7 +58,7 @@ public class InitMessageRepository {
             selectMsgTypeReRead =
                     "select t.interface_id, " +
                     "t.operation_id, t.msg_type, t.msg_type_own, t.msg_typedesc, t.msg_direction, " +
-                    "t.msg_handler, t.url_soap_send, t.url_soap_ack, t.max_retry_count, t.max_retry_time " +
+                    "t.msg_handler, t.url_soap_send, t.url_soap_ack, t.max_retry_count, t.max_retry_time, t.Last_Update_Dt " +
                     "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS t " +
                         "where (1=1) and t.msg_direction like '%IN%' " +
                         "and t.LAST_UPDATE_DT > ( now() AT TIME ZONE 'Europe/Moscow' - Interval '1 Second' * ( 180 + " + intervalReInit + " )  )" +
@@ -95,7 +95,8 @@ public class InitMessageRepository {
                             rs.getString("url_soap_send"),
                             rs.getString("url_soap_ack"),
                             rs.getInt("max_retry_count"),
-                            rs.getInt("max_retry_time")
+                            rs.getInt("max_retry_time"),
+                            rs.getTimestamp( "Last_Update_Dt")
                     );
 
                     MessageType.AllMessageType.put(MessageType.RowNum, messageTypeVO);
@@ -372,7 +373,7 @@ public class InitMessageRepository {
                         "i.url_soap_send, " +
                         "i.url_soap_ack, " +
                         "i.max_retry_count, " +
-                        "i.max_retry_time " +
+                        "i.max_retry_time, i.Last_Update_Dt  " +
                         "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS i " +
                         "where (1=1) " +
                         "and i.msg_direction like '%IN%' " +
@@ -387,7 +388,7 @@ public class InitMessageRepository {
                      "o.url_soap_send, " +
                      "o.url_soap_ack, " +
                      "o.max_retry_count, " +
-                     "o.max_retry_time " +
+                     "o.max_retry_time, o.Last_Update_Dt  " +
                      "from " + DataAccess.HrmsSchema + ".MESSAGE_typeS o " +
                      "where (1=1) " +
                      "and o.msg_direction like '%OUT%' and o.operation_id in (7512,7513) " + //  TODO: отправить запрос на поднесение карты к считывателю SKUD_Action_CARD_READ & SKUD_Request_ACCESS_Point
@@ -419,7 +420,8 @@ public class InitMessageRepository {
                         rs.getString("url_soap_send"),
                         rs.getString("url_soap_ack"),
                         rs.getInt("max_retry_count"),
-                        rs.getInt("max_retry_time")
+                        rs.getInt("max_retry_time"),
+                        rs.getTimestamp( "Last_Update_Dt")
                 );
                 //messageTypeVO.LogMessageDirections( log );
                 // log.info(" messageTypeVO :", messageTypeVO );

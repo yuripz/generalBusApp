@@ -66,26 +66,26 @@ public class RestAPI_ReceiveTask {
         if ( messageTemplateVO  != null ) {
             EnvelopeInXSLT = MessageTemplate.AllMessageTemplate.get(MessageOperationTemplateVOkey).getEnvelopeInXSLT();
             if (EnvelopeInXSLT != null) {
-                RestAPI_Receive_Log.info("`" + Queue_Direction + "`: MessageXSLT Шаблон под оперрацию `" + EnvelopeInXSLT + "`");
+                RestAPI_Receive_Log.info("`{}`: MessageXSLT Шаблон под оперрацию `{}`", Queue_Direction, EnvelopeInXSLT);
             } else {
-                RestAPI_Receive_Log.info("`" + Queue_Direction + "`: MessageXSLT Шаблон под оперрацию `-NULL-`");
+                RestAPI_Receive_Log.info("`{}`: MessageXSLT Шаблон под оперрацию `-NULL-`", Queue_Direction);
             }
         }else { EnvelopeInXSLT= null;
-            RestAPI_Receive_Log.info("`" + Queue_Direction + "`: MessageXSLT Шаблон под оперрацию `-NULL-`");
+            RestAPI_Receive_Log.info("`{}`: MessageXSLT Шаблон под оперрацию `-NULL-`", Queue_Direction);
         }
 
         // MessageTemplateVOkey - Шаблон интерфейса (на основе входного URL), для конвертации боду надо использовать имеено его, т.к. получить шаблон оперрации с учетом получателя
         try {
                 XMLutils.makeMessageDetailsRestApi(Message, EnvelopeInXSLT,
-                         XSLTErrorListener, ConvXMLuseXSLTerr,
+                        MessageOperationTemplateVOkey, ConvXMLuseXSLTerr,
                          isDebugged,
                          RestAPI_Receive_Log);
         }
         catch (Exception e) {
             System.err.println( "["+ Message.XML_MsgInput + "]  Exception" );
             e.printStackTrace();
-            RestAPI_Receive_Log.error(Queue_Direction + "fault: [" + Message.XML_MsgInput + "] XMLutils.makeClearRequest fault: " + sStackTrace.strInterruptedException(e));
-            Message.MsgReason.append("Ошибка на приёме сообщения: " + e.getMessage() ); //  sStackTrace.strInterruptedException(e));
+            RestAPI_Receive_Log.error( "`{}` fault: [{}] XMLutils.makeClearRequest fault: {}", Queue_Direction, Message.XML_MsgInput, sStackTrace.strInterruptedException(e));
+            Message.MsgReason.append("Ошибка на приёме сообщения: ").append(e.getMessage()); //  sStackTrace.strInterruptedException(e));
             if ( (e instanceof JDOMParseException ) || (e instanceof XPathExpressionException)  ) // Клиент прислсл фуфло
                 return 1L;
             else
@@ -93,7 +93,7 @@ public class RestAPI_ReceiveTask {
 
         }
         if ( isDebugged )
-            RestAPI_Receive_Log.info("Clear request:" + Message.XML_MsgClear.toString() );
+            RestAPI_Receive_Log.info("`{}` Clear request:{}", Queue_Direction, Message.XML_MsgClear.toString());
 
         MessageQueueVO messageQueueVO = new MessageQueueVO();
 
@@ -102,9 +102,8 @@ public class RestAPI_ReceiveTask {
         // Установаливем " соединение" , что бы зачитывать очередь
         //  theadDataAccess.setDbSchema( ApplicationProperties.HrmsSchema ); - перенесён в make_Hikari_Connection(), что бы не забылось нигде!
         if ( isDebugged )
-            RestAPI_Receive_Log.info("Установаливем \"соединение\" , что бы зачитывать очередь: [" +
-                    ApplicationProperties.HrmsPoint + "] user:" + ApplicationProperties.hrmsDbLogin +
-                    "; passwd:" + ApplicationProperties.hrmsDbPasswd + ".");
+            RestAPI_Receive_Log.info("Установаливем соединение с БД, что бы зачитывать очередь: [{}] user:{}; passwd:{}.",
+                                      ApplicationProperties.HrmsPoint, ApplicationProperties.hrmsDbLogin, ApplicationProperties.hrmsDbPasswd);
         theadDataAccess.make_Hikari_Connection(
                 ApplicationProperties.HrmsSchema,
                 ApplicationProperties.hrmsDbLogin,
@@ -119,7 +118,7 @@ public class RestAPI_ReceiveTask {
         // Создаем запись в таблице-очереди  select ARTX_PROJ.MESSAGE_QUEUE_SEQ.NEXTVAL ...
         Queue_Id = MessageUtils.MakeNewMessage_Queue( messageQueueVO, theadDataAccess, RestAPI_Receive_Log );
         if ( Queue_Id == null ){
-            Message.MsgReason.append("Ошибка на приёме сообщения, не удалось сохранить заголовок сообщения в БД - MakeNewMessage_Queue return: " + Queue_Id );
+            Message.MsgReason.append("Ошибка на приёме сообщения, не удалось сохранить заголовок сообщения в БД - MakeNewMessage_Queue return: ").append(Queue_Id);
             return -3L;
         }
         Message.ROWID_QUEUElog=null; Message.Queue_Id = Queue_Id;
@@ -149,12 +148,11 @@ public class RestAPI_ReceiveTask {
                 messageQueueVO.setMsg_Reason( MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type() + "() Ok." );
 
                 if ( isDebugged )
-                RestAPI_Receive_Log.info("[" + Queue_Id + "] Нашли по (" + MessageTypeVO_Key + ") Msg_Type =`" +
-                        MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type() +
-                        "`,  Msg_Type_ow=`" + MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type_own() + "`" );
+                    RestAPI_Receive_Log.info("[{}] Нашли по ({}) Msg_Type =`{}`,  Msg_Type_ow=`{}`", Queue_Id, MessageTypeVO_Key,
+                                            MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type(), MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type_own());
             }
             else {
-                RestAPI_Receive_Log.error( "RestAPI_Receiver after ClearRequest: в HTTP-заголовке (BusOperationId ) объявлен неизвестый № операцмм " + MessageOperationId);
+                RestAPI_Receive_Log.error("RestAPI_Receiver after ClearRequest: в HTTP-заголовке (BusOperationId ) объявлен неизвестый № операцмм {}", MessageOperationId);
                 throw new XPathExpressionException("RestAPI_Receiver after ClearRequest: в HTTP-заголовке (BusOperationId) объявлен неизвестый № операцмм " + MessageOperationId + " ") ;
             }
 
@@ -163,7 +161,7 @@ public class RestAPI_ReceiveTask {
             System.err.println( "Queue_Id["+ messageQueueVO.getQueue_Id() + "]  Exception" );
             System.err.println( sStackTrace.strInterruptedException( e ) );
             RestAPI_Receive_Log.error(Queue_Direction + " fault: [" + messageQueueVO.getQueue_Id() + "]" + "Soap_HeaderRequest2messageQueueVO: " + sStackTrace.strInterruptedException(e));
-            Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, fault: " + sStackTrace.strInterruptedException(e));
+            Message.MsgReason.append("Ошибка при получении необходимых значений из заголовка, fault: ").append(sStackTrace.strInterruptedException(e));
 
             MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                     "Ошибка при получении необходимых значений из заголовка : " + Message.XML_MsgClear.toString(),
@@ -276,7 +274,7 @@ public class RestAPI_ReceiveTask {
 
             // Обрабатываем сообщение!
             Function_Result = Perfotmer.performMessage(Message, messageQueueVO, theadDataAccess,
-                                                       XSLTErrorListener,  ConvXMLuseXSLTerr,  RestAPI_Receive_Log );
+                                                       ConvXMLuseXSLTerr,  RestAPI_Receive_Log );
 
         }
         catch (Exception e) {

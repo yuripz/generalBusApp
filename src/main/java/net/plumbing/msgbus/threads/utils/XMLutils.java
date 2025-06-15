@@ -4,10 +4,8 @@ package net.plumbing.msgbus.threads.utils;
 import net.plumbing.msgbus.common.XMLchars;
 import net.plumbing.msgbus.common.sStackTrace;
 import net.plumbing.msgbus.common.xlstErrorListener;
-import net.plumbing.msgbus.model.MessageDetails;
-import net.plumbing.msgbus.model.MessageDirections;
-import net.plumbing.msgbus.model.MessageQueueVO;
-import net.plumbing.msgbus.model.MessageType;
+import net.plumbing.msgbus.model.*;
+import net.sf.saxon.s9api.*;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -19,6 +17,7 @@ import org.jdom2.output.Format;
 import org.slf4j.Logger;
 
 //import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotNull;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
@@ -179,10 +178,13 @@ public class XMLutils {
         return parseResult;
     }
 
-    public static String makeClearRequest(MessageDetails messageDetails, String pEnvelopeInXSLT,
-                                          xlstErrorListener XSLTErrorListener, StringBuilder ConvXMLuseXSLTerr, boolean isDebugged,
+    public static String makeClearRequest(MessageDetails messageDetails,
+                                          int MessageTemplateVOkey,
+                                          // xlstErrorListener XSLTErrorListener,
+                                          StringBuilder ConvXMLuseXSLTerr, boolean isDebugged,
                                           Logger MessegeSend_Log)
-            throws JDOMParseException, JDOMException, IOException, XPathExpressionException, TransformerException, SAXParseException {
+            throws JDOMParseException, JDOMException, IOException, XPathExpressionException,  SAXParseException, SaxonApiException {
+
         SAXBuilder documentBuilder = new SAXBuilder();
         //DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         InputStream parsedConfigStream = new ByteArrayInputStream(messageDetails.XML_MsgInput.getBytes(StandardCharsets.UTF_8));
@@ -210,61 +212,71 @@ public class XMLutils {
         }
         //  MessegeSend_Log.warn("Парсим, 1й проход: XML_MsgClear= [" + messageDetails.XML_MsgClear.toString() + "]"  );
 
-        if (pEnvelopeInXSLT != null) {
-            //    в интерфейсном шаблоне обозначено преобразование, которое надо исполнить над XML_MsgClear
-            ConvXMLuseXSLTerr.setLength(0);
-            ConvXMLuseXSLTerr.trimToSize();
 
-            messageDetails.XML_MsgConfirmation.append(
-                    XMLutils.ConvXMLuseXSLT(-1L,
-                            messageDetails.XML_MsgClear.toString(),
-                            pEnvelopeInXSLT,
-                            messageDetails.MsgReason,
-                            ConvXMLuseXSLTerr,
-                            XSLTErrorListener,
-                            MessegeSend_Log,
-                            isDebugged
-                    ).substring(XMLchars.xml_xml.length()) // берем после <?xml version="1.0" encoding="UTF-8"?>
-            );
-            if (isDebugged)
-                MessegeSend_Log.info("ProcessInputMessage(makeClearRequest): после XSLT={" + messageDetails.XML_MsgConfirmation.toString() + "}");
+        if (MessageTemplateVOkey >= 0) {
+            String pEnvelopeInXSLT;
+            pEnvelopeInXSLT = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getEnvelopeInXSLT();
 
-            if (messageDetails.XML_MsgConfirmation.toString().equals(XMLchars.nanXSLT_Result)) {
+            if ((pEnvelopeInXSLT != null) && (!pEnvelopeInXSLT.isEmpty())) {
+                //    в интерфейсном шаблоне обозначено преобразование, которое надо исполнить над XML_MsgClear
+                Processor xslt30Processor = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getEnvelopeInXSLT_processor();
+                XsltCompiler XsltCompiler = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getEnvelopeInXSLT_xsltCompiler();
+                Xslt30Transformer Xslt30Transformer = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getEnvelopeInXSLT_xslt30Transformer();
+
+                ConvXMLuseXSLTerr.setLength(0);
+                ConvXMLuseXSLTerr.trimToSize();
+
+                messageDetails.XML_MsgConfirmation.append(
+                        XMLutils.ConvXMLuseXSLT30(-1L,
+                                messageDetails.XML_MsgClear.toString(),
+                                xslt30Processor, XsltCompiler, Xslt30Transformer,
+                                pEnvelopeInXSLT,
+                                messageDetails.MsgReason,
+                                ConvXMLuseXSLTerr,
+                                MessegeSend_Log,
+                                isDebugged
+                        ).substring(XMLchars.xml_xml.length()) // берем после <?xml version="1.0" encoding="UTF-8"?>
+                );
                 if (isDebugged)
-                    MessegeSend_Log.error("В результате XSLT преобразования (`"+messageDetails.XML_MsgClear.toString()+"`)получен пустой XML для заголовка сообщения");
-                messageDetails.MsgReason.append("В результате XSLT преобразования очищенного от 'ns:' (`")
-                                        .append(messageDetails.XML_MsgClear.substring(1,260))
-                                        .append("...`)получен пустой XML для заголовка сообщения");
-                throw new TransformerException(messageDetails.MsgReason.toString());
-            }
-            // Всё ок, записываем в  XML_MsgClear результат из  XML_MsgConfirmation
-            messageDetails.XML_MsgClear.setLength(0);
-            messageDetails.XML_MsgClear.trimToSize();
+                    MessegeSend_Log.info("ProcessInputMessage(makeClearRequest): после XSLT={" + messageDetails.XML_MsgConfirmation.toString() + "}");
 
-            messageDetails.XML_MsgClear.append(messageDetails.XML_MsgConfirmation.toString());
-            // removing invalid xml characters from input string
-            /* изъятие не-XML символов перенесли в получение параметров, что бы не падал парсер xml
-            messageDetails.XML_MsgClear =new  StringBuilder(messageDetails.XML_MsgConfirmation.length() );
-
-            char current; // Used to reference the current character.
-                for (int i = 0; i < messageDetails.XML_MsgConfirmation.length(); i++) {
-                    current = messageDetails.XML_MsgConfirmation.charAt(i); // NOTE: No IndexOutOfBoundsException caught here; it should not happen.
-                    if ((current == 0x9) ||
-                            (current == 0xA) ||
-                            (current == 0xD) ||
-                            ((current >= 0x20) && (current <= 0xD7FF)) ||
-                            ((current >= 0xE000) && (current <= 0xFFFD)) ||
-                            ((current >= 0x10000) && (current <= 0x10FFFF)))
-                        messageDetails.XML_MsgClear.append(current);
+                if (messageDetails.XML_MsgConfirmation.toString().equals(XMLchars.nanXSLT_Result)) {
+                    if (isDebugged)
+                        MessegeSend_Log.error("В результате XSLT преобразования (`" + messageDetails.XML_MsgClear.toString() + "`)получен пустой XML для заголовка сообщения");
+                    messageDetails.MsgReason.append("В результате XSLT преобразования очищенного от 'ns:' (`")
+                            .append(messageDetails.XML_MsgClear.substring(1, 260))
+                            .append("...`)получен пустой XML для заголовка сообщения");
+                    throw new SaxonApiException(messageDetails.MsgReason.toString());
                 }
-           */
-            // очищаем использованный XML_MsgConfirmation
-            messageDetails.XML_MsgConfirmation.setLength(0);
-            messageDetails.XML_MsgConfirmation.trimToSize();
-        } else {
-                 if (isDebugged)
+                // Всё ок, записываем в  XML_MsgClear результат из  XML_MsgConfirmation
+                messageDetails.XML_MsgClear.setLength(0);
+                messageDetails.XML_MsgClear.trimToSize();
+
+                messageDetails.XML_MsgClear.append(messageDetails.XML_MsgConfirmation.toString());
+                // removing invalid xml characters from input string
+                /* изъятие не-XML символов перенесли в получение параметров, что бы не падал парсер xml
+                messageDetails.XML_MsgClear =new  StringBuilder(messageDetails.XML_MsgConfirmation.length() );
+
+                char current; // Used to reference the current character.
+                    for (int i = 0; i < messageDetails.XML_MsgConfirmation.length(); i++) {
+                        current = messageDetails.XML_MsgConfirmation.charAt(i); // NOTE: No IndexOutOfBoundsException caught here; it should not happen.
+                        if ((current == 0x9) ||
+                                (current == 0xA) ||
+                                (current == 0xD) ||
+                                ((current >= 0x20) && (current <= 0xD7FF)) ||
+                                ((current >= 0xE000) && (current <= 0xFFFD)) ||
+                                ((current >= 0x10000) && (current <= 0x10FFFF)))
+                            messageDetails.XML_MsgClear.append(current);
+                    }
+               */
+                // очищаем использованный XML_MsgConfirmation
+                messageDetails.XML_MsgConfirmation.setLength(0);
+                messageDetails.XML_MsgConfirmation.trimToSize();
+            } else {
+                if (isDebugged)
                     MessegeSend_Log.info("ProcessInputMessage(makeClearRequest): EnvelopeInXSLT is NULL");
-                }
+            }
+        }
 
         // 2й проход - получаем элемент Context из заголовка ( если есть )
         //  MessegeSend_Log.warn("2й проход - получаем элемент Context из заголовка ( если есть ) InputStreamReader to messageDetails.XML_MsgClear[" +  messageDetails.XML_MsgClear + "]");
@@ -335,10 +347,10 @@ public class XMLutils {
     }
 
     public static String makeMessageDetailsRestApi(MessageDetails messageDetails, String pEnvelopeInXSLT,
-                                                   xlstErrorListener XSLTErrorListener, StringBuilder ConvXMLuseXSLTerr,
+                                                   int MessageTemplateVOkey, StringBuilder ConvXMLuseXSLTerr,
                                            boolean isDebugged,
                                           Logger MessegeSend_Log)
-            throws  JDOMException, IOException, XPathExpressionException, TransformerException
+            throws  JDOMException, IOException, XPathExpressionException, SaxonApiException
     {
         SAXBuilder documentBuilder = new SAXBuilder();
 
@@ -346,18 +358,23 @@ public class XMLutils {
         messageDetails.XML_MsgClear.append(  messageDetails.XML_MsgInput );
         // -- используем XML_MsgConfirmation как временный буфер, он пока не нужен
 
-        if (pEnvelopeInXSLT != null) {
+        if ((pEnvelopeInXSLT != null) && (!pEnvelopeInXSLT.isEmpty()) &&
+                (MessageTemplateVOkey >=0) // нашли шаблон и передали его индекс в массиве
+           ) {
             //    в интерфейсном шаблоне обозначено преобразование, которое надо исполнить над XML_MsgClear
             ConvXMLuseXSLTerr.setLength(0);
             ConvXMLuseXSLTerr.trimToSize();
+            Processor xslt30Processor = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getEnvelopeInXSLT_processor();
+            XsltCompiler XsltCompiler = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getEnvelopeInXSLT_xsltCompiler();
+            Xslt30Transformer Xslt30Transformer = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getEnvelopeInXSLT_xslt30Transformer();
 
             messageDetails.XML_MsgConfirmation.append(
-                    XMLutils.ConvXMLuseXSLT(-1L,
+                    XMLutils.ConvXMLuseXSLT30(-1L,
                             messageDetails.XML_MsgClear.toString(),
+                            xslt30Processor, XsltCompiler, Xslt30Transformer,
                             pEnvelopeInXSLT,
                             messageDetails.MsgReason,
                             ConvXMLuseXSLTerr,
-                            XSLTErrorListener,
                             MessegeSend_Log,
                             isDebugged
                     ).substring(XMLchars.xml_xml.length()) // берем после <?xml version="1.0" encoding="UTF-8"?>
@@ -367,7 +384,7 @@ public class XMLutils {
 
             if (messageDetails.XML_MsgConfirmation.toString().equals(XMLchars.nanXSLT_Result)) {
                 messageDetails.MsgReason.append("В результате XSLT преобразования получен пустой XML для заголовка сообщения");
-                throw new TransformerException(messageDetails.MsgReason.toString());
+                throw new SaxonApiException(messageDetails.MsgReason.toString());
             }
             // Всё ок, записываем в  XML_MsgClear результат из  XML_MsgConfirmation
             messageDetails.XML_MsgClear.setLength(0);
@@ -603,8 +620,176 @@ public class XMLutils {
     }
 
 
+    public static String ConvXMLuseXSLT30(@NotNull Long QueueId, @NotNull String XMLdata_4_Tranform,
+                                          @NotNull Processor xslt30Processor, @NotNull XsltCompiler xslt30Compiler,
+                                          @NotNull Xslt30Transformer xslt30Transformer,
+                                          @NotNull String checkXSLTtext, StringBuilder MsgResult,
+                                          StringBuilder ConvXMLuseXSLTerr,
+                                          Logger MessageSend_Log, boolean IsDebugged )
+            throws SaxonApiException // TransformerException
+    { StreamSource xmlStreamSource;
+        ConvXMLuseXSLTerr.setLength(0); ConvXMLuseXSLTerr.trimToSize();
+        MsgResult.setLength(0); MsgResult.trimToSize();
 
-    public static String ConvXMLuseXSLT(Long QueueId, String XMLdata_4_Tranform, String XSLTdata, StringBuilder MsgResult, StringBuilder ConvXMLuseXSLTerr,
+        if ( (checkXSLTtext != null) && ( !checkXSLTtext.isEmpty() ) &&
+                (xslt30Transformer == null) // проверяем, получилось ли из проверяемого XSLT скомпилировать xslt30Transformer на этапе загрузки
+        ) {
+            ConvXMLuseXSLTerr.append(" ConvXMLuseXSLT30: length XSLTtext 4 transform is NOT NULL and XSLTtext is NOT Empty, but xslt30Processor/xslt30Transformer == null");
+            MessageSend_Log.error("[{}] {}", QueueId, ConvXMLuseXSLTerr );
+
+            MsgResult.append("ConvXMLuseXSLT30:").append(ConvXMLuseXSLTerr);
+            return XMLchars.EmptyXSLT_Result;
+        }
+        if ( (XMLdata_4_Tranform == null) || ( XMLdata_4_Tranform.length() < XMLchars.EmptyXSLT_Result.length() )  ) {
+            ConvXMLuseXSLTerr.append(" ConvXMLuseXSLT30: length XMLdata 4 transform is null OR  < ").append(XMLchars.EmptyXSLT_Result.length());
+            if ( IsDebugged )
+                MessageSend_Log.info("[{}] ConvXMLuseXSLT30: length XMLdata 4 transform is null OR  < {}", QueueId, XMLchars.EmptyXSLT_Result.length());
+            return XMLchars.EmptyXSLT_Result ;
+        }
+
+        ByteArrayInputStream xmlInputStream=null;
+        ByteArrayOutputStream outputByteArrayStream =new ByteArrayOutputStream();
+        String stringResult_of_XSLT = XMLchars.EmptyXSLT_Result;
+
+
+        try {
+            xmlInputStream  = new ByteArrayInputStream(XMLdata_4_Tranform.getBytes(StandardCharsets.UTF_8));
+
+        }
+        catch ( Exception exp ) {
+            ConvXMLuseXSLTerr.append(  sStackTrace.strInterruptedException(exp) );
+            exp.printStackTrace();
+            System.err.println( "["+ QueueId  + "] ConvXMLuseXSLT30.ByteArrayInputStream Exception" );
+            MessageSend_Log.error("[{}] Exception: {}", QueueId, ConvXMLuseXSLTerr);
+            MsgResult.append("ConvXMLuseXSLT30:").append(ConvXMLuseXSLTerr);
+            return XMLchars.EmptyXSLT_Result ;
+        }
+
+        xmlStreamSource = new StreamSource(xmlInputStream);
+        try
+        {
+            if (IsDebugged)
+                MessageSend_Log.warn("[{}] ConvXMLuseXSLT30: using XsltLanguageVersion {}", QueueId, xslt30Compiler.getXsltLanguageVersion());
+            Serializer outSerializer = xslt30Processor.newSerializer();
+            outSerializer.setOutputProperty(Serializer.Property.METHOD, "xml");
+            outSerializer.setOutputProperty(Serializer.Property.ENCODING, "utf-8");
+            outSerializer.setOutputProperty(Serializer.Property.INDENT, "no");
+            outSerializer.setOutputProperty(Serializer.Property.OMIT_XML_DECLARATION, "no");
+            outSerializer.setOutputStream(outputByteArrayStream);
+            xslt30Transformer.transform( xmlStreamSource, outSerializer);
+
+            stringResult_of_XSLT = outputByteArrayStream.toString();
+            if (!stringResult_of_XSLT.isEmpty()) {
+                // System.err.println("result != null, stringResult_of_XSLT:" + stringResult_of_XSLT );
+                if ((stringResult_of_XSLT.charAt(0) == '{') || (stringResult_of_XSLT.charAt(0) == '[')) {
+                    if (IsDebugged)
+                        MessageSend_Log.warn("[{}] json transformer.transform(`{}`)", QueueId, stringResult_of_XSLT);
+                } else if (stringResult_of_XSLT.length() < XMLchars.EmptyXSLT_Result.length()) {
+                    ConvXMLuseXSLTerr.append(" length Xtransformer.transform(`").append(stringResult_of_XSLT).append("`) < ").append(XMLchars.EmptyXSLT_Result.length());
+                    if (IsDebugged)
+                        MessageSend_Log.warn("[{}] length result transformer.transform(`{}`) < {}", QueueId, stringResult_of_XSLT, XMLchars.EmptyXSLT_Result.length());
+                    stringResult_of_XSLT = XMLchars.EmptyXSLT_Result;
+                }
+            }
+            else {
+                ConvXMLuseXSLTerr.append(" length xTransformer.transform(`").append(stringResult_of_XSLT).append("`) == 0 ");
+                if (IsDebugged)
+                    MessageSend_Log.warn("[{}] length xTransformer.transform(`{}`) == 0", QueueId, stringResult_of_XSLT);
+                stringResult_of_XSLT = XMLchars.EmptyXSLT_Result;
+            }
+
+
+            /*
+                if ( IsDebugged ) {
+                MessageSend_Log.info("["+ QueueId  + "] ConvXMLuseXSLT( XML IN ): " + XMLdata_4_Tranform);
+                MessageSend_Log.info("["+ QueueId  + "] ConvXMLuseXSLT( XSLT ): " + XSLTdata);
+                MessageSend_Log.info("["+ QueueId  + "] ConvXMLuseXSLT( XML out ): " + stringResult_of_XSLT);
+            }
+            */
+        }
+        catch ( SaxonApiException exp ) {
+            ConvXMLuseXSLTerr.append( sStackTrace.strInterruptedException(exp));
+            System.err.println( "["+ QueueId  + "] ConvXMLuseXSLT.Transformer TransformerException" );
+            exp.printStackTrace();
+            MessageSend_Log.error("[{}] ConvXMLuseXSLT30.Transformer TransformerException: {}", QueueId, ConvXMLuseXSLTerr);
+            if (  !IsDebugged ) {
+                MessageSend_Log.error("[{}] ConvXMLuseXSLT( XML IN ): {}", QueueId, XMLdata_4_Tranform);
+                MessageSend_Log.error("[{}] ConvXMLuseXSLT( XSLT ): {}", QueueId, checkXSLTtext);
+                MessageSend_Log.error("[{}] ConvXMLuseXSLT( XML out ): {}", QueueId, stringResult_of_XSLT);
+            }
+            MessageSend_Log.error("[{}] ConvXMLuseXSLT30.Transformer.Exception: {}", QueueId, ConvXMLuseXSLTerr);
+            MsgResult.append( "ConvXMLuseXSLT30.Transformer TransformerException:");  MsgResult.append( ConvXMLuseXSLTerr );
+            throw exp;
+            // return XMLchars.EmptyXSLT_Result ;
+        }
+
+        /*
+        try {
+            srcxslt = new StreamSource(new ByteArrayInputStream(XSLTdata.getBytes("UTF-8")));
+        }
+        catch ( Exception exp ) {
+            ConvXMLuseXSLTerr.append(  sStackTrace.strInterruptedException(exp) );
+            exp.printStackTrace();
+            System.err.println( "["+ QueueId  + "] ConvXMLuseXSLT.ByteArrayInputStream Exception" );
+            MessegeSend_Log.error("["+ QueueId  + "] Exception: " + ConvXMLuseXSLTerr );
+            MsgResult.setLength(0);
+            MsgResult.append( "ConvXMLuseXSLT:"  + ConvXMLuseXSLTerr );
+            return XMLchars.EmptyXSLT_Result ;
+        }
+        result = new StreamResult(fOut);
+        try
+        {
+            TransformerFactory XSLTransformerFactory = TransformerFactory.newInstance();
+            XSLTransformerFactory.setErrorListener( XSLTErrorListener ); //!!!! java.lang.IllegalArgumentException: ErrorListener !!!
+            transformer = XSLTransformerFactory.newTransformer(srcxslt);
+            if ( transformer != null) {
+                transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+                // TODO OutputKeys.INDENT for ExeL
+                // transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+                // transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+                transformer.transform(source, result);
+            }
+            else result = null;
+
+            if ( result != null) {
+                resXSLT = fOut.toString();
+                // System.err.println("result != null, res:" + res );
+                if ( resXSLT.length() < XMLchars.EmptyXSLT_Result.length())
+                    resXSLT = XMLchars.EmptyXSLT_Result;
+            }
+            else {
+                resXSLT = XMLchars.EmptyXSLT_Result;
+                // System.err.println("result= null, res:" + res );
+            }
+            try { fOut.close();} catch( IOException IOexc)  { ; }
+            if ( IsDebugged ) {
+                MessegeSend_Log.info("["+ QueueId  + "] ConvXMLuseXSLT( XML IN ): " + XMLdata_4_Tranform);
+                MessegeSend_Log.info("["+ QueueId  + "] ConvXMLuseXSLT( XSLT ): " + XSLTdata);
+                MessegeSend_Log.info("["+ QueueId  + "] ConvXMLuseXSLT( XML out ): " + resXSLT);
+            }
+        }
+        catch ( TransformerException exp ) {
+            ConvXMLuseXSLTerr.append(  sStackTrace.strInterruptedException(exp) );
+            System.err.println( "["+ QueueId  + "] ConvXMLuseXSLT.Transformer Exception" );
+            exp.printStackTrace();
+
+            if ( !IsDebugged ) {
+                MessegeSend_Log.error("["+ QueueId  + "]ConvXMLuseXSLT( XML IN ): " + XMLdata_4_Tranform);
+                MessegeSend_Log.error("["+ QueueId  + "]ConvXMLuseXSLT( XSLT ): " + XSLTdata);
+                MessegeSend_Log.error("["+ QueueId  + "]ConvXMLuseXSLT( XML out ): " + resXSLT);
+            }
+            MessegeSend_Log.error("["+ QueueId  + "] Transformer.Exception: " + ConvXMLuseXSLTerr);
+            MsgResult.setLength(0);
+            MsgResult.append( "ConvXMLuseXSLT.Transformer:"  + ConvXMLuseXSLTerr );
+            throw exp;
+            // return XMLchars.EmptyXSLT_Result ;
+        }
+        */
+        return(stringResult_of_XSLT);
+    }
+
+    public static String legasyConvXMLuseXSLT(Long QueueId, String XMLdata_4_Tranform,
+                                              String XSLTdata, StringBuilder MsgResult, StringBuilder ConvXMLuseXSLTerr,
                                         xlstErrorListener XSLTErrorListener, Logger MessegeSend_Log, boolean IsDebugged )
             throws TransformerException
     { StreamSource source,srcxslt;

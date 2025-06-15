@@ -9,6 +9,7 @@ import net.plumbing.msgbus.threads.ExtSystemDataConnection;
 import net.plumbing.msgbus.threads.PerformQueueMessages4Send;
 import net.plumbing.msgbus.threads.TheadDataAccess;
 import net.plumbing.msgbus.threads.utils.*;
+import net.sf.saxon.s9api.SaxonApiException;
 import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ import java.time.Duration;
 //import java.util.HashMap;
 //import java.util.concurrent.TimeUnit;
 //import java.io.IOException;
-import javax.jms.JMSException;
+import jakarta.jms.JMSException;
 import javax.net.ssl.SSLContext;
 import javax.xml.transform.TransformerException;
 
@@ -49,7 +50,7 @@ public class PerfotmInputMessages {
 
     // private Security endpointProperties;
 
-    public  long performMessage(MessageDetails Message, MessageQueueVO messageQueueVO, TheadDataAccess theadDataAccess, xlstErrorListener XSLTErrorListener, StringBuilder ConvXMLuseXSLTerr, Logger MessegeReceive_Log) {
+    public  long performMessage(MessageDetails Message, MessageQueueVO messageQueueVO, TheadDataAccess theadDataAccess,  StringBuilder ConvXMLuseXSLTerr, Logger MessegeReceive_Log) {
         // 1. Получаем шаблон обработки для MessageQueueVO
         String SubSys_Cod = messageQueueVO.getSubSys_Cod();
         int MsgDirection_Id = messageQueueVO.getMsgDirection_Id();
@@ -63,7 +64,7 @@ public class PerfotmInputMessages {
 
         // ищем Шаблон под оперрацию, с учетом системы приёмника MessageRepositoryHelper.look4MessageTemplateVO_2_Perform
         int Template_Id = MessageRepositoryHelper.look4MessageTemplateVO_2_Perform(Operation_Id, MsgDirection_Id, SubSys_Cod, MessegeReceive_Log);
-        MessegeReceive_Log.info("[" + Queue_Id + "] `" + Queue_Direction + "` look4MessageTemplateVO_2_Perform Шаблон под оперрацию (" + Operation_Id + "), с учетом системы приёмника MsgDirection_Id=" + MsgDirection_Id + ", SubSys_Cod =" + SubSys_Cod + " : вернул Template_Id="  + Template_Id);
+        MessegeReceive_Log.info("[{}] `{}` look4MessageTemplateVO_2_Perform Шаблон под оперрацию ({}), с учетом системы приёмника MsgDirection_Id={}, SubSys_Cod ={} : вернул Template_Id={}", Queue_Id, Queue_Direction, Operation_Id, MsgDirection_Id, SubSys_Cod, Template_Id);
 
         //MessegeReceive_Log.info(Queue_Direction + " [" + Queue_Id + "]  Шаблон под оперрацию =" + Template_Id);
 
@@ -77,7 +78,7 @@ public class PerfotmInputMessages {
 
         int messageTypeVO_Key = MessageRepositoryHelper.look4MessageTypeVO_2_Perform(Operation_Id, MessegeReceive_Log);
         if ( messageTypeVO_Key < 0 ) {
-            MessegeReceive_Log.error("[" + Queue_Id + "] MessageRepositoryHelper.look4MessageTypeVO_2_Perform: Не нашли тип сообщения для Operation_Id=[" + Operation_Id + "]");
+            MessegeReceive_Log.error("[{}] MessageRepositoryHelper.look4MessageTypeVO_2_Perform: Не нашли тип сообщения для Operation_Id=[{}]", Queue_Id, Operation_Id);
             theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Не нашли тип сообщения для Operation_Id=[" + Operation_Id + "]", 3102, MessegeReceive_Log);
             return -17L;
         }
@@ -87,15 +88,15 @@ public class PerfotmInputMessages {
                 MessegeReceive_Log
         );
         if ( Message.MessageTemplate4Perform.getIsDebugged() )
-            MessegeReceive_Log.info("[" + Queue_Id + "] MessageTemplate4Perform[" + Message.MessageTemplate4Perform.printMessageTemplate4Perform() );
+            MessegeReceive_Log.info("[{}] MessageTemplate4Perform[{}", Queue_Id, Message.MessageTemplate4Perform.printMessageTemplate4Perform());
         boolean is_NoConfirmation = // Признак на типе сообщения, что Confirmation формируется в памяти, messageDetails.XML_MsgConfirmation
                 MessageRepositoryHelper.isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation(messageQueueVO.getOperation_Id(), MessegeReceive_Log);
         if ( Message.MessageTemplate4Perform.getIsDebugged() )
-            MessegeReceive_Log.info("[" + Queue_Id + "] признак `NoConfirmation` для операции {} is {}", messageQueueVO.getOperation_Id(), is_NoConfirmation );
+            MessegeReceive_Log.info("[{}] признак `NoConfirmation` для операции {} is {}", Queue_Id, messageQueueVO.getOperation_Id(), is_NoConfirmation);
         boolean is_NoWait4Sender = // Признак на типе сообщения, что несмотря на наличие связанного сообщения, обработка Sender-ом будет асинхронная и ждать не нужно!
                 MessageRepositoryHelper.isNoWaitSender4MessageTypeURL_SOAP_Ack_2_Operation(messageQueueVO.getOperation_Id(), MessegeReceive_Log);
         if ( Message.MessageTemplate4Perform.getIsDebugged() )
-            MessegeReceive_Log.info("[" + Queue_Id + "] признак `NoWait4Sender` для операции {} is {}", messageQueueVO.getOperation_Id(), is_NoWait4Sender );
+            MessegeReceive_Log.info("[{}] признак `NoWait4Sender` для операции {} is {}", Queue_Id, messageQueueVO.getOperation_Id(), is_NoWait4Sender);
 
         switch (Queue_Direction){
             case XMLchars.DirectNEWIN:
@@ -104,7 +105,7 @@ public class PerfotmInputMessages {
                 { boolean is_Message_OUT_Valid =
                     XMLutils.TestXMLByXSD( Queue_Id,  Message.XML_Request_Method.toString(), Message.MessageTemplate4Perform.getMessageXSD(), Message.MsgReason, MessegeReceive_Log );
                     if ( ! is_Message_OUT_Valid ) {
-                        MessegeReceive_Log.error("[" + Queue_Id + "] validateXMLSchema: message (" + Message.XML_Request_Method.toString() + ") is not valid for XSD " + Message.MessageTemplate4Perform.getMessageXSD());
+                        MessegeReceive_Log.error("[{}] validateXMLSchema: message ({}) is not valid for XSD {}", Queue_Id, Message.XML_Request_Method.toString(), Message.MessageTemplate4Perform.getMessageXSD());
 
                         theadDataAccess.doUPDATE_MessageQueue_Temp2ErrIN(Queue_Id,
                                 messageQueueVO.getOperation_Id(),
@@ -142,7 +143,7 @@ public class PerfotmInputMessages {
                         return -21L;
                     }
                 }  catch (Exception e_setIN) {
-                    MessegeReceive_Log.error("Не удалось сохранить заголовок сообщения в твблицу очереди: ProcessingIn_setIN fault " + e_setIN.getMessage());
+                    MessegeReceive_Log.error("Не удалось сохранить заголовок сообщения в твблицу очереди: ProcessingIn_setIN fault {}", e_setIN.getMessage());
                     System.err.println("ProcessingIn_setIN[" + Queue_Id + "] problen: "+ e_setIN.getMessage()); //e_setIN.printStackTrace();
                     MessegeReceive_Log.error( "Не удалось сохранить заголовок сообщения в твблицу очереди:");
                     MessageUtils.ProcessingIn2ErrorIN(  messageQueueVO, Message,  theadDataAccess,
@@ -159,7 +160,7 @@ public class PerfotmInputMessages {
                     //--------------------------------------------------
                     if (Message.MessageTemplate4Perform.getIsDebugged()) {
                         if  ( Message.MessageTemplate4Perform.getPropJavaMethodName() != null)
-                        MessegeReceive_Log.info("[" + Queue_Id + "] getPropJavaMethodName(" +Message.MessageTemplate4Perform.getPropJavaMethodName() + ")");
+                            MessegeReceive_Log.info("[{}] getPropJavaMethodName({})", Queue_Id, Message.MessageTemplate4Perform.getPropJavaMethodName());
 
                     }
                     if  ( Message.MessageTemplate4Perform.getPropJavaMethodName() != null)
@@ -167,7 +168,7 @@ public class PerfotmInputMessages {
                     { String JavaMethodName = Message.MessageTemplate4Perform.getPropJavaMethodName();
                         int resultSQL = 0;
                         if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                            MessegeReceive_Log.info("["+ Queue_Id +"] try CustomJavaMethods for (" + JavaMethodName + ")");
+                            MessegeReceive_Log.info("[{}] try CustomJavaMethods for ({})", Queue_Id, JavaMethodName);
                         switch (JavaMethodName) {
                             case "GetConfig_Text_Template":
                                resultSQL = CustomJavaMethods.GetConfig_Text_Template(  messageQueueVO, Message, theadDataAccess, ApplicationProperties.HrmsSchema, MessegeReceive_Log);
@@ -237,23 +238,24 @@ public class PerfotmInputMessages {
                     { // 2) EnvelopeXSLTExt !! => JDBC-обработчик
 
                         if (Message.MessageTemplate4Perform.getIsDebugged()) {
-                            MessegeReceive_Log.info("[" + Queue_Id + "] Шаблон для SQL-XSLTExt-обработки(" + Message.MessageTemplate4Perform.getEnvelopeXSLTExt() + ")");
+                            MessegeReceive_Log.info("[{}] Шаблон для SQL-XSLTExt-обработки({})", Queue_Id, Message.MessageTemplate4Perform.getEnvelopeXSLTExt());
                             if (Message.MessageTemplate4Perform.getIsExtSystemAccess()) {
-                                MessegeReceive_Log.info("[" + Queue_Id + "] Шаблон для SQL-XSLTExt-обработки использует пулл коннектов для внешней системы");
+                                MessegeReceive_Log.info("[{}] Шаблон для SQL-XSLTExt-обработки использует пул кеннетов для внешней системы", Queue_Id);
                             }
                         }
                         String Passed_Envelope4XSLTExt = null;
                         try {
-                            Passed_Envelope4XSLTExt = XMLutils.ConvXMLuseXSLT(Queue_Id,
+                            Passed_Envelope4XSLTExt = XMLutils.ConvXMLuseXSLT30(Queue_Id,
                                     // Message.XML_MsgClear.toString(),
-                                    MessageUtils.PrepareEnvelope4XSLTExt(messageQueueVO, Message.XML_Request_Method, MessegeReceive_Log), // Искуственный Envelope/Head/Body + XML_Request_Method
+                                    MessageUtils.PrepareEnvelope4XSLTExt(messageQueueVO, Message.XML_Request_Method, MessegeReceive_Log), // Искусственный Envelope/Head/Body + XML_Request_Method
+                                    Message.MessageTemplate4Perform.getEnvelopeXSLTExt_processor(), Message.MessageTemplate4Perform.getEnvelopeXSLTExt_xsltCompiler(), Message.MessageTemplate4Perform.getEnvelopeXSLTExt_xslt30Transformer(),
                                     Message.MessageTemplate4Perform.getEnvelopeXSLTExt(),  // через EnvelopeXSLTExt
                                     Message.MsgReason, // результат помещаем сюда
                                     ConvXMLuseXSLTerr,
-                                    XSLTErrorListener,
+                                    // XSLTErrorListener,
                                     MessegeReceive_Log, Message.MessageTemplate4Perform.getIsDebugged());
-                        } catch (TransformerException exception) {
-                            MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLTExt-преобразователь запроса:{" + Message.MessageTemplate4Perform.getEnvelopeXSLTExt() + "}");
+                        } catch (SaxonApiException exception) {
+                            MessegeReceive_Log.error("{} [{}] XSLTExt-преобразователь запроса:{{}}", Queue_Direction, Queue_Id, Message.MessageTemplate4Perform.getEnvelopeXSLTExt());
                             theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для XSLTExt-обработки " + ConvXMLuseXSLTerr + " :" + Message.MessageTemplate4Perform.getEnvelopeXSLTExt(), 3229,
                                     MessegeReceive_Log);
                             return -31L;
@@ -448,7 +450,7 @@ public class PerfotmInputMessages {
                 }
                 if ( Link_Queue_Id != null) // Обрабатываем порожденное сообщение
                 { // Проверяем в цикле периодически - спорадически готово ли OUT
-                    javax.jms.Connection Qconnection = null;
+                    jakarta.jms.Connection Qconnection = null;
                     PerformTextMessageJMSQueue performTextMessageJMSQueue =null;
 
                     if (!is_NoWait4Sender) { // признака НЕ-ждать-связанного сообщения нет, надо дождаться окончания от Sener-а, ибо данный вызов внешней системы синхолнный
@@ -596,25 +598,27 @@ public class PerfotmInputMessages {
                             }
                             String Passed_Confirmation4AckAnswXSLT = null;
                             try {
-                                Passed_Confirmation4AckAnswXSLT = XMLutils.ConvXMLuseXSLT(Queue_Id,
+                                Passed_Confirmation4AckAnswXSLT = XMLutils.ConvXMLuseXSLT30(Queue_Id,
                                         Message.XML_MsgConfirmation.toString(), //
+                                        Message.MessageTemplate4Perform.getAckAnswXSLT_processor(), Message.MessageTemplate4Perform.getAckAnswXSLT_xsltCompiler(), Message.MessageTemplate4Perform.getAckAnswXSLT_xslt30Transformer(),
                                         Message.MessageTemplate4Perform.getAckAnswXSLT(),  // через AckAnswXSLT
                                         Message.MsgReason, // результат для MsgReason помещаем сюда
                                         ConvXMLuseXSLTerr,
-                                        XSLTErrorListener,
                                         MessegeReceive_Log,
                                         true //Message.MessageTemplate4Perform.getIsDebugged()
                                 );
-                            } catch (TransformerException exception) {
+                            } catch (SaxonApiException exception) {
                                 MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLTExt-преобразователь Confirmation:{" + Message.MessageTemplate4Perform.getAckAnswXSLT() + "}");
                                 theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для обработки Confirmation " + ConvXMLuseXSLTerr + " :" + Message.MessageTemplate4Perform.getAckAnswXSLT(), 3249,
                                         MessegeReceive_Log);
                                 return -42L;
                             }
                             if (Passed_Confirmation4AckAnswXSLT.equals(XMLchars.EmptyXSLT_Result)) {
-                                MessegeReceive_Log.error("[" + Queue_Id + "] Шаблон для XSLT-обработки Confirmation(" + Message.MessageTemplate4Perform.getAckAnswXSLT() + ")");
-                                MessegeReceive_Log.error("[" + Queue_Id + "] Passed_Confirmation4AckAnswXSLT:" + ConvXMLuseXSLTerr);
-                                MessegeReceive_Log.error("[" + Queue_Id + "] Ошибка преобразования XSLT для обработки Confirmation" + Message.MsgReason.toString());
+                                // эксперимент, проверяем, иначе приходит пустой faultstring
+                                Message.MsgReason.append( ConvXMLuseXSLTerr.toString() );
+                                MessegeReceive_Log.error("[{}}] Шаблон для XSLT-обработки Confirmation({})", Queue_Id, Message.MessageTemplate4Perform.getAckAnswXSLT());
+                                MessegeReceive_Log.error("[{}] Passed_Confirmation4AckAnswXSLT:{}" , Queue_Id, ConvXMLuseXSLTerr);
+                                MessegeReceive_Log.error("[{}] Ошибка преобразования XSLT {} для обработки Confirmation `{}`", Queue_Id, ConvXMLuseXSLTerr , Message.MsgReason.toString());
                                 theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для обработки Confirmation " + ConvXMLuseXSLTerr.toString() + " :" + Message.MsgReason.toString(), 3251,
                                         MessegeReceive_Log);
                                 return -43L;
@@ -738,14 +742,14 @@ public class PerfotmInputMessages {
                                 }
                                 String Passed_Confirmation4MsgAnswXSLT = null;
                                 try {
-                                    Passed_Confirmation4MsgAnswXSLT = XMLutils.ConvXMLuseXSLT(Queue_Id,
+                                    Passed_Confirmation4MsgAnswXSLT = XMLutils.ConvXMLuseXSLT30(Queue_Id,
                                             Message.XML_MsgConfirmation.toString(), //
+                                            Message.MessageTemplate4Perform.getMsgAnswXSLT_processor(), Message.MessageTemplate4Perform.getMsgAnswXSLT_xsltCompiler(), Message.MessageTemplate4Perform.getMsgAnswXSLT_xslt30Transformer(),
                                             Message.MessageTemplate4Perform.getMsgAnswXSLT(),  // через AckAnswXSLT
                                             Message.MsgReason, // результат для MsgReason помещаем сюда
                                             ConvXMLuseXSLTerr,
-                                            XSLTErrorListener,
                                             MessegeReceive_Log, Message.MessageTemplate4Perform.getIsDebugged());
-                                } catch (TransformerException exception) {
+                                } catch (SaxonApiException exception) {
                                     MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLTExt-преобразователь Confirmation:{" + Message.MessageTemplate4Perform.getMsgAnswXSLT() + "}");
                                     theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для обработки Confirmation " + ConvXMLuseXSLTerr.toString() + " :" + Message.MessageTemplate4Perform.getMsgAnswXSLT(), 3249,
                                             MessegeReceive_Log);
@@ -788,14 +792,14 @@ public class PerfotmInputMessages {
                 {
                     String Passed_Confirmation4AckXSLT = null;
                     try {
-                        Passed_Confirmation4AckXSLT= XMLutils.ConvXMLuseXSLT( Queue_Id,
+                        Passed_Confirmation4AckXSLT= XMLutils.ConvXMLuseXSLT30( Queue_Id,
                                 Message.XML_MsgConfirmation.toString(), //
+                                Message.MessageTemplate4Perform.getAckXSLT_processor(), Message.MessageTemplate4Perform.getAckXSLT_xsltCompiler(), Message.MessageTemplate4Perform.getAckXSLT_xslt30Transformer(),
                                 Message.MessageTemplate4Perform.getAckXSLT(),  // через AckXSLT
                                 Message.MsgReason, // результат для MsgReason помещаем сюда
                                 ConvXMLuseXSLTerr,
-                                XSLTErrorListener,
                                 MessegeReceive_Log, Message.MessageTemplate4Perform.getIsDebugged());
-                    } catch ( TransformerException exception ) {
+                    } catch ( SaxonApiException exception ) {
                         MessegeReceive_Log.error("[" + Queue_Id + "] " + Queue_Direction + " XSLTExt-преобразователь Confirmation:{" + Message.MessageTemplate4Perform.getAckXSLT() +"}");
                         theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для обработки Confirmation " + ConvXMLuseXSLTerr.toString() + " :" + Message.MessageTemplate4Perform.getAckXSLT(), 3249,
                                 MessegeReceive_Log);
@@ -836,14 +840,14 @@ public class PerfotmInputMessages {
 
                                 String Passed_Envelope4XSLTPost;
                                 try {
-                                    Passed_Envelope4XSLTPost= XMLutils.ConvXMLuseXSLT( messageQueueVO.getQueue_Id(),
+                                    Passed_Envelope4XSLTPost= XMLutils.ConvXMLuseXSLT30( messageQueueVO.getQueue_Id(),
                                             MessageUtils.PrepareEnvelope4XSLTPost( messageQueueVO, Message.XML_MsgConfirmation),  // Искуственный Envelope/Head/<Body>XML_MsgConfirmation</Body>
+                                            Message.MessageTemplate4Perform.getEnvelopeXSLTPost_processor(), Message.MessageTemplate4Perform.getEnvelopeXSLTPost_xsltCompiler(), Message.MessageTemplate4Perform.getEnvelopeXSLTPost_xslt30Transformer(),
                                             Message.MessageTemplate4Perform.getEnvelopeXSLTPost(),  // через EnvelopeXSLTPost
                                             Message.MsgReason, // результат для MsgReason помещаем сюда
                                             ConvXMLuseXSLTerr,
-                                            XSLTErrorListener,
                                             MessegeReceive_Log, Message.MessageTemplate4Perform.getIsDebugged());
-                                } catch ( TransformerException exception ) {
+                                } catch ( SaxonApiException exception ) {
                                     MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLT-пост-преобразователь ответа:{" + Message.MessageTemplate4Perform.getEnvelopeXSLTPost() +"}");
                                     theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN( messageQueueVO.getQueue_Id(),
                                             "Ошибка преобразования XSLT для пост-обработки " + ConvXMLuseXSLTerr + " :" + Message.MessageTemplate4Perform.getEnvelopeXSLTPost(), 1235,
