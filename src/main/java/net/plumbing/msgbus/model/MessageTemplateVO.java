@@ -133,7 +133,7 @@ public class MessageTemplateVO {
     public XsltCompiler getAckAnswXSLT_xsltCompiler() {return AckAnswXSLT_xsltCompiler;}
     public void makeAckAnswXSLT_xslt30Transformer( Logger AppThead_log )   {
         StreamSource srcXSLT;
-        if ( ! AckAnswXSLT.isEmpty() ) // если не пустой XSLT-текст
+        if (( AckAnswXSLT !=null ) && ( ! AckAnswXSLT.isEmpty() )) // если не пустой XSLT-текст
         {
             try {
                 srcXSLT = new StreamSource(new ByteArrayInputStream(AckAnswXSLT.getBytes(StandardCharsets.UTF_8)));
@@ -170,7 +170,7 @@ public class MessageTemplateVO {
     public XsltCompiler getHeaderInXSLT_xsltCompiler() {return HeaderInXSLT_xsltCompiler;}
     public void makeHeaderInXSLT_xslt30Transformer( Logger AppThead_log )   {
         StreamSource srcXSLT;
-        if ( ! HeaderInXSLT.isEmpty() ) // если не пустой XSLT-текст
+        if (( HeaderInXSLT !=null ) && ( ! HeaderInXSLT.isEmpty() )) // если не пустой XSLT-текст
         {
             try {
                 srcXSLT = new StreamSource(new ByteArrayInputStream(HeaderInXSLT.getBytes(StandardCharsets.UTF_8)));
@@ -206,7 +206,7 @@ public class MessageTemplateVO {
     public XsltCompiler getEnvelopeInXSLT_xsltCompiler() {return EnvelopeInXSLT_xsltCompiler;}
     public void makeEnvelopeInXSLT_xslt30Transformer( Logger AppThead_log )   {
         StreamSource srcXSLT;
-        if ( ! EnvelopeInXSLT.isEmpty() ) // если не пустой XSLT-текст
+        if (( EnvelopeInXSLT !=null ) && ( ! EnvelopeInXSLT.isEmpty()) ) // если не пустой XSLT-текст
         {
             try {
                 srcXSLT = new StreamSource(new ByteArrayInputStream(EnvelopeInXSLT.getBytes(StandardCharsets.UTF_8)));
@@ -242,7 +242,7 @@ public class MessageTemplateVO {
     public XsltCompiler getHeaderXSLT_xsltCompiler() {return HeaderXSLT_xsltCompiler;}
     public void makeHeaderXSLT_xslt30Transformer( Logger AppThead_log )   {
         StreamSource srcXSLT;
-        if ( ! HeaderXSLT.isEmpty() ) // если не пустой XSLT-текст
+        if (( HeaderXSLT !=null ) && ( !HeaderXSLT.isEmpty()) ) // если не пустой XSLT-текст
         {
             try {
                 srcXSLT = new StreamSource(new ByteArrayInputStream(HeaderXSLT.getBytes(StandardCharsets.UTF_8)));
@@ -278,7 +278,7 @@ public class MessageTemplateVO {
     public XsltCompiler getMsgAnswXSLT_xsltCompiler() {return MsgAnswXSLT_xsltCompiler;}
     public void makeMsgAnswXSLT_xslt30Transformer( Logger AppThead_log )   {
         StreamSource srcXSLT;
-        if ( ! MsgAnswXSLT.isEmpty() ) // если не пустой XSLT-текст
+        if (( MsgAnswXSLT !=null ) && ( !MsgAnswXSLT.isEmpty() )) // если не пустой XSLT-текст
         {
             try {
                 srcXSLT = new StreamSource(new ByteArrayInputStream(MsgAnswXSLT.getBytes(StandardCharsets.UTF_8)));
@@ -313,7 +313,7 @@ public class MessageTemplateVO {
     public XsltCompiler getMessageXSLT_xsltCompiler() {return MessageXSLT_xsltCompiler;}
     public void makeMessageXSLT_xslt30Transformer( Logger AppThead_log )   {
         StreamSource srcXSLT;
-        if ( ! MessageXSLT.isEmpty() ) // если не пустой XSLT-текст
+        if (( MessageXSLT !=null ) && ( ! MessageXSLT.isEmpty()) ) // если не пустой XSLT-текст
         {
             try {
                 srcXSLT = new StreamSource(new ByteArrayInputStream(MessageXSLT.getBytes(StandardCharsets.UTF_8)));
@@ -350,7 +350,7 @@ public class MessageTemplateVO {
     public XsltCompiler getAckXSLT_xsltCompiler() {return AckXSLT_xsltCompiler;}
     public void makeAckXSLT_xslt30Transformer( Logger AppThead_log )   {
         StreamSource srcXSLT;
-        if ( ! AckXSLT.isEmpty() ) // если не пустой XSLT-текст
+        if (( AckXSLT !=null ) && ( ! AckXSLT.isEmpty()) ) // если не пустой XSLT-текст
         {
             try {
                 srcXSLT = new StreamSource(new ByteArrayInputStream(AckXSLT.getBytes(StandardCharsets.UTF_8)));
@@ -387,7 +387,7 @@ public class MessageTemplateVO {
     public XsltCompiler getEnvelopeXSLTPost_xsltCompiler() {return EnvelopeXSLTPost_xsltCompiler;}
     public void makeEnvelopeXSLTPost_xslt30Transformer( Logger AppThead_log )   {
         StreamSource srcXSLT;
-        if ( ! EnvelopeXSLTPost.isEmpty() ) // если не пустой XSLT-текст
+        if (( EnvelopeXSLTPost !=null ) && ( ! EnvelopeXSLTPost.isEmpty()) ) // если не пустой XSLT-текст
         {
             try {
                 srcXSLT = new StreamSource(new ByteArrayInputStream(EnvelopeXSLTPost.getBytes(StandardCharsets.UTF_8)));
@@ -422,7 +422,7 @@ public class MessageTemplateVO {
     public XsltCompiler getEnvelopeXSLTExt_xsltCompiler() {return EnvelopeXSLTExt_xsltCompiler;}
     public void makeEnvelopeXSLTExt_xslt30Transformer( Logger AppThead_log )   {
         StreamSource srcXSLT;
-        if ( ! EnvelopeXSLTExt.isEmpty() ) // если не пустой XSLT-текст
+        if (( EnvelopeXSLTExt !=null ) && ( ! EnvelopeXSLTExt.isEmpty()) ) // если не пустой XSLT-текст
         {
             try {
                 srcXSLT = new StreamSource(new ByteArrayInputStream(EnvelopeXSLTExt.getBytes(StandardCharsets.UTF_8)));
@@ -457,7 +457,7 @@ public class MessageTemplateVO {
     public XsltCompiler getErrTransXSLT_xsltCompiler() {return ErrTransXSLT_xsltCompiler;}
     public void makeErrTransXSLT_xslt30Transformer( Logger AppThead_log )   {
         StreamSource srcXSLT;
-        if ( ! ErrTransXSLT.isEmpty() ) // если не пустой XSLT-текст
+        if (( ErrTransXSLT !=null ) && ( ! ErrTransXSLT.isEmpty()) ) // если не пустой XSLT-текст
         {
             try {
                 srcXSLT = new StreamSource(new ByteArrayInputStream(ErrTransXSLT.getBytes(StandardCharsets.UTF_8)));

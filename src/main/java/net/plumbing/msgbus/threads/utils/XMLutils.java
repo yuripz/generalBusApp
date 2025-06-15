@@ -65,12 +65,12 @@ public class XMLutils {
 
     public static int makeMessageQueueVO_from_ContextElement( Element hContext, MessageQueueVO messageQueueVO, Logger MessegeSend_Log)
             throws JDOMParseException, JDOMException, IOException, XPathExpressionException{
-
+        Long EventKey= messageQueueVO.getQueue_Id();
         if ( hContext.getName().equals(XMLchars.TagContext) ) {
             String EventInitiator="";
             String EventSource="";
             Integer EventOperationId=null;
-            Long EventKey= messageQueueVO.getQueue_Id();
+
 
             List<Element> list = hContext.getChildren();
             // Перебор всех элементов Context
@@ -95,8 +95,7 @@ public class XMLutils {
                         break;
                 }
             }
-            MessegeSend_Log.warn("Ищем MessageRepositoryHelper.look4MessageDirectionsVO_2_MsgDirection_Cod (`" +
-                    EventInitiator + "`)" );
+            MessegeSend_Log.warn("[{}] Ищем MessageRepositoryHelper.look4MessageDirectionsVO_2_MsgDirection_Cod (`{}`)", EventKey, EventInitiator);
 
             int MsgDirectionVO_Key =
                     MessageRepositoryHelper.look4MessageDirectionsVO_2_MsgDirection_Cod( EventInitiator, MessegeSend_Log );
@@ -113,12 +112,10 @@ public class XMLutils {
             if ( MsgDirectionVO_Key >= 0 ) {
                 messageQueueVO.setEventInitiator( MessageDirections.AllMessageDirections.get(MsgDirectionVO_Key).getMsgDirection_Id(),
                                                   MessageDirections.AllMessageDirections.get(MsgDirectionVO_Key).getSubsys_Cod());
-                MessegeSend_Log.info("Нашли [" + MsgDirectionVO_Key + "] MsgDirection_Id (" +
-                        MessageDirections.AllMessageDirections.get(MsgDirectionVO_Key).getMsgDirection_Id() +
-                        ") Subsys_Cod(" + MessageDirections.AllMessageDirections.get(MsgDirectionVO_Key).getSubsys_Cod() + ")" );
+                MessegeSend_Log.info("[{}] Нашли [{}] MsgDirection_Id ({}) Subsys_Cod({})", EventKey, MsgDirectionVO_Key, MessageDirections.AllMessageDirections.get(MsgDirectionVO_Key).getMsgDirection_Id(), MessageDirections.AllMessageDirections.get(MsgDirectionVO_Key).getSubsys_Cod());
             }
             else {
-                MessegeSend_Log.error("getClearRequest: в SOAP-заголовке (" + XMLchars.TagEventSource + ") объявлен неизвестый код системы-источника " + EventSource);
+                MessegeSend_Log.error("[{}] getClearRequest: в SOAP-заголовке ({}) объявлен неизвестый код системы-источника {}", EventKey, XMLchars.TagEventSource, EventSource);
                 throw new XPathExpressionException("getClearRequest: в SOAP-заголовке (" + XMLchars.TagEventSource + ") объявлен неизвестый код системы-источника " + EventSource);
             }
             int MessageTypeVO_Key =
@@ -130,22 +127,20 @@ public class XMLutils {
                 messageQueueVO.setOutQueue_Id( EventKey.toString() );
                 messageQueueVO.setMsg_Reason( MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type() + "() Ok." );
 
-                MessegeSend_Log.info("Нашли [" + MessageTypeVO_Key + "] Msg_Type(" +
-                        MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type() +
-                        ") Msg_Type_ow(" + MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type_own() + ")" );
+                MessegeSend_Log.info("[{}] Нашли [{}] Msg_Type({}) Msg_Type_ow({})", EventKey, MessageTypeVO_Key, MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type(), MessageType.AllMessageType.get(MessageTypeVO_Key).getMsg_Type_own());
             }
             else {
-                MessegeSend_Log.error( "getClearRequest: в SOAP-заголовке (" + XMLchars.TagEventOperationId + ") объявлен неизвестый № операцмм " + EventOperationId);
+                MessegeSend_Log.error("[{}] getClearRequest: в SOAP-заголовке (" + XMLchars.TagEventOperationId + ") объявлен неизвестый № операцмм {}", EventKey, EventOperationId);
                 throw new XPathExpressionException("getClearRequest: в SOAP-заголовке (" + XMLchars.TagEventOperationId + ") объявлен неизвестый № операцмм " + EventOperationId);
             }
         }
         else {
             String errSring = "getClearRequest(makeMessageQueueVO_from_ContextElement): в SOAP-заголовке не найден " + XMLchars.TagContext +  " hContext.getName()=<" +
             hContext.getName() + ">";
-            MessegeSend_Log.error(errSring);
+            MessegeSend_Log.error("[{}] {}", EventKey,  errSring);
             throw new XPathExpressionException(errSring);
         }
-        MessegeSend_Log.debug( "makeMessageQueueVO_from_ContextElement: " + messageQueueVO.toSring() );
+        MessegeSend_Log.debug("[{}] makeMessageQueueVO_from_ContextElement: {}", EventKey, messageQueueVO.toSring());
       return 0;
     }
 
@@ -164,7 +159,7 @@ public class XMLutils {
         }
         catch ( JDOMParseException e)
         {
-            MessegeSend_Log.error("Soap_HeaderRequest2messageQueueVO: documentBuilder.build (" + Soap_HeaderRequest + ")fault"  );
+            MessegeSend_Log.error("[{}] Soap_HeaderRequest2messageQueueVO: documentBuilder.build ({})fault", messageQueueVO.getQueue_Id(),Soap_HeaderRequest);
             throw new JDOMParseException("client.post:Soap_HeaderRequest2messageQueueVO=(" + Soap_HeaderRequest+ ")", e);
         }
 
@@ -173,7 +168,7 @@ public class XMLutils {
         Element hContext = Soap_HeaderDocument.getRootElement();
         parseResult = makeMessageQueueVO_from_ContextElement( hContext, messageQueueVO, MessegeSend_Log  );
 
-        MessegeSend_Log.warn( "Soap_HeaderRequest2messageQueueVO: " + messageQueueVO.toSring() );
+        MessegeSend_Log.warn("[{}] Soap_HeaderRequest2messageQueueVO: {}", messageQueueVO.getQueue_Id(), messageQueueVO.toSring());
 
         return parseResult;
     }

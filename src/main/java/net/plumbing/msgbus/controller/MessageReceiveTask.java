@@ -59,9 +59,8 @@ public class MessageReceiveTask
         // Установаливем " соединение" , что бы зачитывать очередь
         //  theadDataAccess.setDbSchema( ApplicationProperties.HrmsSchema ); - перенесён в make_Hikari_Connection(), что бы не забылось нигде!
         if ( isDebugged )
-            MessegeReceive_Log.info("Установаливем `соединение`, что бы зачитывать очередь: [" +
-                    ApplicationProperties.HrmsPoint + "] user:" + ApplicationProperties.hrmsDbLogin +
-                    "; passwd:" + ApplicationProperties.hrmsDbPasswd + " Schema: " + ApplicationProperties.HrmsSchema  + ".");
+            MessegeReceive_Log.info("Установаливем `соединение`, что бы зачитывать очередь: [{}] user:{}; passwd:{} Schema: {}.",
+                    ApplicationProperties.HrmsPoint, ApplicationProperties.hrmsDbLogin, ApplicationProperties.hrmsDbPasswd, ApplicationProperties.HrmsSchema);
         theadDataAccess.make_Hikari_Connection(
                 ApplicationProperties.HrmsSchema,
                 ApplicationProperties.hrmsDbLogin,
@@ -74,7 +73,7 @@ public class MessageReceiveTask
         }
         // MessageTemplateVOkey - Шаблон интерфейса (на основе входного URL)
         if ( isDebugged )
-            MessegeReceive_Log.info("ProcessInputMessage: check content of Interface Template by MessageTemplateVOkey 4 getEnvelopeInXSLT(`{}`)", MessageTemplateVOkey);
+            MessegeReceive_Log.info("{}: check content of Interface Template by MessageTemplateVOkey 4 getEnvelopeInXSLT(`{}`)", Queue_Direction, MessageTemplateVOkey);
         try {
             if ( MessageTemplateVOkey >= 0 )
             // Парсим входной запрос и формируем XML-Document !
@@ -89,8 +88,8 @@ public class MessageReceiveTask
         catch (Exception e) {
             System.err.println( "["+ Message.XML_MsgInput + "]  Exception" );
             e.printStackTrace();
-            MessegeReceive_Log.error(Queue_Direction + "fault: [" + Message.XML_MsgInput + "] XMLutils.makeClearRequest fault: " + sStackTrace.strInterruptedException(e));
-            Message.MsgReason.append("Ошибка на приёме сообщения: " + e.getMessage() ); //  sStackTrace.strInterruptedException(e));
+            MessegeReceive_Log.error("{} fault:`{}` XMLutils.makeClearRequest fault: {}", Queue_Direction, Message.XML_MsgInput, sStackTrace.strInterruptedException(e));
+            Message.MsgReason.append("Ошибка на приёме сообщения: ").append(e.getMessage()); //  sStackTrace.strInterruptedException(e));
                if ( (e instanceof JDOMParseException ) || (e instanceof XPathExpressionException)  ) // Клиент прислсл фуфло
                    return 1L;
             else
@@ -141,7 +140,7 @@ public class MessageReceiveTask
                     );
                     //if ( Message.MessageTemplate4Perform.getIsDebugged() )
                     if ( isDebugged )
-                    MessegeReceive_Log.info(Queue_Direction + " [" + Queue_Id + "] после XSLT=:{" + Message.Soap_HeaderRequest.toString() + "}");
+                        MessegeReceive_Log.info( " [{}] {} после XSLT=:{{}}", Queue_Id, Queue_Direction, Message.Soap_HeaderRequest.toString());
                     if ( Message.Soap_HeaderRequest.toString().equals(XMLchars.nanXSLT_Result) ) {
                         MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess, "В результате XSLT преобразования получен пустой заголовок из (" + Message.XML_MsgClear.toString() + ")",
                                 null, MessegeReceive_Log);
@@ -150,12 +149,12 @@ public class MessageReceiveTask
                     }
 
                 } catch (SaxonApiException exception) {
-                    MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLT-преобразователь тела:{" + MessageXSLT_4_HeaderIn + "}");
-                    MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] fault " + ConvXMLuseXSLTerr.toString() + " после XSLT=:{" + Message.Soap_HeaderRequest.toString() + "}");
+                    MessegeReceive_Log.error("[{}] {} XSLT-преобразователь тела:{{}}", Queue_Id, Queue_Direction, MessageXSLT_4_HeaderIn);
+                    MessegeReceive_Log.error("[{}] {} fault {} после XSLT=:{{}}", Queue_Id, Queue_Direction, ConvXMLuseXSLTerr, Message.Soap_HeaderRequest.toString());
                     MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                             "Ошибка построенния заголовка при XSLT-преобразовании из сообщения: " + ConvXMLuseXSLTerr + Message.XML_MsgClear.toString() + " on " + MessageXSLT_4_HeaderIn,
                             null, MessegeReceive_Log);
-                    Message.MsgReason.append("Ошибка построенния заголовка при XSLT-преобразовании из сообщения: " +  ConvXMLuseXSLTerr.toString());
+                    Message.MsgReason.append("Ошибка построенния заголовка при XSLT-преобразовании из сообщения: ").append(ConvXMLuseXSLTerr.toString());
                     // Считаем, что виноват клиент
                     return 5L;
                 }
@@ -178,7 +177,7 @@ public class MessageReceiveTask
                 }
 
             }
-            else { // Берем распарсенный  Context из Header сообщения для сохранения в БД
+            else { // Берем распарсенный Context из Header сообщения для сохранения в БД
                 if ( Message.Input_Header_Context != null ) {
                     try {
                         XMLutils.Soap_XMLDocument2messageQueueVO(Message.Input_Header_Context, messageQueueVO, MessegeReceive_Log);
@@ -198,7 +197,7 @@ public class MessageReceiveTask
                 }
                 else {
                     MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "]" + "Soap_XMLDocument2messageQueueVO: (" +  Message.XML_MsgClear.toString() + ") fault " );
-                    Message.MsgReason.append("Не был найдет элемент 'Context' - Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения (: " + Message.XML_MsgClear.toString() + ")" );
+                    Message.MsgReason.append("Не был найдет элемент 'Context' - Ошибка при получении необходимых значений из заголовка, построенного XSLT из сообщения (: ").append(Message.XML_MsgClear.toString()).append(")");
 
                     MessageUtils.ProcessingIn2ErrorIN(messageQueueVO, Message, theadDataAccess,
                             "Не был найдет элемент 'Context' - Ошибка при получении необходимых значений из заголовка, полученного в сообщении: " + Message.XML_MsgClear.toString(),
