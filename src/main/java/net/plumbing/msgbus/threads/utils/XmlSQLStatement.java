@@ -138,7 +138,7 @@ public class XmlSQLStatement {
                         SQLStatement_ColumnCount = SQLStatement_ReturnColumnCount.getValue();
 
                         if (isDebugged)
-                        MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + "] ExecuteSQLincludedXML:.SQLStatement.getAttribute(SQLStatement_Type)=`" + SQLStatement_Type.getValue() + "` =================================");
+                            MessegeSend_Log.warn("[{}] ExecuteSQLincludedXML:.SQLStatement.getAttribute(SQLStatement_Type)=`{}` =================================", messageQueueVO.getQueue_Id(), SQLStatement_Type.getValue());
                         // SQLStatement_Type.getValue();
                         // if (isDebugged) MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + "] =============================================================================================");
                         List<Element> SQLStatementParamList = SQLStatement.getChildren();
@@ -215,7 +215,8 @@ public class XmlSQLStatement {
                     for ( int k =0; k < SQLparamValues.size(); k++ )
                         MessegeSend_Log.warn( "SQLparamValues.get(" + k + " )=" + SQLparamValues.get(k).toString());
                 }
-                if (isDebugged)  MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + "] =====================================================================================");
+                if (isDebugged)
+                    MessegeSend_Log.warn("[{}] =====================================================================================", messageQueueVO.getQueue_Id());
                 // todo
                // boolean is_NoConfirmation =
                 //        MessageRepositoryHelper.isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation(  messageQueueVO.getOperation_Id(), MessegeSend_Log );
@@ -234,7 +235,7 @@ public class XmlSQLStatement {
                         callableStatement.registerOutParameter(1, Types.INTEGER);
                         for ( int k =0; k < SQLparamValues.size(); k++ ) {
                             if (isDebugged)
-                            MessegeSend_Log.warn("callableStatement.setString: SQLparamValues.get(" + k + " )=" + SQLparamValues.get(k).toString());
+                                MessegeSend_Log.warn("callableStatement.setString: SQLparamValues.get({} )={}", k, SQLparamValues.get(k).toString());
                             callableStatement.setString(2 + k, SQLparamValues.get(k));
                         }
 
@@ -246,14 +247,14 @@ public class XmlSQLStatement {
                         } catch (SQLException e) {
                             e.printStackTrace();
                             messageDetails.MsgReason.append( (", SQLException callableStatement.execute(`"+ messageQueueVO.getOutQueue_Id() + "`):=" + sStackTrace.strInterruptedException(e)) );
-                            MessegeSend_Log.error("[ {} ] , SQLException callableStatement.execute(`{}`):= {}", messageQueueVO.getQueue_Id(), messageQueueVO.getQueue_Id(), e.getMessage());
+                            MessegeSend_Log.error("[{}] , SQLException callableStatement.execute(`{}`):= {}", messageQueueVO.getQueue_Id(), messageQueueVO.getQueue_Id(), e.getMessage());
                             //MessegeSend_Log.error(messageDetails.MsgReason.toString());
                             SQLWarning warning = callableStatement.getWarnings();
 
                             while (warning != null) {
                                 // System.out.println(warning.getMessage());
                                 if (isDebugged)
-                                    MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] callableStatement.SQLWarning: " + warning.getMessage());
+                                    MessegeSend_Log.warn("[{}] callableStatement.SQLWarning: {}", messageQueueVO.getQueue_Id() , warning.getMessage());
                                 warning = warning.getNextWarning();
                             }
                             callableStatement.close();

@@ -71,13 +71,14 @@ public class XMLutils {
             String EventSource="";
             Integer EventOperationId=null;
 
-
             List<Element> list = hContext.getChildren();
+            //MessegeSend_Log.warn("[{}] list.size()={} hContext.getChildren MessageRepositoryHelper.makeMessageQueueVO_from_ContextElement (`{}`)", EventKey, list.size(), hContext.getText());
             // Перебор всех элементов Context
             for (int i = 0; i < list.size(); i++) {
                 Element XMLelement = (Element) list.get(i);
                 String ElementEntry = XMLelement.getName();
                 String ElementContent = XMLelement.getText() ;
+                //MessegeSend_Log.warn("[{}] {} Ищем MessageRepositoryHelper.makeMessageQueueVO_from_ContextElement (`{}`)", EventKey, i, ElementEntry);
 
                 switch ( ElementEntry) {
                     case XMLchars.TagEventInitiator:

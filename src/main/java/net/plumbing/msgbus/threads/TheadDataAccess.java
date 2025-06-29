@@ -783,22 +783,23 @@ public class TheadDataAccess {
                     Statement stmt = Hermes_Connection.createStatement();
 
                     // get the postgresql serial field value with this query
-                    ResultSet rs = stmt.executeQuery("select cast(currval('message_queuelog_seq')as varchar)");
+                    String currValSeq ="select cast(currval('"+ dbSchema + ".message_queuelog_seq') as varchar)";
+                    ResultSet rs = stmt.executeQuery(currValSeq);
                     if (rs.next()) {
                         ROWID_QUEUElog = rs.getString(1);
                     }
                     stmt.close();
                 }
-                dataAccess_log.info( "[" + Queue_Id + "] ROWID = stmt_INSERT_QUEUElog.executeUpdate() => " + ROWID_QUEUElog);
+                dataAccess_log.info("[{}] ROWID = stmt_INSERT_QUEUElog.executeUpdate() => {}", Queue_Id, ROWID_QUEUElog);
             }
             Hermes_Connection.commit();
             // dataAccess.do_Commit();
 
         } catch (Exception e) {
-            dataAccess_log.error( "insert into " + dbSchema + ".MESSAGE_QUEUElog for [" + Queue_Id+  "]: " + INSERT_QUEUElog_Request + ") fault: " + e.getMessage() );
+            dataAccess_log.error("insert into {}.MESSAGE_QUEUElog for [{}]: {}) fault: {}", dbSchema, Queue_Id, INSERT_QUEUElog_Request, e.getMessage());
             try {
                 Hermes_Connection.rollback(); } catch (SQLException SQLe) {
-                dataAccess_log.error( "[" + Queue_Id + "] rollback(" + INSERT_QUEUElog_Request + ") fault: " + SQLe.getMessage() );
+                dataAccess_log.error("[{}] rollback({}) fault: {}", Queue_Id, INSERT_QUEUElog_Request, SQLe.getMessage());
                 System.err.println( "[" + Queue_Id + "] rollback (" + INSERT_QUEUElog_Request + ") fault: " + SQLe.getMessage()  );
             }
             e.printStackTrace();

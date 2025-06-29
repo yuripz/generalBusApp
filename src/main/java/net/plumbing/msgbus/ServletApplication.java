@@ -51,7 +51,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.5.06.15saX";
+    public static final String ApplicationName="*Receiver_BUS* v.5.06.29saX";
     public static String propJDBC;
     public static String propExtJDBC;
 
