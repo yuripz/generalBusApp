@@ -151,10 +151,24 @@ public class CustomJavaMethods {
 		if ( elmtQueue_Id== null) {
 			messageDetails.MsgReason.setLength(0);
 			messageDetails.MsgReason.append( "[").append( messageQueueVO.getQueue_Id() ).append(" ] В запросе GetRequest_Body4Message не найден параметр Parametrs/QueryString/Queue_Id");
+			MessegeReceive_Log.error("[{}] ] В запросе GetRequest_Body4Message не найден параметр Parametrs/QueryString/Queue_Id", messageQueueVO.getQueue_Id());
 			return -33;
 		}
 		String Queue_Id_Value= elmtQueue_Id.getText();
-		long Queue_Id= Long.parseLong(Queue_Id_Value);
+
+		long Queue_Id;
+		try {
+
+			Queue_Id = Long.parseLong(Queue_Id_Value);
+		} catch ( NumberFormatException e ) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append( "[").append( messageQueueVO.getQueue_Id() )
+					.append(" ] В запросе GetRequest_Body4Message параметр Parametrs/QueryString/Queue_Id =`")
+			.append( Queue_Id_Value ).append( "` не может быть конвертирован в Long");
+			MessegeReceive_Log.error("[{}] ] В запросе GetRequest_Body4Message параметр Parametrs/QueryString/Queue_Id =`{}` не может быть конвертирован в Long", messageQueueVO.getQueue_Id(), Queue_Id_Value);
+			return -34;
+
+		}
 		/*messageDetails.XML_MsgResponse.append( "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SaveGeoObjectResponse>\n" +
 				"\t<ResponseCode>10</ResponseCode><ResponseMessage>106891449</ResponseMessage>\n" +
 				"</SaveGeoObjectResponse>" );

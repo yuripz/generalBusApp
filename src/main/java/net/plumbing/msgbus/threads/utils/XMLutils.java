@@ -91,7 +91,13 @@ public class XMLutils {
                         EventOperationId = Integer.parseInt(ElementContent);
                         break;
                     case XMLchars.TagEventKey:
-                        EventKey = Long.parseLong(ElementContent);
+                        try {
+                            EventKey = Long.parseLong(ElementContent);
+                        } catch (NumberFormatException e) {
+                            MessegeSend_Log.error("[{}] getClearRequest(makeMessageQueueVO_from_ContextElement):шибка при преобразовании элемента SOAP-заголовка `{}` сообщения EventKey в longValue ({})  {}",
+                                                    -1, XMLchars.TagEventKey, ElementContent, e.getMessage() );
+                            throw new IOException("Ошибка при преобразовании элемента SOAP-заголовка сообщения EventKey в longValue:" + e.getMessage() );
+                        }
                         if ( EventKey.longValue() == -1L) EventKey = messageQueueVO.getQueue_Id();
                         break;
                 }

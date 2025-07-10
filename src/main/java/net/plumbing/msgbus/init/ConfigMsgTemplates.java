@@ -73,12 +73,14 @@ public class ConfigMsgTemplates {
                 switch ( configEntry) {
                     case "EnvelopeInXSLT":
                         messageTemplateVO.setEnvelopeInXSLT(configContent);
-                        messageTemplateVO.makeEnvelopeInXSLT_xslt30Transformer( AppThead_log );
+                        if (configContent != null)
+                            messageTemplateVO.makeEnvelopeInXSLT_xslt30Transformer( AppThead_log );
                         break;
 
                     case "HeaderInXSLT":
                         messageTemplateVO.setHeaderInXSLT(configContent);
-                        messageTemplateVO.makeHeaderInXSLT_xslt30Transformer(AppThead_log );
+                        if (configContent != null)
+                            messageTemplateVO.makeHeaderInXSLT_xslt30Transformer(AppThead_log );
                         break;
                     case "WsdlInterface":
                         messageTemplateVO.setWsdlInterface(configContent);
@@ -127,7 +129,8 @@ public class ConfigMsgTemplates {
                         break;
                     case "HeaderXSLT":
                         messageTemplateVO.setHeaderXSLT( configContent);
-                        messageTemplateVO.makeHeaderXSLT_xslt30Transformer( AppThead_log );
+                        if (configContent != null)
+                            messageTemplateVO.makeHeaderXSLT_xslt30Transformer( AppThead_log );
                         break;
 
                     case  "ConfigPostExec":
@@ -136,29 +139,34 @@ public class ConfigMsgTemplates {
                         break;
                     case "EnvelopeXSLTPost":
                         messageTemplateVO.setEnvelopeXSLTPost( configContent);
-                        messageTemplateVO.makeEnvelopeXSLTPost_xslt30Transformer(AppThead_log);
+                        if (configContent != null)
+                            messageTemplateVO.makeEnvelopeXSLTPost_xslt30Transformer(AppThead_log);
                         break;
 
                     case "MsgAnswXSLT":
                         messageTemplateVO.setMsgAnswXSLT( configContent);
-                        messageTemplateVO.makeMsgAnswXSLT_xslt30Transformer(AppThead_log);
+                        if (configContent != null)
+                            messageTemplateVO.makeMsgAnswXSLT_xslt30Transformer(AppThead_log);
                         break;
 
                     case "MessageXSLT":
                         messageTemplateVO.setMessageXSLT( configContent);
-                        messageTemplateVO.makeMessageXSLT_xslt30Transformer(AppThead_log);
+                        if (configContent != null)
+                            messageTemplateVO.makeMessageXSLT_xslt30Transformer(AppThead_log);
                         break;
 
                     case "AckXSLT":
                         //AppThead_log.info( "AckXSLT configEntry:`{}`configContent 4 :`{}`", configEntry, configContent);
                         messageTemplateVO.setAckXSLT( configContent);
-                        messageTemplateVO.makeAckXSLT_xslt30Transformer(AppThead_log);
+                        if (configContent != null)
+                            messageTemplateVO.makeAckXSLT_xslt30Transformer(AppThead_log);
                         break;
 
                     case "EnvelopeXSLTExt":
                         //AppThead_log.info( "EnvelopeXSLTExt configEntry:`{}`configContent:`{}`", configEntry, configContent);
                         messageTemplateVO.setEnvelopeXSLTExt( configContent);
-                        messageTemplateVO.makeEnvelopeXSLTExt_xslt30Transformer(AppThead_log);
+                        if (configContent != null)
+                            messageTemplateVO.makeEnvelopeXSLTExt_xslt30Transformer(AppThead_log);
                         break;
 
                     /*case "MessageAck":
@@ -181,14 +189,16 @@ public class ConfigMsgTemplates {
                         break;
                     case "AckAnswXSLT":
                         messageTemplateVO.setAckAnswXSLT( configContent);
-                        messageTemplateVO.makeAckAnswXSLT_xslt30Transformer(AppThead_log);
+                        if (configContent != null)
+                            messageTemplateVO.makeAckAnswXSLT_xslt30Transformer(AppThead_log);
                         break;
                     case "HeaderXSD":
                         messageTemplateVO.setHeaderXSD( configContent);
                         break;
                     case "ErrTransXSLT":
                         messageTemplateVO.setErrTransXSLT( configContent);
-                        messageTemplateVO.makeErrTransXSLT_xslt30Transformer(AppThead_log);
+                        if (configContent != null)
+                            messageTemplateVO.makeErrTransXSLT_xslt30Transformer(AppThead_log);
                         break;
                     case "EnvelopeNS" :
                         messageTemplateVO.setEnvelopeNS( configContent );
