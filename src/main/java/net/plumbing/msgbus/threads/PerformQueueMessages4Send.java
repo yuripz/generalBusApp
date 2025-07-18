@@ -148,7 +148,9 @@ public class PerformQueueMessages4Send {
                                 MessageXSLT_4_OUT_2_SEND,
                                 Message.MsgReason,
                                 MessageSend_Log, Message.MessageTemplate4Perform.getIsDebugged()
-                        ).substring(XMLchars.xml_xml.length());// берем после <?xml version="1.0" encoding="UTF-8"?>
+                        )
+                        //.substring(XMLchars.xml_xml.length()) // НЕ берем после <?xml version="1.0" encoding="UTF-8"?>, Property.OMIT_XML_DECLARATION = "yes"
+                        ;
                         if ( Message.MessageTemplate4Perform.getIsDebugged() )
                             MessageSend_Log.info(Queue_Direction + " [" + Queue_Id + "] после XSLT=:{" + Message.XML_MsgSEND + "}");
                     } catch ( SaxonApiException exception ) // TransformerException ==> SaxonApiException
@@ -264,7 +266,7 @@ public class PerformQueueMessages4Send {
                                                 Message.MsgReason, MessageSend_Log,
                                                 Message.MessageTemplate4Perform.getIsDebugged()
                                         )
-                                                .substring(XMLchars.xml_xml.length()) // берем после <?xml version="1.0" encoding="UTF-8"?>
+                                        //.substring(XMLchars.xml_xml.length()) // НЕ берем после <?xml version="1.0" encoding="UTF-8"?>, Property.OMIT_XML_DECLARATION = "yes"
                                 );
                             } catch (SaxonApiException exception) {
                                 MessageSend_Log.error("{} [{}] XSLT-преобразователь заголовка:{{}}", Queue_Direction, Queue_Id, Message.MessageTemplate4Perform.getHeaderXSLT());
@@ -293,7 +295,7 @@ public class PerformQueueMessages4Send {
                                                         Message.MessageTemplate4Perform.getAckXSLT_processor(),
                                                         Message.MessageTemplate4Perform.getAckXSLT_xsltCompiler(),
                                                         Message.MessageTemplate4Perform.getAckXSLT_xslt30Transformer(),
-                                                        AckXSLT_4_make_JSON,  // через HeaderXSLT
+                                                        AckXSLT_4_make_JSON,  // через AckXSLT
                                                         Message.MsgReason, MessageSend_Log,
                                                         Message.MessageTemplate4Perform.getIsDebugged()
                                                 );
@@ -305,7 +307,7 @@ public class PerformQueueMessages4Send {
                                         MessageSend_Log.error("[{}] SEND  XSLT-преобразователь для JSON :{{}}", messageQueueVO.getQueue_Id(), AckXSLT_4_make_JSON);
 
                                         theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT(messageQueueVO,
-                                                "Header XSLT fault: " + ConvXMLuseXSLTerr + " for " + AckXSLT_4_make_JSON, 1244,
+                                                "Header XSLT over AckXSLT fault: " + ConvXMLuseXSLTerr + " for " + AckXSLT_4_make_JSON, 1244,
                                                 messageQueueVO.getRetry_Count(), MessageSend_Log);
 
                                         System.err.println("[" + messageQueueVO.getQueue_Id() + "] SaxonApi TransformerException ");
@@ -345,7 +347,7 @@ public class PerformQueueMessages4Send {
                                                     Message.MsgReason, MessageSend_Log,
                                                     Message.MessageTemplate4Perform.getIsDebugged()
                                             )
-                                                    .substring(XMLchars.xml_xml.length()) // берем после <?xml version="1.0" encoding="UTF-8"?>
+                                            //.substring(XMLchars.xml_xml.length()) // НЕ берем после <?xml version="1.0" encoding="UTF-8"?>, Property.OMIT_XML_DECLARATION = "yes"
                                     );
                                 } catch (SaxonApiException exception) {
                                     MessageSend_Log.error( "{} [{}}] XSLT-преобразователь заголовка:{ {} } : {}", Queue_Direction, Queue_Id, Message.MessageTemplate4Perform.getHeaderXSLT(), exception.getMessage());
@@ -385,7 +387,7 @@ public class PerformQueueMessages4Send {
                                     Message.MsgReason, MessageSend_Log,
                                     Message.MessageTemplate4Perform.getIsDebugged()
                                     )
-                                    .substring(XMLchars.xml_xml.length()) // берем после <?xml version="1.0" encoding="UTF-8"?>
+                            //.substring(XMLchars.xml_xml.length()) // НЕ берем после <?xml version="1.0" encoding="UTF-8"?>, Property.OMIT_XML_DECLARATION = "yes"
                     );
                     } catch ( Exception exception ) {
                         MessageSend_Log.error("{} [{}] XSLT-преобразователь ответа:{{}}", Queue_Direction, Queue_Id, Message.MessageTemplate4Perform.getMsgAnswXSLT());
@@ -877,7 +879,7 @@ public class PerformQueueMessages4Send {
             outSerializer.setOutputProperty(Serializer.Property.METHOD, "xml");
             outSerializer.setOutputProperty(Serializer.Property.ENCODING, "utf-8");
             outSerializer.setOutputProperty(Serializer.Property.INDENT, "no");
-            outSerializer.setOutputProperty(Serializer.Property.OMIT_XML_DECLARATION, "no");
+            outSerializer.setOutputProperty(Serializer.Property.OMIT_XML_DECLARATION, "yes");
             outSerializer.setOutputStream(outputByteArrayStream);
             xslt30Transformer.transform( xmlStreamSource, outSerializer);
 

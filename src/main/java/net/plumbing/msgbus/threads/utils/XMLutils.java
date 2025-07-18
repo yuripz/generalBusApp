@@ -237,7 +237,8 @@ public class XMLutils {
                                 ConvXMLuseXSLTerr,
                                 MessegeSend_Log,
                                 isDebugged
-                        ).substring(XMLchars.xml_xml.length()) // берем после <?xml version="1.0" encoding="UTF-8"?>
+                        )
+                        //.substring(XMLchars.xml_xml.length()) // НЕ берем после <?xml version="1.0" encoding="UTF-8"?>, Property.OMIT_XML_DECLARATION = "yes"
                 );
                 if (isDebugged)
                     MessegeSend_Log.info("ProcessInputMessage(makeClearRequest): после XSLT={" + messageDetails.XML_MsgConfirmation.toString() + "}");
@@ -379,7 +380,8 @@ public class XMLutils {
                             ConvXMLuseXSLTerr,
                             MessegeSend_Log,
                             isDebugged
-                    ).substring(XMLchars.xml_xml.length()) // берем после <?xml version="1.0" encoding="UTF-8"?>
+                    )
+                    //.substring(XMLchars.xml_xml.length()) // НЕ берем после <?xml version="1.0" encoding="UTF-8"?>, Property.OMIT_XML_DECLARATION = "yes"
             );
             if (isDebugged)
                 MessegeSend_Log.info("ProcessInputMessage(makeClearRequest): после XSLT={" + messageDetails.XML_MsgConfirmation.toString() + "}");
@@ -676,7 +678,7 @@ public class XMLutils {
             outSerializer.setOutputProperty(Serializer.Property.METHOD, "xml");
             outSerializer.setOutputProperty(Serializer.Property.ENCODING, "utf-8");
             outSerializer.setOutputProperty(Serializer.Property.INDENT, "no");
-            outSerializer.setOutputProperty(Serializer.Property.OMIT_XML_DECLARATION, "no");
+            outSerializer.setOutputProperty(Serializer.Property.OMIT_XML_DECLARATION, "yes");
             outSerializer.setOutputStream(outputByteArrayStream);
             xslt30Transformer.transform( xmlStreamSource, outSerializer);
 

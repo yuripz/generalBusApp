@@ -605,7 +605,7 @@ public class PerfotmInputMessages {
                                         Message.MsgReason, // результат для MsgReason помещаем сюда
                                         ConvXMLuseXSLTerr,
                                         MessegeReceive_Log,
-                                        true //Message.MessageTemplate4Perform.getIsDebugged()
+                                        Message.MessageTemplate4Perform.getIsDebugged()
                                 );
                             } catch (SaxonApiException exception) {
                                 MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLTExt-преобразователь Confirmation:{" + Message.MessageTemplate4Perform.getAckAnswXSLT() + "}");
@@ -624,7 +624,8 @@ public class PerfotmInputMessages {
                                 return -43L;
 
                             }
-                            Message.XML_MsgResponse.append(Passed_Confirmation4AckAnswXSLT.substring(XMLchars.xml_xml.length()));
+                            Message.XML_MsgResponse.append( Passed_Confirmation4AckAnswXSLT );
+                            //.substring(XMLchars.xml_xml.length()) // НЕ берем после <?xml version="1.0" encoding="UTF-8"?>, Property.OMIT_XML_DECLARATION = "yes"
                             if ( Message.MessageTemplate4Perform.getIsDebugged() )
                             MessegeReceive_Log.warn("[" + Queue_Id + "] возврашаем от исходящего " + Link_Queue_Id + " сообщения (" + Message.XML_MsgResponse + ")");
                             // Устанавливаеи признак завершения работы
@@ -764,7 +765,8 @@ public class PerfotmInputMessages {
                                     return -51L;
 
                                 }
-                                Message.XML_MsgResponse.append(Passed_Confirmation4MsgAnswXSLT.substring(XMLchars.xml_xml.length()));
+                                Message.XML_MsgResponse.append(Passed_Confirmation4MsgAnswXSLT);
+                             //.substring(XMLchars.xml_xml.length()) // НЕ берем после <?xml version="1.0" encoding="UTF-8"?>, Property.OMIT_XML_DECLARATION = "yes"
                                 if ( Message.MessageTemplate4Perform.getIsDebugged() )
                                     MessegeReceive_Log.warn("[" + Queue_Id + "] возврашаем от исходящего " + Link_Queue_Id + " сообщения (" + Message.XML_MsgResponse + ")");
                                 // Устанавливаеи признак завершения работы
@@ -798,7 +800,8 @@ public class PerfotmInputMessages {
                                 Message.MessageTemplate4Perform.getAckXSLT(),  // через AckXSLT
                                 Message.MsgReason, // результат для MsgReason помещаем сюда
                                 ConvXMLuseXSLTerr,
-                                MessegeReceive_Log, Message.MessageTemplate4Perform.getIsDebugged());
+                                MessegeReceive_Log,
+                                Message.MessageTemplate4Perform.getIsDebugged());
                     } catch ( SaxonApiException exception ) {
                         MessegeReceive_Log.error("[" + Queue_Id + "] " + Queue_Direction + " XSLTExt-преобразователь Confirmation:{" + Message.MessageTemplate4Perform.getAckXSLT() +"}");
                         theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, "Ошибка преобразования XSLT для обработки Confirmation " + ConvXMLuseXSLTerr.toString() + " :" + Message.MessageTemplate4Perform.getAckXSLT(), 3249,
@@ -814,7 +817,8 @@ public class PerfotmInputMessages {
                         return -53L;
 
                     }
-                    Message.XML_MsgResponse.append(Passed_Confirmation4AckXSLT.substring(XMLchars.xml_xml.length()));
+                    Message.XML_MsgResponse.append( Passed_Confirmation4AckXSLT );
+                    //.substring(XMLchars.xml_xml.length()) // НЕ берем после <?xml version="1.0" encoding="UTF-8"?>, Property.OMIT_XML_DECLARATION = "yes"
                     if ( Message.MessageTemplate4Perform.getIsDebugged() )
                     MessegeReceive_Log.warn("["+ Queue_Id +"] возврашаем(" + Message.XML_MsgResponse + ")");
                 }
@@ -846,7 +850,8 @@ public class PerfotmInputMessages {
                                             Message.MessageTemplate4Perform.getEnvelopeXSLTPost(),  // через EnvelopeXSLTPost
                                             Message.MsgReason, // результат для MsgReason помещаем сюда
                                             ConvXMLuseXSLTerr,
-                                            MessegeReceive_Log, Message.MessageTemplate4Perform.getIsDebugged());
+                                            MessegeReceive_Log,
+                                            Message.MessageTemplate4Perform.getIsDebugged());
                                 } catch ( SaxonApiException exception ) {
                                     MessegeReceive_Log.error(Queue_Direction + " [" + Queue_Id + "] XSLT-пост-преобразователь ответа:{" + Message.MessageTemplate4Perform.getEnvelopeXSLTPost() +"}");
                                     theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN( messageQueueVO.getQueue_Id(),

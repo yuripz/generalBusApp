@@ -488,15 +488,17 @@ public void run()   {
                 Xslt30Transformer xslt30Transformer = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getHeaderInXSLT_xslt30Transformer();
                 ConvXMLuseXSLTerr.setLength(0); ConvXMLuseXSLTerr.trimToSize();
                 try {
-                    Message.Soap_HeaderRequest.append(XMLutils.ConvXMLuseXSLT30(Queue_Id,
-                            Message.XML_MsgClear.toString(),
-                            xslt30Processor, xsltCompiler, xslt30Transformer,
-                            MessageXSLT_4_HeaderIn,
-                            Message.MsgReason,
-                            ConvXMLuseXSLTerr,
-                            MessegeReceive_Log,
-                            isDebugged
-                            ).substring(XMLchars.xml_xml.length()) // берем после <?xml version="1.0" encoding="UTF-8"?>
+                    Message.Soap_HeaderRequest.append(
+                            XMLutils.ConvXMLuseXSLT30(Queue_Id,
+                                            Message.XML_MsgClear.toString(),
+                                            xslt30Processor, xsltCompiler, xslt30Transformer,
+                                            MessageXSLT_4_HeaderIn,
+                                            Message.MsgReason,
+                                            ConvXMLuseXSLTerr,
+                                            MessegeReceive_Log,
+                                            isDebugged
+                                            )
+                            //.substring(XMLchars.xml_xml.length()) // НЕ берем после <?xml version="1.0" encoding="UTF-8"?>, Property.OMIT_XML_DECLARATION = "yes"
                     );
                     //if ( Message.MessageTemplate4Perform.getIsDebugged() )
                     if ( isDebugged )
