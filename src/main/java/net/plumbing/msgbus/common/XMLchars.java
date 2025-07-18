@@ -57,7 +57,7 @@ public class XMLchars {
     public static final String Body="Body";
     public static final String Header="Header";
 
-    public static final String NameRootTagContentJsonResponse    = "MsgData";
+    public static final String NameRootTagContentJsonResponse= "MsgData";
     public static final String Envelope="Envelope";
     public static final String TagConfirmation="Confirmation";
     public static final String TagDetailList="DetailList";
@@ -161,8 +161,8 @@ public class XMLchars {
     //public static final String Fault_Client_Rest_Begin="{\"ClientFault\": \"";
     //public static final String Fault_Server_Rest_Begin="{\"ServerFault\": \"";
 
-    public static final String EmptyXSLT_Result ="<?xml version=\"1.0\" encoding=\"utf-8\"?><nan/>";
-      public static final String nanXSLT_Result ="<nan/>";
+    public static final String EmptyXSLT_Result ="<nan/>"; //"<?xml version=\"1.0\" encoding=\"utf-8\"?><nan/>";
+     public static final String nanXSLT_Result ="<nan/>";
 
         //  set in net.plumbing.msgbus.common.HikariDataAccess.DataSourcePoolMetadata
         //  for Oracle it must be 3992
