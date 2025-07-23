@@ -161,9 +161,9 @@ public class TheadDataAccess {
                                                  Logger dataAccess_log) {
         Connection Target_Connection ;
         String connectionUrl= dataSource.getJdbcUrl() ;
-        // попробуй ARTX_PROJ / rIYmcN38St5P  || hermes / uthvtc
-        //String db_userid = "HERMES";
-        //String db_password = "uthvtc";
+        // попробуй *** / ***  || *** / ***
+        //String db_userid = "***";
+        //String db_password = "***";
         if (connectionUrl.indexOf("oracle") > 0) {
             rdbmsVendor = "oracle";
         } else {
@@ -197,9 +197,7 @@ public class TheadDataAccess {
                                                  Logger dataAccess_log) {
         Connection Target_Connection ;
         String connectionUrl= dataSource.getJdbcUrl() ;
-        // попробуй ARTX_PROJ / rIYmcN38St5P  || hermes / uthvtc
-        //String db_userid = "HERMES";
-        //String db_password = "uthvtc";
+
         this.dbSchema = HrmsSchema;
         if (connectionUrl.indexOf("oracle") > 0) {
             rdbmsVendor = "oracle";

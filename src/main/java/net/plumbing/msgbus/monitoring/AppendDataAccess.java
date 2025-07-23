@@ -30,10 +30,6 @@ public class AppendDataAccess {
         else {
             connectionUrl = dst_point;
         }
-        // попробуй ARTX_PROJ / rIYmcN38St5P
-        // hermes / uthvtc
-        //String db_userid = "HERMES";
-        //String db_password = "uthvtc";
 
         dataAccess_log.info( "Try monitoring getConnection: " + connectionUrl + " as " + db_userid );
         try {

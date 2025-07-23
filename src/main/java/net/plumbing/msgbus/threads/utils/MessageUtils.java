@@ -194,21 +194,22 @@ public class MessageUtils {
                         rs.getLong("Perform_Object_Id")
                 );
                 if ( !isRecordFoud )
-                    MessegeReceive_Log.error( "Queue_Id:[" + Queue_Id + "] readMessage_Queue: не нашли запись в `"+ theadDataAccess.selectMessage4QueueIdSQL +"` =>`" + messageQueueVO.getQueue_Id()  + "`");
+                    MessegeReceive_Log.error("Queue_Id:[{}] readMessage_Queue: не нашли запись в `{}` =>`{}`", Queue_Id, theadDataAccess.selectMessage4QueueIdSQL, messageQueueVO.getQueue_Id());
 
-                MessegeReceive_Log.info("readMessage_Queue: messageQueueVO.Queue_Id = " + rs.getLong("Queue_Id") +
-                        " [ " + rs.getString("Msg_Type") + "] SubSys_Cod=" + rs.getString("SubSys_Cod") + ",  ROWID=" + rs.getString("ROWID"));
+                MessegeReceive_Log.info("readMessage_Queue: messageQueueVO.Queue_Id = {} [ {}] SubSys_Cod={},  ROWID={}",
+                                            rs.getLong("Queue_Id"), rs.getString("Msg_Type"),
+                                        rs.getString("SubSys_Cod"), rs.getString("ROWID"));
                 messageQueueVO.setMsg_Date(java.sql.Timestamp.valueOf(LocalDateTime.now(ZoneId.of("Europe/Moscow"))));
             }
         }
         catch (SQLException e) {
             // Запись захвачена другим потоком
-            MessegeReceive_Log.info( "Queue_Id:[" + Queue_Id + "] readMessage_Queue: stmtMsgQueueVO_Query.Queue_Id:" + messageQueueVO.getQueue_Id()  + " record can't be readed, " +e.getSQLState() + " :" + e.getMessage() );
+            MessegeReceive_Log.info("Queue_Id:[{}] readMessage_Queue: stmtMsgQueueVO_Query.Queue_Id:{} record can't be readed, {} :{}", Queue_Id, messageQueueVO.getQueue_Id(), e.getSQLState(), e.getMessage());
             try {
                 theadDataAccess.Hermes_Connection.rollback();
             }
             catch (SQLException rollback_e) {
-                MessegeReceive_Log.info( "Queue_Id:[" + Queue_Id + "] readMessage_Queue: stmtMsgQueueVO_Query.Queue_Id:" + messageQueueVO.getQueue_Id()  + " theadDataAccess.rollback() fault, " +e.getSQLState() + " :" + e.getMessage() );
+                MessegeReceive_Log.info("Queue_Id:[{}] readMessage_Queue: stmtMsgQueueVO_Query.Queue_Id:{} theadDataAccess.rollback() fault, {} :{}", Queue_Id, messageQueueVO.getQueue_Id(), e.getSQLState(), e.getMessage());
             }
         }
 
@@ -247,10 +248,10 @@ public class MessageUtils {
         }
         catch (SQLException e)
         {
-            MessegeReceive_Log.error(e.getMessage());
-            System.err.println("Queue_Id=[ NewMessage_Queue ] :" + e.getMessage() );
+            MessegeReceive_Log.error("MakeNewMessage_Queue: {}" ,e.getMessage());
+            System.err.println("MakeNewMessage_Queue: Queue_Id=[ NewMessage_Queue ] :" + e.getMessage() );
             e.printStackTrace();
-            MessegeReceive_Log.error( "что то пошло совсем не так...:" + theadDataAccess.selectMessageStatement);
+            MessegeReceive_Log.error("MakeNewMessage_Queue: что то пошло совсем не так...:{}", theadDataAccess.selectMessageStatement);
             //if ( rs !=null ) rs.close();
             return null;
         }
@@ -263,20 +264,20 @@ public class MessageUtils {
             // MessegeReceive_Log.info(  ">" + theadDataAccess.INSERT_Message_Queue + ":Queue_Id=[" + Queue_Id + "] done");
 
         } catch (SQLException e) {
-            MessegeReceive_Log.error("["+ Queue_Id +"] MakeNewMessage_Queue `" + theadDataAccess.INSERT_Message_Queue + "` fault: " + sStackTrace.strInterruptedException(e));
+            MessegeReceive_Log.error("[{}] MakeNewMessage_Queue `{}` fault: {}", Queue_Id, theadDataAccess.INSERT_Message_Queue, sStackTrace.strInterruptedException(e));
             System.err.println("["+ Queue_Id +"] MakeNewMessage_Queue `" + theadDataAccess.INSERT_Message_Queue + "` fault: " + e.getMessage());
             e.printStackTrace();
             try {
                 theadDataAccess.Hermes_Connection.rollback();
             } catch (SQLException exp) {
-                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: " + exp.getMessage());
+                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: {}", exp.getMessage());
             }
             return null;
         }
         try {
             theadDataAccess.Hermes_Connection.commit();
         } catch (SQLException exp) {
-            MessegeReceive_Log.error("["+ Queue_Id +"] MakeNewMessage_Queue Hermes_Connection.commit()  fault: " + sStackTrace.strInterruptedException(exp));
+            MessegeReceive_Log.error("[{}] MakeNewMessage_Queue Hermes_Connection.commit()  fault: {}", Queue_Id, sStackTrace.strInterruptedException(exp));
             return null;
         }
         return Queue_Id;
@@ -550,12 +551,12 @@ public class MessageUtils {
             theadDataAccess.stmt_DELETE_Message_Details.setLong(1, Queue_Id);
             theadDataAccess.stmt_DELETE_Message_Details.executeUpdate();
         } catch (SQLException e) {
-            MessegeReceive_Log.error("DELETE(" + theadDataAccess.DELETE_Message_Details + "[" + Queue_Id + "]" + ") fault: " + e.getMessage());
+            MessegeReceive_Log.error("DELETE({}[{}]) fault: {}", theadDataAccess.DELETE_Message_Details, Queue_Id, e.getMessage());
             e.printStackTrace();
             try {
                 theadDataAccess.Hermes_Connection.rollback();
             } catch (SQLException exp) {
-                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: " + exp.getMessage());
+                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: {}" , exp.getMessage());
             }
             return -1;
         }
@@ -589,17 +590,17 @@ public class MessageUtils {
             theadDataAccess.stmt_INSERT_Message_Details.executeBatch();
 
         } catch (SQLException e) {
-            MessegeReceive_Log.error(theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "] :" + sStackTrace.strInterruptedException(e));
+            MessegeReceive_Log.error("{}:Queue_Id=[{}] :{}", theadDataAccess.INSERT_Message_Details, Queue_Id, sStackTrace.strInterruptedException(e));
             e.printStackTrace();
             try {
                 theadDataAccess.Hermes_Connection.rollback();
             } catch (SQLException exp) {
-                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: " + exp.getMessage());
+                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: {}", exp.getMessage());
             }
             return -2;
         }
 
-        MessegeReceive_Log.info("Queue_Id=[" + Queue_Id + "] : Delete and INSERT new Message Details, " + nn + " rows done");
+        MessegeReceive_Log.info("[{}] : Delete and INSERT new Message Details, {} rows done", Queue_Id, nn);
         return nn;
     }
 
@@ -731,24 +732,24 @@ public class MessageUtils {
             // Insert data in Oracle with Java … Batched mode
             theadDataAccess.stmt_INSERT_Message_Details.executeBatch();
         } catch ( Exception e) {
-            MessegeSend_Log.error(theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "]["+ iNumberRecordInConfirmation +"] :" + sStackTrace.strInterruptedException(e));
+            MessegeSend_Log.error("{}:Queue_Id=[{}][{}] :{}", theadDataAccess.INSERT_Message_Details, Queue_Id, iNumberRecordInConfirmation, sStackTrace.strInterruptedException(e));
             messageDetails.MsgReason.append( "ReplaceConfirmation ["+ iNumberRecordInConfirmation +"] " + sStackTrace.strInterruptedException(e) );
             e.printStackTrace();
             try {
                 theadDataAccess.Hermes_Connection.rollback();
             } catch (SQLException exp) {
-                MessegeSend_Log.error("Hermes_Connection.rollback()fault: " + exp.getMessage());
+                MessegeSend_Log.error("Hermes_Connection.rollback()fault: {}" , exp.getMessage());
             }
             return -2;
         }
         try {
             theadDataAccess.Hermes_Connection.commit();
         } catch (SQLException exp) {
-            MessegeSend_Log.error("Hermes_Connection.rollback()fault: " + exp.getMessage());
+            MessegeSend_Log.error("Hermes_Connection.rollback()fault: {}", exp.getMessage());
             return -3;
         }
 
-        MessegeSend_Log.info(theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "] :" + nn + " done");
+        MessegeSend_Log.info("{}:Queue_Id=[{}] :{} done", theadDataAccess.INSERT_Message_Details, Queue_Id, nn);
         return nn;
     }
 
@@ -784,7 +785,7 @@ public class MessageUtils {
 
         } catch (JDOMException | IOException ex) {
             ex.printStackTrace(System.out);
-            MessegeSend_Log.error("[" + Queue_Id + "] ReplaceMessage4SEND fault:" + ex.getMessage());
+            MessegeSend_Log.error("[{}] ReplaceMessage4SEND fault:{}", Queue_Id, ex.getMessage());
             MessageUtils.ProcessingOut2ErrorOUT(  messageQueueVO, messageDetails,  theadDataAccess,
                     "ReplaceMessage4SEND.SAXBuilder fault:"  + ex.getMessage() + " " + messageDetails.XML_MsgSEND   ,
                     null ,  MessegeSend_Log);
@@ -887,7 +888,7 @@ public class MessageUtils {
         SoapEnvelope.append( XML_Request_Method );
         SoapEnvelope.append(XMLchars.Body_noNS_End);
         SoapEnvelope.append(XMLchars.Envelope_noNS_End);
-        MessegeReceive_Log.warn( "PrepareEnvelope4XSLTExt: {"+ SoapEnvelope.toString() + "}" );
+        MessegeReceive_Log.warn("PrepareEnvelope4XSLTExt: {{}}", SoapEnvelope.toString());
         return SoapEnvelope.toString();
     }
 
@@ -965,43 +966,40 @@ public class MessageUtils {
                 // MessegeSend_Log.info( "Tag_Id:" + rs.getString("Tag_Id") + " [" + rs.getString("Tag_Value") + "]");
             }
         } catch (SQLException e) {
-            MessegeSend_Log.error("Queue_Id=[" + Queue_Id + "] ReadMessageDetai4Send:" + sStackTrace.strInterruptedException(e));
+            MessegeSend_Log.error("Queue_Id=[{}] ReadMessageDetai4Send:{}", Queue_Id, sStackTrace.strInterruptedException(e));
             System.err.println("["+ Queue_Id +"] select  from MESSAGE_QUEUEdet  fault: " + e.getMessage());
             e.printStackTrace();
             return messageDetails.MessageRowNum;
         }
-        MessegeSend_Log.info( "["+ Queue_Id +"] ReadMessageDetai4Send:считали из БД фрагменты XML,{} записей",messageDetails.MessageRowNum );
+        MessegeSend_Log.info("[{}] ReadMessageDetai4Send:считали из БД фрагменты XML,{} записей", Queue_Id, messageDetails.MessageRowNum);
 
         if ( messageDetails.MessageRowNum > 0 )
             try {
                 XML_Current_Tags4Send( messageDetails, 0);
             } catch ( NullPointerException e ) {
                 // NPE случилось, печатаем диагностику
-                MessegeSend_Log.warn("[" + Queue_Id + "] ReadMessageDetai4Send: проверяем вторчный индекс MessageIndex_by_Tag_Par_Num, потому как получили NullPointerException на подготовке XML" );
+                MessegeSend_Log.warn("[{}] ReadMessageDetai4Send: проверяем вторичный индекс MessageIndex_by_Tag_Par_Num, потому как получили NullPointerException на подготовке XML", Queue_Id);
                 Set<Integer> MessageIndexSet = messageDetails.MessageIndex_by_Tag_Par_Num.keySet();
                 Iterator MessageIndexIterator = MessageIndexSet.iterator();
                 while (MessageIndexIterator.hasNext()) {
                     Integer i = (Integer) MessageIndexIterator.next();
-                    MessegeSend_Log.warn("[" + Queue_Id + "] ReadMessageDetai4Send: MessageIndex_by_Tag_Par_Num[" + i + "]" +
-                            messageDetails.MessageIndex_by_Tag_Par_Num.get(i).toString());
+                    MessegeSend_Log.warn("[{}] ReadMessageDetai4Send: MessageIndex_by_Tag_Par_Num[{}]{}", Queue_Id,
+                                                i, messageDetails.MessageIndex_by_Tag_Par_Num.get(i).toString());
                 }
                 MessageIndexSet = messageDetails.Message.keySet();
                 Iterator messageDetailsIterator = MessageIndexSet.iterator();
                 while (messageDetailsIterator.hasNext()) {
                     Integer i = (Integer) messageDetailsIterator.next();
-                    MessegeSend_Log.warn("[" + Queue_Id + "] ReadMessageDetai4Send: messageDetails.Message[" + i + "] <" +
-                            messageDetails.Message.get(i).Tag_Id + ">" +
-                            messageDetails.Message.get(i).Tag_Value +
-                            "; Tag_Num=" + messageDetails.Message.get(i).Tag_Num +
-                            "; Tag_Par_Num=" + messageDetails.Message.get(i).Tag_Par_Num
-                    );
+                    MessegeSend_Log.warn("[{}] ReadMessageDetai4Send: messageDetails.Message[{}] <{}>{}; Tag_Num={}; Tag_Par_Num={}",
+                                                    Queue_Id, i, messageDetails.Message.get(i).Tag_Id, messageDetails.Message.get(i).Tag_Value,
+                                                    messageDetails.Message.get(i).Tag_Num, messageDetails.Message.get(i).Tag_Par_Num);
                 }
-                MessegeSend_Log.info( "["+ Queue_Id +"] ReadMessageDetai4Send: тело XML тело XML не получено из БД , остановлено на " + messageDetails.XML_MsgOUT.length() + " символов" );
+                MessegeSend_Log.info("[{}] ReadMessageDetai4Send: тело XML тело XML не получено из БД , остановлено на {} символов", Queue_Id, messageDetails.XML_MsgOUT.length());
             }
 
-        MessegeSend_Log.info( "["+ Queue_Id +"] ReadMessageDetai4Send: получили из БД тело XML, " + messageDetails.XML_MsgOUT.length() + " символов" );
+        MessegeSend_Log.info("[{}] ReadMessageDetai4Send: получили из БД тело XML, {} символов", Queue_Id, messageDetails.XML_MsgOUT.length());
         if (IsDebugged ) {
-            MessegeSend_Log.info("["+ Queue_Id +"] ReadMessageDetai4Send: полученное из БД тело XML `" + messageDetails.XML_MsgOUT.toString() + "`");
+            MessegeSend_Log.info("[{}] ReadMessageDetai4Send: полученное из БД тело XML `{}`", Queue_Id, messageDetails.XML_MsgOUT.toString());
         }
         return messageDetails.MessageRowNum;
     }
@@ -1061,47 +1059,43 @@ public class MessageUtils {
 
                 messageDetails.MessageRowNum += 1;
                 if ( messageDetails.MessageRowNum % 10000 == 0)
-                    MessegeSend_Log.info( "["+ Queue_Id +"] чReadMessage: итаем из БД тело XML{} записей", messageDetails.MessageRowNum  );
+                    MessegeSend_Log.info("[{}] чReadMessage: итаем из БД тело XML{} записей", Queue_Id, messageDetails.MessageRowNum);
                 // MessegeSend_Log.info( "Tag_Id:" + rs.getString("Tag_Id") + " [" + rs.getString("Tag_Value") + "]");
             }
         } catch (SQLException e) {
-            MessegeSend_Log.error("Queue_Id=[" + Queue_Id + "] :" + sStackTrace.strInterruptedException(e));
+            MessegeSend_Log.error("Queue_Id=[{}] :{}", Queue_Id, sStackTrace.strInterruptedException(e));
             System.err.println("["+ Queue_Id +"] select  from MESSAGE_QUEUEdet  fault: " + e.getMessage());
             e.printStackTrace();
             return messageDetails.MessageRowNum;
         }
-        MessegeSend_Log.info( "["+ Queue_Id +"] ReadMessage: считали из БД фрагменты XML {} записей", messageDetails.MessageRowNum );
+        MessegeSend_Log.info("[{}] ReadMessage: считали из БД фрагменты XML {} записей", Queue_Id, messageDetails.MessageRowNum);
 
         if ( messageDetails.MessageRowNum > 0 )
             try {
                 XML_Current_Tags( messageDetails, 0);
             } catch ( NullPointerException e ) {
                 // NPE случилось, печатаем диагностику
-                MessegeSend_Log.warn("[" + Queue_Id + "] ReadMessage: проверяем вторчный индекс MessageIndex_by_Tag_Par_Num, потому как получили NullPointerException на подготовке XML" );
+                MessegeSend_Log.warn("[{}] ReadMessage: проверяем вторичный индекс MessageIndex_by_Tag_Par_Num, потому как получили NullPointerException на подготовке XML", Queue_Id);
                 Set<Integer> MessageIndexSet = messageDetails.MessageIndex_by_Tag_Par_Num.keySet();
                 Iterator MessageIndexIterator = MessageIndexSet.iterator();
                 while (MessageIndexIterator.hasNext()) {
                     Integer i = (Integer) MessageIndexIterator.next();
-                    MessegeSend_Log.warn("[" + Queue_Id + "] MessageIndex_by_Tag_Par_Num[" + i + "]" +
-                            messageDetails.MessageIndex_by_Tag_Par_Num.get(i).toString());
+                    MessegeSend_Log.warn("[{}] MessageIndex_by_Tag_Par_Num[{}]{}", Queue_Id, i, messageDetails.MessageIndex_by_Tag_Par_Num.get(i).toString());
                 }
                 MessageIndexSet = messageDetails.Message.keySet();
                 Iterator messageDetailsIterator = MessageIndexSet.iterator();
                 while (messageDetailsIterator.hasNext()) {
                     Integer i = (Integer) messageDetailsIterator.next();
-                    MessegeSend_Log.warn("[" + Queue_Id + "] messageDetails.Message[" + i + "] <" +
-                            messageDetails.Message.get(i).Tag_Id + ">" +
-                            messageDetails.Message.get(i).Tag_Value +
-                            "; Tag_Num=" + messageDetails.Message.get(i).Tag_Num +
-                            "; Tag_Par_Num=" + messageDetails.Message.get(i).Tag_Par_Num
-                    );
+                    MessegeSend_Log.warn("[{}] messageDetails.Message[{}] <{}>{}; Tag_Num={}; Tag_Par_Num={}", Queue_Id,
+                                        i, messageDetails.Message.get(i).Tag_Id, messageDetails.Message.get(i).Tag_Value, messageDetails.Message.get(i).Tag_Num,
+                                        messageDetails.Message.get(i).Tag_Par_Num);
                 }
-                MessegeSend_Log.info( "["+ Queue_Id +"] ReadMessage: тело XML тело XML не получено из БД , остановлено на " + messageDetails.XML_MsgResponse.length() + " символов" );
+                MessegeSend_Log.info("[{}] ReadMessage: тело XML тело XML не получено из БД , остановлено на {} символов", Queue_Id, messageDetails.XML_MsgResponse.length());
             }
 
-        MessegeSend_Log.info( "["+ Queue_Id +"] ReadMessage: получили из БД тело XML, " + messageDetails.XML_MsgResponse.length() + " символов" );
+        MessegeSend_Log.info("[{}] ReadMessage: получили из БД тело XML, {} символов", Queue_Id, messageDetails.XML_MsgResponse.length());
         if (IsDebugged ) {
-            MessegeSend_Log.info("["+ Queue_Id +"] ReadMessage: полученное из БД тело XML `{}`",  messageDetails.XML_MsgResponse.toString() );
+            MessegeSend_Log.info("[{}] ReadMessage: полученное из БД тело XML `{}`", Queue_Id, messageDetails.XML_MsgResponse.toString());
         }
         return messageDetails.MessageRowNum;
     }
@@ -1208,9 +1202,9 @@ public class MessageUtils {
                     messageQueueVO.setMsg_Reason( rs.getString("Msg_Reason") );
                     messageQueueVO.setMsg_Result( rs.getString("Msg_Result") );
                     if ( isDebugged )
-                    MessegeReceive_Log.info( "["+ Queue_Id +"] isMessageQueue_Direction_EXEIN: Direction=" + rs.getString("Queue_Direction") +
-                            " Msg_status:[" + rs.getString("Msg_status") + "] Msg_Reason=" + rs.getString("Msg_Reason") +
-                            "] Msg_Result=" + rs.getString("Msg_Result") + " Outqueue_id=" + rs.getLong("OutQueue_id"));
+                        MessegeReceive_Log.info("[{}] isMessageQueue_Direction_EXEIN: Direction={} Msg_status:[{}] Msg_Reason={}] Msg_Result={} Outqueue_id={}",
+                                                Queue_Id, rs.getString("Queue_Direction"), rs.getString("Msg_status"), rs.getString("Msg_Reason"),
+                                                rs.getString("Msg_Result"), rs.getLong("OutQueue_id"));
                     // Очистили Message от всего, что там было
 
                 }
@@ -1219,7 +1213,8 @@ public class MessageUtils {
                 MessegeReceive_Log.error(e.getMessage());
                 System.err.println("["+ Queue_Id +"] select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage());
                 //e.printStackTrace();
-                MessegeReceive_Log.error( "["+ Queue_Id +"] select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
+                MessegeReceive_Log.error("[{}] select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: {} что то пошло совсем не так...",
+                                                Queue_Id, e.getMessage());
                 return false;
             }
             if ( Queue_Direction != null)
@@ -1236,9 +1231,9 @@ public class MessageUtils {
             while (rs.next()) {
                 Queue_Direction = rs.getString("Queue_Direction");
                 if ( isDebugged )
-                MessegeReceive_Log.info( "["+ Queue_Id +"] isLink_Queue_Finish:" + rs.getString("Queue_Direction") +
-                        " Msg_status:[ " + rs.getString("Msg_status") + "] Msg_Reason=" + rs.getString("Msg_Reason") +
-                        "] Msg_Result=" + rs.getString("Msg_Result"));
+                    MessegeReceive_Log.info("[{}] isLink_Queue_Finish:{} Msg_status:[ {}] Msg_Reason={}] Msg_Result={}", Queue_Id,
+                                            rs.getString("Queue_Direction"), rs.getString("Msg_status"),
+                                            rs.getString("Msg_Reason"), rs.getString("Msg_Result"));
                 // Очистили Message от всего, что там было
 
             }
@@ -1247,7 +1242,7 @@ public class MessageUtils {
             MessegeReceive_Log.error(e.getMessage());
             System.err.println("["+ Queue_Id +"] isLink_Queue_Finish(): select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
             e.printStackTrace();
-            MessegeReceive_Log.error( "["+ Queue_Id +"] select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
+            MessegeReceive_Log.error("[{}] select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: {} что то пошло совсем не так...", Queue_Id, e.getMessage());
             return false;
         }
         if ( Queue_Direction != null)
@@ -1267,9 +1262,8 @@ public class MessageUtils {
                 pXML_MsgConfirmation.setLength(0); pXML_MsgConfirmation.trimToSize();
                 pXML_MsgConfirmation.append( rs.getString("Msg_Reason"));
                 if ( isDebugged )
-                    MessegeReceive_Log.info( "["+ Queue_Id +"] get_Link_Queue_Finish:" + rs.getString("Queue_Direction") +
-                            " Msg_status:[ " + rs.getString("Msg_status") + "] Msg_Reason=" + rs.getString("Msg_Reason") +
-                            "] Msg_Result=" + rs.getString("Msg_Result"));
+                    MessegeReceive_Log.info("[{}] get_Link_Queue_Finish:{} Msg_status:[ {}] Msg_Reason={}] Msg_Result={}", Queue_Id,
+                                    rs.getString("Queue_Direction"), rs.getString("Msg_status"), rs.getString("Msg_Reason"), rs.getString("Msg_Result"));
                 // Очистили Message от всего, что там было
 
             }
@@ -1278,7 +1272,7 @@ public class MessageUtils {
             //MessegeReceive_Log.error(e.getMessage());
             System.err.println("["+ Queue_Id +"] get_Link_Queue_Finish(): select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
             e.printStackTrace();
-            MessegeReceive_Log.error( "["+ Queue_Id +"] get_Link_Queue_Finish(): select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
+            MessegeReceive_Log.error("[{}] get_Link_Queue_Finish(): select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: {} что то пошло совсем не так...", Queue_Id, e.getMessage());
             return null;
         }
         if ( Queue_Direction != null)
@@ -1297,9 +1291,7 @@ public class MessageUtils {
             while (rs.next()) {
                 msg_infostreamid = rs.getInt("msg_infostreamid");
                 if ( isDebugged )
-                MessegeReceive_Log.info( "["+ Queue_Id +"] get_SelectLink_msg_InfostreamId:" + rs.getString("Queue_Direction") +
-                        " Msg_status:[ " + rs.getString("Msg_status") + "] Msg_Reason=" + rs.getString("Msg_Reason") +
-                        "] msg_infostreamid =" + rs.getInt("msg_infostreamid"));
+                    MessegeReceive_Log.info("[{}] get_SelectLink_msg_InfostreamId:{} Msg_status:[ {}] Msg_Reason={}] msg_infostreamid ={}", Queue_Id, rs.getString("Queue_Direction"), rs.getString("Msg_status"), rs.getString("Msg_Reason"), rs.getInt("msg_infostreamid"));
                 // Очистили Message от всего, что там было
 
             }
@@ -1307,7 +1299,7 @@ public class MessageUtils {
         } catch (Exception e) {
             MessegeReceive_Log.error(e.getMessage());
             System.err.println("Queue_Id=[" + Queue_Id + "] get_SelectLink_msg_InfostreamId() select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault " + sStackTrace.strInterruptedException(e));
-            MessegeReceive_Log.error( "["+ Queue_Id +"] get_SelectLink_msg_InfostreamId() select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: " + e.getMessage() + " что то пошло совсем не так...");
+            MessegeReceive_Log.error("[{}] get_SelectLink_msg_InfostreamId() select Queue_Direction from MESSAGE_QUEUE q Where  Q.queue_id = ? fault: {} что то пошло совсем не так...", Queue_Id, e.getMessage());
             return -2;
         }
 
@@ -1324,13 +1316,13 @@ public class MessageUtils {
                 Link_Queue_Id = rs.getLong("Link_Queue_Id");
                 messageQueueVO.setMsg_Reason( rs.getString("Msg_Reason") );
                 if ( isDebugged )
-                MessegeReceive_Log.info( "["+ Queue_Id +"] get_SelectLink_Queue_Id:" + rs.getLong("Link_Queue_Id"));
+                    MessegeReceive_Log.info("[{}] get_SelectLink_Queue_Id:{}", Queue_Id, rs.getLong("Link_Queue_Id"));
                 if ( Link_Queue_Id == 0L ) Link_Queue_Id = null;
             }
             rs.close();
         } catch (Exception e) {
             System.err.println("Queue_Id=[" + Queue_Id + "] :" + theadDataAccess.SELECT_Link_Queue_Id + "fault " + sStackTrace.strInterruptedException(e));
-            MessegeReceive_Log.error( "["+ Queue_Id +"] " + theadDataAccess.SELECT_Link_Queue_Id + "fault " + e.getMessage() + " что то пошло совсем не так...");
+            MessegeReceive_Log.error("[{}] {}fault {} что то пошло совсем не так...", Queue_Id, theadDataAccess.SELECT_Link_Queue_Id, e.getMessage());
             return Link_Queue_Id;
         }
             return Link_Queue_Id;
@@ -1385,8 +1377,7 @@ public class MessageUtils {
                     XPathExpression<Element> xpathNext = XPathFactory.instance().compile(xpathNextExpression, Filters.element());
                     Element emtNext = xpathNext.evaluateFirst(document);
                     if ( emtNext != null ) {
-                        MessegeSend_Log.info(" ["+ messageQueueVO.getQueue_Id() +"] XPath has result: <" + emtNext.getName() + "> :" + emtNext.getText()
-                        );
+                        MessegeSend_Log.info(" [{}] XPath has result: <{}> :{}", messageQueueVO.getQueue_Id(), emtNext.getName(), emtNext.getText());
                         AnswXSLTQueue_Direction = emtNext.getText();
 
                         XPathExpression<Element> xpathResultCode = XPathFactory.instance().compile(xpathResultCodeExpression, Filters.element());
@@ -1432,7 +1423,7 @@ public class MessageUtils {
                                 theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT(messageQueueVO,
                                         "PrepareConfirmation.'" + org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4(messageDetails.MsgReason.toString()) + "' for (" + parsedMessageConfirmation + ")", 1233,
                                         messageQueueVO.getRetry_Count(), MessegeSend_Log);
-                                MessegeSend_Log.error("PrepareConfirmation.'"+ messageDetails.MsgReason.toString()  +"' for(" + parsedMessageConfirmation + ")");
+                                MessegeSend_Log.error("PrepareConfirmation.'{}' for({})", messageDetails.MsgReason.toString(), parsedMessageConfirmation);
 
                                 return XMLchars.DirectERROUT;
                             }
@@ -1448,14 +1439,14 @@ public class MessageUtils {
                         theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT(messageQueueVO,
                                 "PrepareConfirmation.XPathFactory.xpath.evaluateFirst('" + xpathNextExpression + "') не нашёл <Next></Next> в (" + parsedMessageConfirmation + ")", 1233,
                                 messageQueueVO.getRetry_Count(), MessegeSend_Log);
-                        MessegeSend_Log.error("PrepareConfirmation.XPathFactory.xpath.evaluateFirst('\"+ xpathNextExpression  +\"') не нашёл <Next></Next> в (" + parsedMessageConfirmation + ")");
+                        MessegeSend_Log.error("PrepareConfirmation.XPathFactory.xpath.evaluateFirst('\"+ xpathNextExpression  +\"') не нашёл <Next></Next> в ({})", parsedMessageConfirmation);
 
                         return AnswXSLTQueue_Direction;
                     }
                 }
                 catch (Exception ex) {
                     ex.printStackTrace();
-                    MessegeSend_Log.error("PrepareConfirmation.XPathFactory.xpath.evaluateFirst \""+ xpathNextExpression + "\" fault: " + ex.getMessage() + " for " + parsedMessageConfirmation );
+                    MessegeSend_Log.error("PrepareConfirmation.XPathFactory.xpath.evaluateFirst \"{}\" fault: {} for {}", xpathNextExpression, ex.getMessage(), parsedMessageConfirmation);
                     theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT(messageQueueVO,
                             "PrepareConfirmation.XPathFactory.xpath.evaluateFirst \""+ xpathNextExpression +"\" for (" + parsedMessageConfirmation + ") fault: " + ex.getMessage()  , 1233,
                             messageQueueVO.getRetry_Count(), MessegeSend_Log);
@@ -1463,7 +1454,7 @@ public class MessageUtils {
 
             } catch (Exception ex) {
                 ex.printStackTrace();
-                MessegeSend_Log.error("PrepareConfirmation.XPathFactory.xpath.evaluateFirst '/Confirmation' fault: " + ex.getMessage() + " for " + parsedMessageConfirmation );
+                MessegeSend_Log.error("PrepareConfirmation.XPathFactory.xpath.evaluateFirst '/Confirmation' fault: {} for {}", ex.getMessage(), parsedMessageConfirmation);
                 theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT(messageQueueVO,
                         "PrepareConfirmation.XPathFactory.xpath.evaluateFirst \"/Confirmation\" for (" + parsedMessageConfirmation + ") fault: " + ex.getMessage()  , 1233,
                         messageQueueVO.getRetry_Count(), MessegeSend_Log);
@@ -1475,7 +1466,7 @@ public class MessageUtils {
 
 
         } catch (JDOMException | IOException ex) {
-            MessegeSend_Log.error("PrepareConfirmation.documentBuilder fault: " + ex.getMessage() + " for " + parsedMessageConfirmation);
+            MessegeSend_Log.error("PrepareConfirmation.documentBuilder fault: {} for {}", ex.getMessage(), parsedMessageConfirmation);
             theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT(messageQueueVO,
                     "PrepareConfirmation.documentBuilder fault: " + ex.getMessage() + " for " + parsedMessageConfirmation, 1233,
                     messageQueueVO.getRetry_Count(), MessegeSend_Log);
@@ -1502,13 +1493,13 @@ public class MessageUtils {
                 }
                 rs.close();
             } catch (SQLException e) {
-                MessegeReceive_Log.error("Queue_Id=[" + Queue_Id + "] :" + sStackTrace.strInterruptedException(e));
+                MessegeReceive_Log.error("[{}] :{}", Queue_Id, sStackTrace.strInterruptedException(e));
                 System.err.println("Queue_Id=[" + Queue_Id + "] :" + e.getMessage() );
                 e.printStackTrace();
                 return messageDetails.ConfirmationRowNum;
             }
             if ( Tag_Num < 1 ) {
-                MessegeReceive_Log.warn("Queue_Id=[" + Queue_Id + "] ReadConfirmation: tag 'Confirmation' is not found in MESSAGE_QUEUEDET" );
+                MessegeReceive_Log.warn("Queue_Id=[{}] ReadConfirmation: tag 'Confirmation' is not found in MESSAGE_QUEUEDET", Queue_Id);
                 messageDetails.XML_MsgConfirmation.append(XMLchars.OpenTag)
                         .append(XMLchars.TagConfirmation).append(XMLchars.CloseTag)
                         .append(XMLchars.nanXSLT_Result)
@@ -1555,7 +1546,7 @@ public class MessageUtils {
                 }
                 rs.close();
             } catch (SQLException e) {
-                MessegeReceive_Log.error("Queue_Id=[" + Queue_Id + "] :" + sStackTrace.strInterruptedException(e));
+                MessegeReceive_Log.error("[{}] :{}", Queue_Id, sStackTrace.strInterruptedException(e));
                 e.printStackTrace();
                 return -2;
             }
@@ -1574,7 +1565,7 @@ public class MessageUtils {
 
             XML_CurrentConfirmation_Tags(messageDetails, 0, MessegeReceive_Log);
             if (  messageDetails.MessageTemplate4Perform.getIsDebugged() )
-            MessegeReceive_Log.info("["+ Queue_Id +"] MsgConfirmation: " +  messageDetails.XML_MsgConfirmation.toString());
+                MessegeReceive_Log.info("[{}] MsgConfirmation: {}", Queue_Id, messageDetails.XML_MsgConfirmation.toString());
             return messageDetails.ConfirmationRowNum;
         }
 
@@ -1709,7 +1700,7 @@ public class MessageUtils {
 
         } catch (NullPointerException  ex) { // | IOException
             ex.printStackTrace(System.err);
-            MessegeReceive_Log.error("[" + Queue_Id + "] SaveMessage4Input fault:" + ex.getMessage());
+            MessegeReceive_Log.error("[{}] SaveMessage4Input fault:{}", Queue_Id, ex.getMessage());
             MessageUtils.ProcessingIn2ErrorIN(  messageQueueVO, messageDetails,  theadDataAccess,
                     "SaveMessage4Input.SAXBuilder fault:"  + ex.getMessage() + " " + messageDetails.XML_MsgClear.toString()  ,
                     null ,  MessegeReceive_Log);
@@ -1757,7 +1748,7 @@ public class MessageUtils {
                 // в БД имеет Tag_Num= 0, ссылается на элемент.
                 Namespace Namespace = ElementNamespaces.get(j);
 
-                MessegeReceive_Log.info("Tag_Par_Num[1][0]: " + XMLchars.XMLns + Namespace.getPrefix() + "=" + Namespace.getURI());
+                MessegeReceive_Log.info("Tag_Par_Num[1][0]: " + XMLchars.XMLns + "{}={}", Namespace.getPrefix(), Namespace.getURI());
                 MessageDetailVO NSmessageDetailVO = new MessageDetailVO();
                 NSmessageDetailVO.setMessageQueue(XMLchars.XMLns + Namespace.getPrefix(), // "Tag_Id"
                         Namespace.getURI(), // Tag_Value
@@ -1887,7 +1878,7 @@ public class MessageUtils {
             theadDataAccess.stmt_INSERT_Message_Details.executeBatch();
 
         } catch (SQLException e) {
-            MessegeReceive_Log.error(theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "] :" + sStackTrace.strInterruptedException(e));
+            MessegeReceive_Log.error("[{}] {}: :{}", Queue_Id, theadDataAccess.INSERT_Message_Details, sStackTrace.strInterruptedException(e));
             System.err.println(":Queue_Id=[" + Queue_Id + "] :" + theadDataAccess.INSERT_Message_Details );
             System.err.println(StringEscapeUtils.unescapeXml(messageDetailVO.Tag_Value));
             e.printStackTrace();
@@ -1895,14 +1886,14 @@ public class MessageUtils {
                 theadDataAccess.Hermes_Connection.rollback();
             } catch (SQLException exp) {
                 System.err.println(":Queue_Id=[" + Queue_Id + "] :" + "Hermes_Connection.rollback() fault: " + exp.getMessage());
-                MessegeReceive_Log.error("Hermes_Connection.rollback() fault: " + exp.getMessage());
+                MessegeReceive_Log.error("[{}] Hermes_Connection.rollback() fault: {}", Queue_Id, exp.getMessage());
             }
             return -2;
         }
         try {
             theadDataAccess.Hermes_Connection.commit();
         } catch (SQLException exp) {
-            MessegeReceive_Log.error("Hermes_Connection.commit() fault: " + exp.getMessage());
+            MessegeReceive_Log.error("Hermes_Connection.commit() fault: {}", exp.getMessage());
             return -3;
         }
 
@@ -1918,12 +1909,13 @@ public class MessageUtils {
             theadDataAccess.stmt_DELETE_Message_Details.setLong(1, Queue_Id);
             theadDataAccess.stmt_DELETE_Message_Details.executeUpdate();
         } catch (SQLException e) {
-            MessegeReceive_Log.error("DELETE(" + theadDataAccess.DELETE_Message_Details + "[" + Queue_Id + "]" + ") fault: " + e.getMessage());
+            MessegeReceive_Log.error("Hermes_Connection.rollback()fault: {}", Queue_Id , e.getMessage());
+            MessegeReceive_Log.error("[{}] DELETE({}) fault: {}", Queue_Id ,theadDataAccess.DELETE_Message_Details, e.getMessage());
             e.printStackTrace();
             try {
                 theadDataAccess.Hermes_Connection.rollback();
             } catch (SQLException exp) {
-                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: " + exp.getMessage());
+                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: {}", Queue_Id , exp.getMessage());
             }
             return -1;
         }
@@ -1957,17 +1949,17 @@ public class MessageUtils {
             theadDataAccess.stmt_INSERT_Message_Details.executeBatch();
 
         } catch (SQLException e) {
-            MessegeReceive_Log.error(theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "] :" + sStackTrace.strInterruptedException(e));
+            MessegeReceive_Log.error("{}:Queue_Id=[{}] ReplaceMessage :{}", theadDataAccess.INSERT_Message_Details, Queue_Id, sStackTrace.strInterruptedException(e));
             e.printStackTrace();
             try {
                 theadDataAccess.Hermes_Connection.rollback();
             } catch (SQLException exp) {
-                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: " + exp.getMessage());
+                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: {}", exp.getMessage());
             }
             return -2;
         }
 
-        MessegeReceive_Log.info("Queue_Id=[" + Queue_Id + "] : Delete and INSERT new Message Details, " + nn + " rows done");
+        MessegeReceive_Log.info("[{}] : Delete and INSERT new Message Details, {} rows done", Queue_Id, nn);
         return nn;
     }
 

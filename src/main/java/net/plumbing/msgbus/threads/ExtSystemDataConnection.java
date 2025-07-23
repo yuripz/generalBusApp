@@ -18,14 +18,11 @@ public class ExtSystemDataConnection {
 
         String rdbmsVendor;
         if ( ApplicationProperties.extSystemDataSource == null ) {
-            dataAccess_log.error("[" + Queue_Id + "] ExtSystem getConnection() fault: ApplicationProperties.extSystemDataSource is null" );
+            dataAccess_log.error("[{}] ExtSystem getConnection() fault: ApplicationProperties.extSystemDataSource is null", Queue_Id);
             return ;
         }
         HikariDataSource dataSource= ApplicationProperties.extSystemDataSource;
         String connectionUrl = dataSource.getJdbcUrl();
-        // попробуй ARTX_PROJ / rIYmcN38St5P  || hermes / uthvtc
-        //String db_userid = "HERMES";
-        //String db_password = "uthvtc";
         //this.dbSchema = HrmsSchema;
         if (connectionUrl.contains("oracle") ) {
             rdbmsVendor = "oracle";
@@ -35,14 +32,14 @@ public class ExtSystemDataConnection {
             else
                 rdbmsVendor = "presto";
         }
-        dataAccess_log.info("[" + Queue_Id + "] Try(thead) ExtSystem getConnection: " + connectionUrl + " as " + ApplicationProperties.ExtSysDbLogin + " rdbmsVendor=" + rdbmsVendor);
+        dataAccess_log.info("[{}] Try(thead) ExtSystem getConnection: {} as {} rdbmsVendor={}", Queue_Id, connectionUrl, ApplicationProperties.ExtSysDbLogin, rdbmsVendor);
 
 
         try {
             Target_Connection = dataSource.getConnection();
             Target_Connection.setAutoCommit(false);
         } catch (SQLException e) {
-            dataAccess_log.error("[" + Queue_Id + "] ExtSystem getConnection() fault: " + e.getMessage());
+            dataAccess_log.error("[{}] ExtSystem getConnection() fault: {}", Queue_Id, e.getMessage());
             System.err.println( "["+ Queue_Id + "] ExtSystem getConnection() Exception" );
             e.printStackTrace();
             return ;
@@ -69,38 +66,39 @@ public class ExtSystemDataConnection {
                         PreparedStatement set_config_Statement = Target_Connection.prepareStatement( set_config_Query );
                         ResultSet resultSet;
                         resultSet = set_config_Statement.executeQuery();
-                        ServletApplication.AppThead_log.info( "Target_Connection ( at prepareStatement ): set_config: " + set_config_Query );
+                        ServletApplication.AppThead_log.info("Target_Connection ( at prepareStatement ): set_config: {}", set_config_Query);
                         if ( resultSet != null ) {
                             if (resultSet.next() ) {
                                 current_setting_Set_Config = resultSet.getString(1);
-                                ServletApplication.AppThead_log.info("Target_Connection ( at prepareStatement ): set_config: " + current_setting_Set_Config);
+                                ServletApplication.AppThead_log.info("Target_Connection ( at prepareStatement ): set_config: {}", current_setting_Set_Config);
                             }
                             else {
-                                ServletApplication.AppThead_log.error( "Target_Connection set_config_Statement.executeQuery() fault `" + set_config_Query + "` :" +  " resultSet is empty " );
+                                ServletApplication.AppThead_log.error("Target_Connection set_config_Statement.executeQuery() fault `{}` : resultSet is empty ", set_config_Query);
                             }
                             resultSet.close();
                         }
                         else {
-                            ServletApplication.AppThead_log.error( "Target_Connection set_config_Statement.executeQuery() fault `" + set_config_Query + "` :" +  " resultSet == null " );
+                            ServletApplication.AppThead_log.error("Target_Connection set_config_Statement.executeQuery() fault `{}` : resultSet == null ", set_config_Query);
                         }
                         set_config_Statement.close();
 
 
                     }
                     catch (java.sql.SQLException e)
-                    { ServletApplication.AppThead_log.error( "Target_Connection set_config fault `" + set_config_Query + "` :" +  e.getMessage());
+                    {
+                        ServletApplication.AppThead_log.error("Target_Connection set_config fault `{}` :{}", set_config_Query, e.getMessage());
 
                     }
 
-                dataAccess_log.info("[" + Queue_Id + "] ExtSystem `set SESSION time zone 3` done " );
+                dataAccess_log.info("[{}] ExtSystem `set SESSION time zone 3` done ", Queue_Id);
             } catch (SQLException e) {
 
-                dataAccess_log.error("[" + Queue_Id + "] ExtSystem `set SESSION time zone 3` fault: " + e.getMessage());
+                dataAccess_log.error("[{}] ExtSystem `set SESSION time zone 3` fault: {}", Queue_Id, e.getMessage());
                 System.err.println( "["+ Queue_Id + "] ExtSystem `set SESSION time zone 3` Exception" );
                 e.printStackTrace();
                 try { Target_Connection.close(); //.close(); ??
                 } catch (SQLException SQLe) {
-                    dataAccess_log.error("[" + Queue_Id + "] `ExtSystem Connection.close()` fault: " + e.getMessage());
+                    dataAccess_log.error("[{}] `ExtSystem Connection.close()` fault: {}", Queue_Id, e.getMessage());
                 }
                 return ;
             }

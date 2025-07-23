@@ -17,8 +17,7 @@ public class HikariDataAccess {
         HikariConfig hikariConfig = new HikariConfig();
         String connectionUrl ;
         if ( JdbcUrl==null) {
-            connectionUrl = "jdbc:oracle:thin:@//10.242.36.8:1521/hermes12"; // Test-Capsul !!!
-            //connectionUrl = "jdbc:oracle:thin:@//10.32.245.4:1521/hermes"; // Бой !!!
+            connectionUrl = "jdbc:oracle:thin:@//5.6.7.8:1521/hermesXX"; // Test-Capsul !!!
         }
         else {
             //connectionUrl = "jdbc:oracle:thin:@"+dst_point;
@@ -36,14 +35,13 @@ public class HikariDataAccess {
         }
 
 //        hikariConfig.setDriverClassName("oracle.jdbc.driver.OracleDriver");
-//        hikariConfig.setJdbcUrl( "jdbc:oracle:thin:@"+ JdbcUrl); //("jdbc:oracle:thin:@//10.242.36.8:1521/hermes12");
-        ServletApplication.AppThead_log.info( "Try make hikariConfig: " + connectionUrl + " as " + Username + " , Class.forName:" + ClassforName);
+//        hikariConfig.setJdbcUrl( "jdbc:oracle:thin:@"+ JdbcUrl);
+        ServletApplication.AppThead_log.info("Try make hikariConfig: {} as {} , Class.forName:{}", connectionUrl, Username, ClassforName);
         hikariConfig.setDriverClassName(ClassforName);
-        hikariConfig.setJdbcUrl(  connectionUrl ); //("jdbc:oracle:thin:@//10.242.36.8:1521/hermes12");
+        hikariConfig.setJdbcUrl(  connectionUrl );
 
-        hikariConfig.setUsername( Username ); //("ARTX_PROJ");
-        hikariConfig.setPassword( Password ); // ("rIYmcN38St5P");
-
+        hikariConfig.setUsername( Username );
+        hikariConfig.setPassword( Password );
         hikariConfig.setLeakDetectionThreshold(TimeUnit.MINUTES.toMillis(5));
         hikariConfig.setConnectionTimeout(TimeUnit.SECONDS.toMillis(30));
         hikariConfig.setValidationTimeout(TimeUnit.MINUTES.toMillis(1));

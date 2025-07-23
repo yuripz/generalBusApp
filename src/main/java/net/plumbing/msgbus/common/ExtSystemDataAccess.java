@@ -48,9 +48,9 @@ public class ExtSystemDataAccess {
         hikariConfig.setDriverClassName(ClassforName);
         hikariConfig.setJdbcUrl(  connectionUrl ); //("jdbc:oracle:thin:@//10.242.36.8:1521/hermes12");
 
-        hikariConfig.setUsername( Username ); //("ARTX_PROJ");
+        hikariConfig.setUsername( Username );
         if ((Password !=null ) && (! Password.isEmpty()))
-        hikariConfig.setPassword( Password ); // ("rIYmcN38St5P");
+        hikariConfig.setPassword( Password );
 
         hikariConfig.setLeakDetectionThreshold(TimeUnit.MINUTES.toMillis(5));
         hikariConfig.setConnectionTimeout(TimeUnit.SECONDS.toMillis(30));
