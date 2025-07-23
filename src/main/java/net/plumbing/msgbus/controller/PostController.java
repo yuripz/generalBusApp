@@ -845,7 +845,7 @@ public class PostController {
                 Fault_noNS_End;
         int Interface_id =
                 MessageRepositoryHelper.look4MessageTypeVO_2_Interface(Url_Soap_Send, Controller_log);
-        Controller_log.warn("Interface_id=" + Interface_id);
+        Controller_log.warn("GetHttpRequest: Interface_id={}", Interface_id);
         if (Interface_id < 0) {
             getResponse.setStatus(500);
             HttpResponse = Fault_Client_noNS_Begin +
@@ -853,12 +853,12 @@ public class PostController {
                     XML.escape(httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")") +
                     " в системе не сконфигурирован" +
                     Fault_noNS_End;
-            Controller_log.warn("HttpResponse:\n" + HttpResponse);
+            Controller_log.warn("HttpResponse:\n{}" , HttpResponse);
             try {
                 JSONObject xmlJSONObj = XML.toJSONObject(HttpResponse);
 
                 String jsonPrettyPrintString = xmlJSONObj.toString(4);
-                Controller_log.warn("jsonPrettyPrintString:\n" + jsonPrettyPrintString);
+                Controller_log.warn("GetHttpRequest: jsonPrettyPrintString=\n{}", jsonPrettyPrintString);
                 getResponse.setContentType("application/json;Charset=UTF-8");
                 return (jsonPrettyPrintString);
 
@@ -870,6 +870,7 @@ public class PostController {
         } else
         // Начинае подготовку к обработке запроса
         { StringBuilder tmpHttpResponse = new StringBuilder();
+            boolean isDebugged =false;
 
             tmpHttpResponse.append(Parametrs_Begin);
             String queryParams[];
@@ -877,18 +878,20 @@ public class PostController {
             for (int i= 0 ; queryString.length() > 1 && i < queryParams.length; i++)
             { // Controller_log.warn( queryParams[i]);
                 String ParamElements[] = queryParams[i].split("=");
-                Controller_log.warn( ParamElements[0] + " :=" );
+                Controller_log.warn("GetHttpRequest: {} :=", ParamElements[0]);
 
                 tmpHttpResponse.append(OpenTag);
                 tmpHttpResponse.append(ParamElements[0]);
                 tmpHttpResponse.append(CloseTag);
+
 
                 if ( ParamElements[0] != null ) {
                     String UpperParamElement = ParamElements[0].toUpperCase();
                     String XSD_section=null;
 
                     if ((ParamElements.length > 1) && (ParamElements[1] != null)) {
-                        Controller_log.warn(queryParams[i].substring(ParamElements[0].length() + 1));
+                        if ( isDebugged)
+                        Controller_log.warn("GetHttpRequest: queryParams[{}].substring {}", i, queryParams[i].substring(ParamElements[0].length() + 1));
                         tmpHttpResponse.append(queryParams[i].substring(ParamElements[0].length() + 1));
                         XSD_section = queryParams[i].substring(ParamElements[0].length() + 1) ;
                     }
@@ -897,15 +900,15 @@ public class PostController {
                     int MessageTemplateVOkey = MessageRepositoryHelper.look4MessageTemplate_2_Interface(Interface_id, Controller_log);
                     if (MessageTemplateVOkey < 0)
                     { getResponse.setContentType("text/xml; charset=utf-8");
-                        Controller_log.error("WSDL для интерфейса Id='" + Interface_id + "') не найден" );
+                        Controller_log.error("GetHttpRequest: WSDL для интерфейса Id='{}') не найден", Interface_id);
                         String OutResponse = Envelope_Begin + Empty_Header + Body_Begin + Fault_Client_Begin +
                                 "WSDL/XSD для интерфейса Id='" + Interface_id + "' не найден" +
                                 Fault_End + Body_End + Envelope_End;
                         getResponse.setStatus(200);
                         return OutResponse;
                     }
-                    boolean isDebugged =false;
-                    Controller_log.warn("isDebugged before ClientIpHelper.getIsDebuged(): false" + isDebugged );
+
+                    Controller_log.warn("isDebugged before ClientIpHelper.getIsDebuged(): false{}", isDebugged);
                     String getIsDebugedResponse = ClientIpHelper.getIsDebuged( MessageTemplateVOkey, isDebugged, Controller_log);
                     if ( ( ! getIsDebugedResponse.equalsIgnoreCase("true") ) && ( ! getIsDebugedResponse.equalsIgnoreCase("false") ))
                     {
@@ -916,7 +919,7 @@ public class PostController {
                     else {
                         isDebugged = getIsDebugedResponse.equalsIgnoreCase("true");
                     }
-                    Controller_log.warn("isDebugged after ClientIpHelper.getIsDebuged(): " + isDebugged );
+                    Controller_log.warn("isDebugged after ClientIpHelper.getIsDebuged(): {}", isDebugged);
                         switch (UpperParamElement) {
                             case WSDLhi:
 
@@ -925,7 +928,7 @@ public class PostController {
                                     // WsdlInterface.replaceAll("http://10.32.245.8:7001/", "http://" + myHostAddress + ":8008/" );
 
                                     if ( isDebugged)
-                                    Controller_log.info("WsdlInterface:" + WsdlInterface);
+                                        Controller_log.info("GetHttpRequest: WsdlInterface:{}", WsdlInterface);
                                     if (MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getWsdlInterface() != null) {
                                         getResponse.setStatus(200);
                                         getResponse.setContentType("text/xml; charset=utf-8");
@@ -933,7 +936,7 @@ public class PostController {
                                     }
                                     else {
                                         getResponse.setStatus(404);
-                                        Controller_log.error("WSDL для интерфейса Id='" + Interface_id + "') не сконфигурён" );
+                                        Controller_log.error("GetHttpRequest: WSDL для интерфейса Id='{}') не сконфигурён", Interface_id);
                                         String OutResponse = Envelope_Begin + Empty_Header + Body_Begin + Fault_Client_Begin +
                                                 "WSDL для интерфейса Id='" + Interface_id + "' не сконфигурён" +
                                                 Fault_End + Body_End + Envelope_End;
@@ -983,7 +986,7 @@ public class PostController {
                                 else {
                                     getResponse.setContentType("text/xml; charset=utf-8");
                                     getResponse.setStatus(404);
-                                    Controller_log.error("WsdlXSD [" + XSD_section +  "] для интерфейса Id='" + Interface_id + "') не найден" );
+                                    Controller_log.error("GetHttpRequest: WsdlXSD [{}] для интерфейса Id='{}') не найден", XSD_section, Interface_id);
                                     String OutResponse = Envelope_Begin + Empty_Header + Body_Begin + Fault_Client_Begin +
                                             "WSDLXSD [" + XSD_section + "]  для интерфейса Id='" + Interface_id + "' не найден" +
                                             Fault_End + Body_End + Envelope_End;

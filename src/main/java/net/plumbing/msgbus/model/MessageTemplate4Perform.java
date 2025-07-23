@@ -589,7 +589,7 @@ public class MessageTemplate4Perform {
 
     public void setErrTransXSLT (String ErrTransXSLT) { this.ErrTransXSLT =  ErrTransXSLT ; }
     public void setErrTransXSD (String ErrTransXSD) { this.ErrTransXSD = ErrTransXSD ; }
-    public void setHeaderXSD (String ErrTransXSD) { this.ErrTransXSD = ErrTransXSD ; }
+    public void setHeaderXSD (String HeaderXSD ) { this.HeaderXSD  = HeaderXSD  ; }
     public void setHeaderXSLT (String HeaderXSLT) { this.HeaderXSLT = HeaderXSLT ; }
 
 

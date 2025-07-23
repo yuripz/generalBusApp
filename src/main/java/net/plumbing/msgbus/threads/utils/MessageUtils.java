@@ -1909,13 +1909,13 @@ public class MessageUtils {
             theadDataAccess.stmt_DELETE_Message_Details.setLong(1, Queue_Id);
             theadDataAccess.stmt_DELETE_Message_Details.executeUpdate();
         } catch (SQLException e) {
-            MessegeReceive_Log.error("Hermes_Connection.rollback()fault: {}", Queue_Id , e.getMessage());
+            MessegeReceive_Log.error("[{}] Hermes_Connection.rollback() fault: {}", Queue_Id , e.getMessage());
             MessegeReceive_Log.error("[{}] DELETE({}) fault: {}", Queue_Id ,theadDataAccess.DELETE_Message_Details, e.getMessage());
             e.printStackTrace();
             try {
                 theadDataAccess.Hermes_Connection.rollback();
             } catch (SQLException exp) {
-                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: {}", Queue_Id , exp.getMessage());
+                MessegeReceive_Log.error("[{}] Hermes_Connection.rollback() fault: {}", Queue_Id , exp.getMessage());
             }
             return -1;
         }
