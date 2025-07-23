@@ -501,7 +501,7 @@ public class PostController {
                 postResponse.setContentType("application/json;Charset=UTF-8");
                 return HttpResponse;
             }
-            Controller_log.warn("BusOperationMesssageType: [" + BusOperationMesssageType + "]");
+            Controller_log.warn("BusOperationMesssageType: [{}]", BusOperationMesssageType);
             // формируем НАСТОЯЩИЙ тип операции из полученнго от URL + в зависимости от  queryString
 
 //                if ( queryString == null) // Значит, в "InternalRestApi/"+ Url_Soap_Send +"/" может  быть ПК для зачитывания записи для GetOne
@@ -574,13 +574,13 @@ public class PostController {
                     org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ")") +
                     " в системе не сконфигурирована" +
                     Fault_Rest_End;
-            Controller_log.warn("HttpResponse:" + HttpResponse);
+            Controller_log.warn("HttpResponse:{}", HttpResponse);
             postResponse.setContentType("application/json;Charset=UTF-8");
             postResponse.setStatus(422);
             return HttpResponse;
         }
-        Controller_log.warn("Операция с типом:" + BusOperationMesssageType + " NN=" + OperationId);
-        Controller_log.warn("POST QueryString: [" + queryString + "]");
+        Controller_log.warn("Операция с типом:{} NN={}", BusOperationMesssageType, OperationId);
+        Controller_log.warn("POST QueryString: [{}]", queryString);
         MessageDetails Message = new MessageDetails();
         Message.XML_Request_Method.append(QueryString_Begin);
         if (queryString !=null)
@@ -616,7 +616,7 @@ public class PostController {
                     HttpResponse= Fault_Client_Rest_Begin + org.apache.commons.text.StringEscapeUtils.escapeJson(
                             "Ошибка при разборе параметров от клиента (" + queryString + ") " + e.getMessage() ) +
                             Fault_Rest_End ;
-                    Controller_log.warn("HttpResponse:\n" + HttpResponse);
+                    Controller_log.warn("HttpResponse:\n{}", HttpResponse);
                     postResponse.setContentType("application/json;Charset=UTF-8");
                     postResponse.setStatus(422);
                     return HttpResponse;
@@ -639,7 +639,7 @@ public class PostController {
                 Message.XML_MsgConfirmation.append( CharStreams.toString(reader) );
 
             if ( isDebugged )
-                Controller_log.warn("InputStreamReader to Message.JSONObject[" +  Message.XML_MsgConfirmation.toString() + "]");
+                Controller_log.warn("InputStreamReader to Message.JSONObject[{}]", Message.XML_MsgConfirmation.toString());
 
                 JSONObject postJSONObject = new JSONObject( Message.XML_MsgConfirmation.toString() );
                 Message.XML_MsgConfirmation.setLength(0);
@@ -652,7 +652,7 @@ public class PostController {
                 Message.XML_MsgConfirmation.append( CharStreams.toString(reader) );
                 Message.XML_MsgConfirmation.append(XMLchars.Data_CDATA_End);
                 if ( isDebugged )
-                    Controller_log.warn("InputStreamReader to XML_MsgConfirmation[" +  Message.XML_MsgConfirmation.toString() + "]");
+                    Controller_log.warn("InputStreamReader to XML_MsgConfirmation[{}]", Message.XML_MsgConfirmation.toString());
             }
             Message.XML_MsgInput = Envelope_noNS_Begin
                     // + EmptyHeader
@@ -664,7 +664,7 @@ public class PostController {
 
 
             if ( isDebugged )
-                Controller_log.warn("InputStreamReader to Message.XML_MsgInput[" +  Message.XML_MsgInput + "]");
+                Controller_log.warn("InputStreamReader to Message.XML_MsgInput[{}}]", Message.XML_MsgInput );
             inputStream.close();
             // throw  new IOException( " Проверка ioException ! " ) ;
         } catch (IOException | JSONException|   IllegalCharsetNameException ioException ) {
@@ -707,7 +707,7 @@ public class PostController {
                             Fault_noNS_End;
                 } else {
                     if (isDebugged)
-                        Controller_log.info("[" + Message.Queue_Id + "] MsgReason for HttpResponse:" + Message.MsgReason);
+                        Controller_log.info("[{}] MsgReason for HttpResponse:{}", Message.Queue_Id, Message.MsgReason);
                     postResponse.setStatus(500);
                     HttpResponse = Fault_Server_noNS_Begin +
                             Message.MsgReason.toString() +
@@ -721,7 +721,7 @@ public class PostController {
                     Fault_noNS_End;
 */
             if (isDebugged)
-                Controller_log.info("HttpResponse:" + HttpResponse);
+                Controller_log.info("HttpResponse:{}", HttpResponse);
             // Controller_log.warn("XML-HttpResponse готов" );
 
             if ( isLooked4MessageTypeURL_SOAP_Ack_RestXML) {
@@ -740,7 +740,7 @@ public class PostController {
                     //System.out.println("jsonPrettyPrintString:\n" + jsonPrettyPrintString);
                     postResponse.setContentType("application/json;Charset=UTF-8");
                     HttpResponse = jsonPrettyPrintString;
-                    Controller_log.warn("JSON-HttpResponse готов [" + jsonPrettyPrintString + "]");
+                    Controller_log.warn("JSON-HttpResponse готов [{}]", jsonPrettyPrintString);
                     if (isDebugged)
                         messageReceiveTask.theadDataAccess.doUPDATE_QUEUElog(Message.ROWID_QUEUElog, Message.Queue_Id, jsonPrettyPrintString, Controller_log);
                     try {
@@ -750,11 +750,10 @@ public class PostController {
                             messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                         }
                     } catch (SQLException SQLe) {
-                        Controller_log.error(SQLe.getMessage());
-                        Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                        Controller_log.error("Hermes_Connection.close() fault:{}" , SQLe.getMessage());
                         System.err.println(strInterruptedException(SQLe));
                     }
-                    Controller_log.info("jsonPrettyPrint:[" + jsonPrettyPrintString + "] DataSourcePool=" + DataSourcePoolMetadata.getActive());
+                    Controller_log.info("jsonPrettyPrint:[{}] DataSourcePool={}", jsonPrettyPrintString, DataSourcePoolMetadata.getActive());
                     postResponse.setContentType("application/json;Charset=UTF-8");
 
                     return (HttpResponse);
