@@ -39,7 +39,7 @@ public class PerformSaveRequest {
         try {
             document = documentBuilder.build(parsedConfigStream); // .parse(parsedConfigStream);
         } catch (JDOMParseException JDOMe) {
-            MessegeReceive_Log.error("SaveRequestBody_4_MessageQueue: documentBuilder.build (" + requestContent_4_Save + ") fault");
+            MessegeReceive_Log.error("[{}] SaveRequestBody_4_MessageQueue: documentBuilder.build ({}) fault", Queue_Id, requestContent_4_Save);
             throw new JDOMParseException(JDOMe.getMessage() + ": SaveRequestBody_4_MessageQueue=(" + requestContent_4_Save + ")", JDOMe);
         }
         Element RootElement  = document.getRootElement();
@@ -67,7 +67,7 @@ public class PerformSaveRequest {
 
         } catch (NullPointerException  ex) { // | IOException
             ex.printStackTrace(System.err);
-            MessegeReceive_Log.error("[" + Queue_Id + "] SaveRequestBody_4_MessageQueue fault:" + ex.getMessage());
+            MessegeReceive_Log.error("[{}] SaveRequestBody_4_MessageQueue fault:{}", Queue_Id, ex.getMessage());
             messageDetails.XML_MsgResponse.setLength(0);
             messageDetails.XML_MsgResponse.append( "SaveRequestBody_4_MessageQueue fault:" + ex.getMessage());
             return -22; // HE-5864 Спец.символ UTF-16 или любой другой invalid XML character
@@ -92,7 +92,7 @@ public class PerformSaveRequest {
         try {
             document = documentBuilder.build(parsedConfigStream); // .parse(parsedConfigStream);
         } catch (JDOMParseException JDOMe) {
-            MessegeReceive_Log.error("SaveRequestBody_4_MessageQueue: documentBuilder.build (" + requestContent_4_Save + ") fault");
+            MessegeReceive_Log.error("[{}] SaveRequestBody_4_MessageQueue: documentBuilder.build ({}) fault", Queue_Id, requestContent_4_Save);
             throw new JDOMParseException(JDOMe.getMessage() + ": SaveRequestBody_4_MessageQueue=(" + requestContent_4_Save + ")", JDOMe);
         }
         Element RootElement = document.getRootElement();
@@ -124,7 +124,7 @@ public class PerformSaveRequest {
                     }
                     rs.close();
                 } catch (SQLException e) {
-                    MessegeReceive_Log.error("Queue_Id=[" + Queue_Id + "] for {} fault : {}" , theadDataAccess.selectMsgLastBodyTag , sStackTrace.strInterruptedException(e));
+                    MessegeReceive_Log.error("[{}] for {} fault : {}", Queue_Id, theadDataAccess.selectMsgLastBodyTag, sStackTrace.strInterruptedException(e));
                     System.err.println("Queue_Id=[" + Queue_Id + "] fault :" + e.getMessage() );
                     e.printStackTrace();
                     return messageDetails.ConfirmationRowNum;
@@ -145,16 +145,20 @@ public class PerformSaveRequest {
 
             } catch (NullPointerException ex) { // | IOException
                 ex.printStackTrace(System.err);
-                MessegeReceive_Log.error("[" + Queue_Id + "] ReplaceConfirmation_4_MessageQueue fault:" + ex.getMessage());
+                MessegeReceive_Log.error("[{}] ReplaceConfirmation_4_MessageQueue fault:{}", Queue_Id, ex.getMessage());
                 messageDetails.XML_MsgResponse.setLength(0);
                 messageDetails.XML_MsgResponse.append("ReplaceConfirmation_4_MessageQueue fault:" + ex.getMessage());
                 return -24; // HE-5864 Спец.символ UTF-16 или любой другой invalid XML character
             }
         }
         else {
-            MessegeReceive_Log.error("[" + Queue_Id + "] ReplaceConfirmation_4_MessageQueue fault: `" + RootElement.getName()+ "` NONT equals(" + XMLchars.TagConfirmation+ ")" );
+            MessegeReceive_Log.error("[{}] ReplaceConfirmation_4_MessageQueue fault: `{}` NONT equals(" + XMLchars.TagConfirmation + ")", Queue_Id, RootElement.getName());
             messageDetails.XML_MsgResponse.setLength(0);
-            messageDetails.XML_MsgResponse.append("ReplaceConfirmation_4_MessageQueue fault: `" + RootElement.getName()+ "` NONT equals(" + XMLchars.TagConfirmation+ ")" );
+            messageDetails.XML_MsgResponse.append("ReplaceConfirmation_4_MessageQueue fault: `")
+                                            .append(RootElement.getName())
+                                            .append("` NONT equals(")
+                                            .append(XMLchars.TagConfirmation)
+                                            .append(")");
         }
         //MessegeReceive_Log.warn("SaveMessage4Input SplitMessage complete");
 
@@ -185,24 +189,24 @@ public class PerformSaveRequest {
                 nn = iNumberRecordInConfirmation;
             }
         } catch ( Exception e) {
-            MessegeReceive_Log.error(theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "]["+ iNumberRecordInConfirmation +"] :" + sStackTrace.strInterruptedException(e));
-            messageDetails.MsgReason.append( "ReplaceConfirmation [").append( iNumberRecordInConfirmation).append("] ").append( sStackTrace.strInterruptedException(e) );
+            MessegeReceive_Log.error("[{}] InsertNewConfirmation `{}`: [{}] :{}", Queue_Id, theadDataAccess.INSERT_Message_Details, iNumberRecordInConfirmation, sStackTrace.strInterruptedException(e));
+            messageDetails.MsgReason.append( "InsertNewConfirmation [").append( iNumberRecordInConfirmation).append("] ").append( sStackTrace.strInterruptedException(e) );
             e.printStackTrace();
             try {
                 theadDataAccess.Hermes_Connection.rollback();
             } catch (SQLException exp) {
-                MessegeReceive_Log.error("Hermes_Connection.rollback()fault: " + exp.getMessage());
+                MessegeReceive_Log.error("[{}] InsertNewConfirmation Hermes_Connection.rollback() fault: {}", Queue_Id, exp.getMessage());
             }
             return -2;
         }
         try {
             theadDataAccess.Hermes_Connection.commit();
         } catch (SQLException exp) {
-            MessegeReceive_Log.error("Hermes_Connection.rollback()fault: " + exp.getMessage());
+            MessegeReceive_Log.error("[{}] InsertNewConfirmation Hermes_Connection.rollback() fault: {}", Queue_Id, exp.getMessage());
             return -3;
         }
 
-        MessegeReceive_Log.info(theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "] :" + nn + " done");
+        MessegeReceive_Log.info("[{}] InsertNewConfirmation, `{}` :{} done", Queue_Id, theadDataAccess.INSERT_Message_Details, nn);
         return nn;
     }
 
