@@ -59,6 +59,12 @@ public  class DataAccess {
                 PreparedStatement stmt_SetTimeZone = Target_Connection.prepareStatement("set SESSION time zone 3; set enable_bitmapscan to off;");//.nativeSQL( "set SESSION time zone 3" );
                 stmt_SetTimeZone.execute();
                 stmt_SetTimeZone.close();
+
+                // SET max_parallel_workers_per_gather = 0;
+                dataAccess_log.info("Try setup Connection: `set SESSION time zone 3; set enable_bitmapscan to off;`");
+                PreparedStatement stmt_SetMax_parallel_workers = Target_Connection.prepareStatement("SET max_parallel_workers_per_gather = 0;");//.nativeSQL( "SET max_parallel_workers_per_gather = 0" );
+                stmt_SetMax_parallel_workers.execute();
+                stmt_SetMax_parallel_workers.close();
                 Target_Connection.commit();
             }
             else

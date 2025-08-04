@@ -61,7 +61,7 @@ public class HikariDataAccess {
         hikariConfig.addDataSourceProperty("dataSource.prepStmtCacheSqlLimit", "4096");
         hikariConfig.addDataSourceProperty("dataSource.useServerPrepStmts", "true");
         hikariConfig.addDataSourceProperty("dataSource.autoCommit", "false");
-        ServletApplication.AppThead_log.info( "Try make DataSourcePool: " + connectionUrl + " as " + Username + " , Class.forName:" + ClassforName);
+        ServletApplication.AppThead_log.info("Try make DataSourcePool: {} as {} , Class.forName:{}", connectionUrl, Username, ClassforName);
         HikariDataSource dataSource = new HikariDataSource(hikariConfig);
         //HikariPool hikariPool = new HikariPool(hikariConfig);
         DataSourcePoolMetadata = new HikariDataSourcePoolMetadata(dataSource);
@@ -71,11 +71,8 @@ public class HikariDataAccess {
                 + ", getMax: " + DataSourcePoolMetadata.getMax()
                 + ", getMin: " + DataSourcePoolMetadata.getMin()
         );
-        ServletApplication.AppThead_log.info(
-                "ConnectionTestQuery: " + dataSource.getConnectionTestQuery()
-                + ", IdleTimeout: " + dataSource.getIdleTimeout()
-                + ", LeakDetectionThreshold: " + dataSource.getLeakDetectionThreshold()
-        );
+        ServletApplication.AppThead_log.info("ConnectionTestQuery: {}, IdleTimeout: {}, LeakDetectionThreshold: {}",
+                            dataSource.getConnectionTestQuery(), dataSource.getIdleTimeout(), dataSource.getLeakDetectionThreshold());
 
         try {
 
@@ -83,21 +80,24 @@ public class HikariDataAccess {
             PreparedStatement prepareStatement;
             if ( connectionUrl.indexOf("oracle") > 0 )
                 prepareStatement = tryConn.prepareStatement( "SELECT 1 from dual");
-            else
-                prepareStatement = tryConn.prepareStatement( "SELECT 1 ");
+            else {
+                // SET max_parallel_workers_per_gather = 0;
+                ServletApplication.AppThead_log.info("Try setup Connection: `set SESSION time zone 3; set enable_bitmapscan to off;`");
+                PreparedStatement stmt_SetMax_parallel_workers = tryConn.prepareStatement("SET max_parallel_workers_per_gather = 0;");//.nativeSQL( "SET max_parallel_workers_per_gather = 0" );
+                stmt_SetMax_parallel_workers.execute();
+                stmt_SetMax_parallel_workers.close();
+                prepareStatement = tryConn.prepareStatement("SELECT 1 ");
+            }
             prepareStatement.executeQuery();
             prepareStatement.close();
-            ServletApplication.AppThead_log.info( "DataSourcePool ( at prepareStatement ): getMax: " + DataSourcePoolMetadata.getMax()
-                    + ", getIdle: " + DataSourcePoolMetadata.getIdle()
-                    + ", getActive: " + DataSourcePoolMetadata.getActive()
-                    + ", getMax: " + DataSourcePoolMetadata.getMax()
-                    + ", getMin: " + DataSourcePoolMetadata.getMin()
-            );
+            ServletApplication.AppThead_log.info("HiDataSource.DataSourcePool ( at prepareStatement ): getMax: {}, getIdle: {}, getActive: {}, getMin: {}",
+                                                DataSourcePoolMetadata.getMax(), DataSourcePoolMetadata.getIdle(),
+                                                DataSourcePoolMetadata.getActive(),  DataSourcePoolMetadata.getMin());
             tryConn.close();
             ServletApplication.AppThead_log.info( "getJdbcUrl: "+ hikariConfig.getJdbcUrl());
         }
         catch (java.sql.SQLException e)
-        { ServletApplication.AppThead_log.error( e.getMessage());}
+        { ServletApplication.AppThead_log.error( "HiDataSource.dataSource.getConnection fault: {}", e.getMessage());}
 
 
         return dataSource;
