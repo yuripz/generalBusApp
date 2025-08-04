@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 // import oracle.jdbc.internal.OracleTypes;
 // import oracle.jdbc.internal.OracleRowId;
 // import oracle.sql.NUMBER;
+import net.plumbing.msgbus.ServletApplication;
 import net.plumbing.msgbus.common.XMLchars;
 import net.plumbing.msgbus.model.MessageQueueVO;
 import org.slf4j.Logger;
@@ -225,12 +226,14 @@ public class TheadDataAccess {
         Target_Connection = Hermes_Connection;
 
         if (!rdbmsVendor.equals("oracle")) {
+           String setSetupConnection = "set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;";
           try {
-            PreparedStatement stmt_SetTimeZone = Hermes_Connection.prepareStatement("set SESSION time zone 3");//.nativeSQL( "set SESSION time zone 3" );
-            stmt_SetTimeZone.execute();
-            stmt_SetTimeZone.close();
+              dataAccess_log.info("make_Hikari_Connection: Try setup Connection as `set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;`");
+            PreparedStatement stmt_SetSetupConnection = Hermes_Connection.prepareStatement(setSetupConnection);//.nativeSQL( "set SESSION time zone 3"... );
+              stmt_SetSetupConnection.execute();
+              stmt_SetSetupConnection.close();
         }catch (SQLException e) {
-              dataAccess_log.error("make_Hikari_Connection stmt_SetTimeZone PreparedStatement for: `{}` fault:{}", connectionUrl, e.getMessage());
+              dataAccess_log.error("make_Hikari_Connection `{}` PreparedStatement for: `{}` fault:{}", setSetupConnection, connectionUrl, e.getMessage());
               e.printStackTrace();
               if ( Hermes_Connection != null)
                   try {

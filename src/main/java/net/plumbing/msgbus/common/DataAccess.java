@@ -61,8 +61,8 @@ public  class DataAccess {
                 stmt_SetTimeZone.close();
 
                 // SET max_parallel_workers_per_gather = 0;
-                dataAccess_log.info("Try setup Connection: `set SESSION time zone 3; set enable_bitmapscan to off;`");
-                PreparedStatement stmt_SetMax_parallel_workers = Target_Connection.prepareStatement("SET max_parallel_workers_per_gather = 0;");//.nativeSQL( "SET max_parallel_workers_per_gather = 0" );
+                dataAccess_log.info("Try add setup Connection: `set max_parallel_workers_per_gather = 0;`");
+                PreparedStatement stmt_SetMax_parallel_workers = Target_Connection.prepareStatement("set max_parallel_workers_per_gather = 0;");//.nativeSQL( "SET max_parallel_workers_per_gather = 0" );
                 stmt_SetMax_parallel_workers.execute();
                 stmt_SetMax_parallel_workers.close();
                 Target_Connection.commit();

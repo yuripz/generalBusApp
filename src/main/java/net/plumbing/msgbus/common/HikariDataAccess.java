@@ -82,8 +82,8 @@ public class HikariDataAccess {
                 prepareStatement = tryConn.prepareStatement( "SELECT 1 from dual");
             else {
                 // SET max_parallel_workers_per_gather = 0;
-                ServletApplication.AppThead_log.info("Try setup Connection: `set SESSION time zone 3; set enable_bitmapscan to off;`");
-                PreparedStatement stmt_SetMax_parallel_workers = tryConn.prepareStatement("SET max_parallel_workers_per_gather = 0;");//.nativeSQL( "SET max_parallel_workers_per_gather = 0" );
+                ServletApplication.AppThead_log.info("HiDataSource: Try setup Connection as `set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;`");
+                PreparedStatement stmt_SetMax_parallel_workers = tryConn.prepareStatement("set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;");//.nativeSQL( "SET max_parallel_workers_per_gather = 0" );
                 stmt_SetMax_parallel_workers.execute();
                 stmt_SetMax_parallel_workers.close();
                 prepareStatement = tryConn.prepareStatement("SELECT 1 ");
