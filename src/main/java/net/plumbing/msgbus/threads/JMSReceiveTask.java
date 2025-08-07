@@ -209,6 +209,7 @@ public void run()   {
                                             ApplicationProperties.HrmsSchema,
                                             ApplicationProperties.hrmsDbLogin,
                                             ApplicationProperties.dataSource,
+                                            ApplicationProperties.InternalDbPgSetupConnection,
                                             JMSReceiveTask_Log
                                             );
     if ( theadDataAccess.Hermes_Connection == null ){

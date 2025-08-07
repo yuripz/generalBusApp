@@ -195,6 +195,7 @@ public class TheadDataAccess {
     public Connection make_Hikari_Connection(  String HrmsSchema,
                                                 String db_userid ,
                                                  HikariDataSource dataSource,
+                                                 String InternalDbPgSetSetupConnection,
                                                  Logger dataAccess_log) {
         Connection Target_Connection ;
         String connectionUrl= dataSource.getJdbcUrl() ;
@@ -226,14 +227,14 @@ public class TheadDataAccess {
         Target_Connection = Hermes_Connection;
 
         if (!rdbmsVendor.equals("oracle")) {
-           String setSetupConnection = "set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;";
+           //String setSetupConnection = "set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;";
           try {
-              dataAccess_log.info("make_Hikari_Connection: Try setup Connection as `set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;`");
-            PreparedStatement stmt_SetSetupConnection = Hermes_Connection.prepareStatement(setSetupConnection);//.nativeSQL( "set SESSION time zone 3"... );
+              dataAccess_log.info("make_Hikari_Connection: Try setup Connection as `{}`", InternalDbPgSetSetupConnection);
+            PreparedStatement stmt_SetSetupConnection = Hermes_Connection.prepareStatement( InternalDbPgSetSetupConnection );//.nativeSQL( "set SESSION time zone 3"... );
               stmt_SetSetupConnection.execute();
               stmt_SetSetupConnection.close();
         }catch (SQLException e) {
-              dataAccess_log.error("make_Hikari_Connection `{}` PreparedStatement for: `{}` fault:{}", setSetupConnection, connectionUrl, e.getMessage());
+              dataAccess_log.error("make_Hikari_Connection `{}` PreparedStatement for: `{}` fault:{}", InternalDbPgSetSetupConnection, connectionUrl, e.getMessage());
               e.printStackTrace();
               if ( Hermes_Connection != null)
                   try {

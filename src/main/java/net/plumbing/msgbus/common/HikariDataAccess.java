@@ -13,7 +13,10 @@ import java.util.concurrent.TimeUnit;
 public class HikariDataAccess {
     public static HikariDataSourcePoolMetadata DataSourcePoolMetadata = null;
     @Bean (destroyMethod = "close")
-    public static  HikariDataSource HiDataSource(String JdbcUrl, String Username, String Password ){
+    public static  HikariDataSource HiDataSource(String JdbcUrl,
+                                                 String Username,
+                                                 String Password,
+                                                 String InternalDbPgSetSetupConnection){
         HikariConfig hikariConfig = new HikariConfig();
         String connectionUrl ;
         if ( JdbcUrl==null) {
@@ -75,17 +78,16 @@ public class HikariDataAccess {
                             dataSource.getConnectionTestQuery(), dataSource.getIdleTimeout(), dataSource.getLeakDetectionThreshold());
 
         try {
-
             Connection tryConn = dataSource.getConnection();
             PreparedStatement prepareStatement;
             if ( connectionUrl.indexOf("oracle") > 0 )
                 prepareStatement = tryConn.prepareStatement( "SELECT 1 from dual");
             else {
-                // SET max_parallel_workers_per_gather = 0;
-                ServletApplication.AppThead_log.info("HiDataSource: Try setup Connection as `set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;`");
-                PreparedStatement stmt_SetMax_parallel_workers = tryConn.prepareStatement("set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;");//.nativeSQL( "SET max_parallel_workers_per_gather = 0" );
-                stmt_SetMax_parallel_workers.execute();
-                stmt_SetMax_parallel_workers.close();
+                // set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;
+                ServletApplication.AppThead_log.info("HiDataSource: Try setup Connection as `{}`", InternalDbPgSetSetupConnection);
+                PreparedStatement stmt_SetSetupConnection = tryConn.prepareStatement(InternalDbPgSetSetupConnection);//.nativeSQL( "set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0" );
+                stmt_SetSetupConnection.execute();
+                stmt_SetSetupConnection.close();
                 prepareStatement = tryConn.prepareStatement("SELECT 1 ");
             }
             prepareStatement.executeQuery();

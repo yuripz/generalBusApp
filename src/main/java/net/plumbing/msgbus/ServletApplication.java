@@ -51,7 +51,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.5.08.06saX";
+    public static final String ApplicationName="*Receiver_BUS* v.5.08.07saX";
     public static String propJDBC;
     public static String propExtJDBC;
 
@@ -138,8 +138,17 @@ public class ServletApplication implements CommandLineRunner {
 
         ApplicationProperties.hrmsDbLogin = connectionProperties.gethrmsDbLogin();
         ApplicationProperties.hrmsDbPasswd =  connectionProperties.gethrmsDbPasswd();
+        if ( (connectionProperties.gethrmsPgSetupConnection() != null) &&
+                (!connectionProperties.gethrmsPgSetupConnection().isEmpty()) ) {
+            ApplicationProperties.InternalDbPgSetupConnection =  connectionProperties.gethrmsPgSetupConnection();
+        }
+        else
+            ApplicationProperties.InternalDbPgSetupConnection = "set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;";
+
         ApplicationProperties.ConnectMsgBus = connectionProperties.getconnectMsgBus();
         ApplicationProperties.ExtSysSchema = connectionProperties.getextsysDbSchema();
+
+
         if ( ApplicationProperties.ConnectMsgBus == null) ApplicationProperties.ConnectMsgBus = "tcp://localhost:61216";
         if (connectionProperties.getjmsReceiveTaskEnabled().equalsIgnoreCase("true") )
             jmsReceiveTaskEnabled = true;
@@ -156,7 +165,8 @@ public class ServletApplication implements CommandLineRunner {
         try {
         ApplicationProperties.dataSource = HikariDataAccess.HiDataSource (connectionProperties.gethrmsPoint(),
                 connectionProperties.gethrmsDbLogin(),
-                connectionProperties.gethrmsDbPasswd()
+                connectionProperties.gethrmsDbPasswd(),
+                ApplicationProperties.InternalDbPgSetupConnection
         );
             ApplicationProperties.DataSourcePoolMetadata = HikariDataAccess.DataSourcePoolMetadata;
     } catch (Exception e) {
@@ -181,6 +191,12 @@ public class ServletApplication implements CommandLineRunner {
         ApplicationProperties.ExtSysPoint = connectionProperties.getextsysPoint();
         ApplicationProperties.ExtSysDbLogin = connectionProperties.getextsysDbLogin();
         ApplicationProperties.ExtSysDbPasswd = connectionProperties.getextsysDbPasswd();
+        if ( (connectionProperties.getextsysPgSetupConnection() != null) &&
+                (!connectionProperties.getextsysPgSetupConnection().isEmpty()) ) {
+            ApplicationProperties.ExtSysPgSetupConnection =  connectionProperties.getextsysPgSetupConnection();
+        }
+        else
+            ApplicationProperties.ExtSysPgSetupConnection = "set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;";
 
         if ( ApplicationProperties.ExtSysPoint.equalsIgnoreCase("NONE") )
         {
@@ -192,17 +208,18 @@ public class ServletApplication implements CommandLineRunner {
                 ApplicationProperties.extSystemDataSource = ExtSystemDataAccess.HiDataSource(connectionProperties.getextsysPoint(),
                         connectionProperties.getextsysDbLogin(),
                         connectionProperties.getextsysDbPasswd(),
+                        ApplicationProperties.ExtSysPgSetupConnection,
                         connectionProperties.getextSysDataSourceClassName()
                 );
                 ApplicationProperties.extSystemDataSourcePoolMetadata = ExtSystemDataAccess.DataSourcePoolMetadata;
             } catch (Exception e) {
-                AppThead_log.error("НЕ удалось подключится к базе данных внешней системы: (" + " )" + e.getMessage());
+                AppThead_log.error("НЕ удалось подключится к базе данных внешней системы:( {}) :{}", connectionProperties.getextsysPoint(), e.getMessage());
                 NotifyByChannel.Telegram_sendMessage("Do stopping " + ApplicationName + " *extDB problem* `" + e.getMessage() + "` ip:" + InetAddress.getLocalHost().getHostAddress() + ", db `" + connectionProperties.getextsysPoint() + "` as `" + connectionProperties.getextsysDbLogin() + "`), *stopping*", AppThead_log);
                 System.exit(-20);
             }
         }
 
-        AppThead_log.info("extSystem DataSource = " + ApplicationProperties.extSystemDataSource );
+        AppThead_log.info("Проверям полученный extSystem DataSource = " + ApplicationProperties.extSystemDataSource );
         if (! ApplicationProperties.ExtSysPoint.equalsIgnoreCase("NONE")) {
             if (ApplicationProperties.extSystemDataSource != null) {
                 AppThead_log.info("extSystem DataSource = " + ApplicationProperties.extSystemDataSource
@@ -211,7 +228,7 @@ public class ServletApplication implements CommandLineRunner {
                         + " 4 dbSchema:" + ApplicationProperties.ExtSysSchema
                         + " by driver:" + connectionProperties.getextSysDataSourceClassName());
             } else {
-                AppThead_log.error("НЕ удалось подключится к базе данных внешней системы: останавливаем");
+                AppThead_log.error("НЕ удалось подключится к базе данных внешней системы {}: останавливаем", ApplicationProperties.extSystemDataSource);
                 NotifyByChannel.Telegram_sendMessage("Do stopping " + ApplicationName + " *extDB problem*  ip:" + InetAddress.getLocalHost().getHostAddress() +
                         ", db `" + connectionProperties.getextsysPoint() + "` as `" + connectionProperties.getextsysDbLogin() + "`), *stopping*", AppThead_log);
                 System.exit(-20);
@@ -239,6 +256,7 @@ public class ServletApplication implements CommandLineRunner {
                 connectionProperties.gethrmsPoint(),
                 connectionProperties.gethrmsDbLogin(),
                 connectionProperties.gethrmsDbPasswd(),
+                ApplicationProperties.InternalDbPgSetupConnection,
                 AppThead_log
         );
 

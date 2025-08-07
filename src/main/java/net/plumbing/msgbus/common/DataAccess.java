@@ -22,7 +22,10 @@ public  class DataAccess {
     private static  String SQLCurrentTimeStringRead;
     private static  String SQLCurrentTimeDateRead;
 
-    public static  Connection make_Hermes_Connection( String DbSchema,  Connection pTarget_Connection, String dst_point, String db_userid , String db_password, Logger dataAccess_log) {
+    public static  Connection make_Hermes_Connection( String DbSchema,  Connection pTarget_Connection, String dst_point,
+                                                      String db_userid , String db_password,
+                                                      String InternalDbPgSetSetupConnection,
+                                                      Logger dataAccess_log) {
         Connection Target_Connection = null;
         String connectionUrl ;
         if ( dst_point==null) {
@@ -55,16 +58,17 @@ public  class DataAccess {
             if ( !rdbmsVendor.equals("oracle") ) {
                 SQLCurrentTimeStringRead= "SELECT to_char( clock_timestamp() at time zone 'Europe/Moscow', 'YYYYMMDDHH24MISS') as InitTime";
                 SQLCurrentTimeDateRead= "SELECT clock_timestamp() at time zone 'Europe/Moscow' as InitTime";
-                dataAccess_log.info("Try setup Connection: `set SESSION time zone 3; set enable_bitmapscan to off;`");
-                PreparedStatement stmt_SetTimeZone = Target_Connection.prepareStatement("set SESSION time zone 3; set enable_bitmapscan to off;");//.nativeSQL( "set SESSION time zone 3" );
-                stmt_SetTimeZone.execute();
-                stmt_SetTimeZone.close();
+                dataAccess_log.info("Try setup Connection: `{}`", InternalDbPgSetSetupConnection ) ;
+                PreparedStatement stmt_PgSetSetupConnection = Target_Connection.prepareStatement(InternalDbPgSetSetupConnection);//.nativeSQL( "set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0" );
+                stmt_PgSetSetupConnection.execute();
+                stmt_PgSetSetupConnection.close();
 
-                // SET max_parallel_workers_per_gather = 0;
-                dataAccess_log.info("Try add setup Connection: `set max_parallel_workers_per_gather = 0;`");
-                PreparedStatement stmt_SetMax_parallel_workers = Target_Connection.prepareStatement("set max_parallel_workers_per_gather = 0;");//.nativeSQL( "SET max_parallel_workers_per_gather = 0" );
-                stmt_SetMax_parallel_workers.execute();
-                stmt_SetMax_parallel_workers.close();
+                // комментарим , строка "SET max_parallel_workers_per_gather = 0" включена в InternalDbPgSetSetupConnection
+                //dataAccess_log.info("Try add setup Connection: `set max_parallel_workers_per_gather = 0;`");
+                //PreparedStatement stmt_SetMax_parallel_workers = Target_Connection.prepareStatement("set max_parallel_workers_per_gather = 0;");//.nativeSQL( "SET max_parallel_workers_per_gather = 0" );
+                //stmt_SetMax_parallel_workers.execute();
+                //stmt_SetMax_parallel_workers.close();
+
                 Target_Connection.commit();
             }
             else

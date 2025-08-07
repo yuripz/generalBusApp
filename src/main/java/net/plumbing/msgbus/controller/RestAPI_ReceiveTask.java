@@ -108,6 +108,7 @@ public class RestAPI_ReceiveTask {
                 ApplicationProperties.HrmsSchema,
                 ApplicationProperties.hrmsDbLogin,
                 ApplicationProperties.dataSource,
+                ApplicationProperties.InternalDbPgSetupConnection,
                 RestAPI_Receive_Log
         );
         if ( theadDataAccess.Hermes_Connection == null ){

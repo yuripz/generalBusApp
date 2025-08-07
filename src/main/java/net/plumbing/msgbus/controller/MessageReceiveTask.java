@@ -65,6 +65,7 @@ public class MessageReceiveTask
                 ApplicationProperties.HrmsSchema,
                 ApplicationProperties.hrmsDbLogin,
                 ApplicationProperties.dataSource,
+                ApplicationProperties.InternalDbPgSetupConnection,
                 MessegeReceive_Log
         );
         if ( theadDataAccess.Hermes_Connection == null ){

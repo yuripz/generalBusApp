@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class ExtSystemDataAccess {
     public static HikariDataSourcePoolMetadata DataSourcePoolMetadata = null;
     @Bean (destroyMethod = "close")
-    public static  HikariDataSource HiDataSource(String JdbcUrl, String Username, String Password, String extSysDataSourceClassName ) throws java.sql.SQLException {
+    public static  HikariDataSource HiDataSource(String JdbcUrl, String Username, String Password, String ExtSysPgSetSetupConnection, String extSysDataSourceClassName ) throws java.sql.SQLException {
         HikariConfig hikariConfig = new HikariConfig();
         String connectionUrl ;
         if ( JdbcUrl==null) {
@@ -136,15 +136,15 @@ public class ExtSystemDataAccess {
                     set_config_Statement.close();
                     ServletApplication.AppThead_log.info( "DataSourcePool ( at prepareStatement ): set_config: " + set_config_Query
                     );
-                    ServletApplication.AppThead_log.info("Try setup Connection: `set SESSION time zone 3; set enable_bitmapscan to off;`");
-                    PreparedStatement stmt_SetTimeZone = tryConn.prepareStatement("set SESSION time zone 3; set enable_bitmapscan to off;");//.nativeSQL( "set SESSION time zone 3" );
-                    stmt_SetTimeZone.execute();
-                    stmt_SetTimeZone.close();
+                    ServletApplication.AppThead_log.info("Try setup Connection: `{}`", ExtSysPgSetSetupConnection );
+                    PreparedStatement stmt_SetSetupConnection = tryConn.prepareStatement(ExtSysPgSetSetupConnection);//.nativeSQL( "set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0" );
+                    stmt_SetSetupConnection.execute();
+                    stmt_SetSetupConnection.close();
                     // SET max_parallel_workers_per_gather = 0;
-                    ServletApplication.AppThead_log.info("Try setup Connection: `set SESSION time zone 3; set enable_bitmapscan to off;`");
-                    PreparedStatement stmt_SetMax_parallel_workers = tryConn.prepareStatement("SET max_parallel_workers_per_gather = 0;");//.nativeSQL( "SET max_parallel_workers_per_gather = 0" );
-                    stmt_SetMax_parallel_workers.execute();
-                    stmt_SetMax_parallel_workers.close();
+                    //ServletApplication.AppThead_log.info("Try setup Connection: `set SESSION time zone 3; set enable_bitmapscan to off;`");
+                    //PreparedStatement stmt_SetMax_parallel_workers = tryConn.prepareStatement("SET max_parallel_workers_per_gather = 0;");//.nativeSQL( "SET max_parallel_workers_per_gather = 0" );
+                    //stmt_SetMax_parallel_workers.execute();
+                    //stmt_SetMax_parallel_workers.close();
                 }
                 catch (java.sql.SQLException e)
                 { ServletApplication.AppThead_log.error( "dataSource set_config fault `" + set_config_Query + "` :" +  e.getMessage());

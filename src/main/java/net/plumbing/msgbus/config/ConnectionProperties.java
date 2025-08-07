@@ -10,7 +10,15 @@ import org.springframework.stereotype.Component;
 public class ConnectionProperties {
 
  // extSystem
- private String extsysDbSchema;
+
+ // hermes.extsys-pg-setup-connection=set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;
+    private String extsysPgSetupConnection;
+    public String getextsysPgSetupConnection() {
+        return extsysPgSetupConnection;
+    }
+    public void setextsysPgSetupConnection(String extsysPgSetupConnection) {this.extsysPgSetupConnection = extsysPgSetupConnection;}
+
+    private String extsysDbSchema;
     public String getextsysDbSchema() {
         return extsysDbSchema;
     }
@@ -53,6 +61,13 @@ public class ConnectionProperties {
         return this.jmsReceiveTaskEnabled;
     }
     public void setjmsReceiveTaskEnabled(String jmsReceiveTaskEnabled) { this.jmsReceiveTaskEnabled = jmsReceiveTaskEnabled; }
+
+    // hermes.hrms-pg-setup-connection=set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;
+    private String hrmsPgSetupConnection;
+    public String gethrmsPgSetupConnection() {
+        return hrmsPgSetupConnection;
+    }
+    public void sethrmsPgSetupConnection(String hrmsPgSetupConnection) {this.hrmsPgSetupConnection = hrmsPgSetupConnection;}
 
     private String hrmsDbSchema;
     public String gethrmsDbSchema() {

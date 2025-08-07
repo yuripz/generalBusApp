@@ -24,6 +24,8 @@ public  class ApplicationProperties {
     public static Integer LongRetryInterval ;
     public static String ConnectMsgBus;
     public static String pSQLFunctionRun;
+    public static String ExtSysPgSetupConnection;
+    public static String InternalDbPgSetupConnection;
 
     public void setWaitTimeBetweenScan(Integer waitTimeBetweenScan) {
         this.WaitTimeBetweenScan = waitTimeBetweenScan;
