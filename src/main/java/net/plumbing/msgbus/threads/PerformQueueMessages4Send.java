@@ -416,7 +416,7 @@ public class PerformQueueMessages4Send {
                 messageQueueVO.setQueue_Direction(AnswXSLTQueue_Direction);
 
                 if ( !AnswXSLTQueue_Direction.equals(XMLchars.DirectRESOUT))
-                    // TODO Надо бы всзести переменную - что c XSLT всё плохо, но пост-обработчик надо всё же вызвать хоть раз.
+                    // TODO Надо бы взвести переменную - что c XSLT всё плохо, но пост-обработчик надо всё же вызвать хоть раз.
                 {  // перечитываем состояние заголовка сообщения из БД
                     theadDataAccess.do_SelectMESSAGE_QUEUE(  messageQueueVO, MessageSend_Log );
                     break;

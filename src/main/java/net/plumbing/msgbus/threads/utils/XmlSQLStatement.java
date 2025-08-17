@@ -191,7 +191,7 @@ public class XmlSQLStatement {
                 if ( SQLcallableStatementExpression == null )
                 {
                     messageDetails.MsgReason.append("ExecuteSQLincludedXML: Не нашли " + "/"+ TagNameHead+ "/"+ TagNameSQLStatement + "/" + TagNamePSTMT + " в результате XSLT прообразования " + Passed_Envelope4XSLTPost);
-                    MessegeSend_Log.error("[" + messageQueueVO.getQueue_Id() + "] "+ messageDetails.MsgReason.toString());
+                    MessegeSend_Log.error("[{}] {}", messageQueueVO.getQueue_Id(), messageDetails.MsgReason.toString());
                     return -2;
                 }
 /*************************************************************************
@@ -213,7 +213,7 @@ public class XmlSQLStatement {
 
                 if (isDebugged) {
                     for ( int k =0; k < SQLparamValues.size(); k++ )
-                        MessegeSend_Log.warn( "SQLparamValues.get(" + k + " )=" + SQLparamValues.get(k).toString());
+                        MessegeSend_Log.warn("[{}] SQLparamValues.get({} )={}", messageQueueVO.getQueue_Id(), k, SQLparamValues.get(k).toString());
                 }
                 if (isDebugged)
                     MessegeSend_Log.warn("[{}] =====================================================================================", messageQueueVO.getQueue_Id());
@@ -227,7 +227,7 @@ public class XmlSQLStatement {
                         // Step 2.B: Creating JDBC CallableStatement
                         callableStatement = current_Connection_4_ExecuteSQL.prepareCall (SQLcallableStatementExpression);
                         if (isDebugged)
-                            MessegeSend_Log.info( SQLcallableStatementExpression );
+                            MessegeSend_Log.info("[{}] SQLcallableStatementExpression_4_{}:{}", messageQueueVO.getQueue_Id(), OperTypeRef, SQLcallableStatementExpression);
                         // register OUT parameter
                         if (  isExtSystemAccess ) // Внешний вызов возвращает "0~Message"
                             callableStatement.registerOutParameter(1, Types.VARCHAR);
@@ -235,7 +235,7 @@ public class XmlSQLStatement {
                         callableStatement.registerOutParameter(1, Types.INTEGER);
                         for ( int k =0; k < SQLparamValues.size(); k++ ) {
                             if (isDebugged)
-                                MessegeSend_Log.warn("callableStatement.setString: SQLparamValues.get({} )={}", k, SQLparamValues.get(k).toString());
+                                MessegeSend_Log.warn("[{}] callableStatement.setString: SQLparamValues.get({} )={}",messageQueueVO.getQueue_Id(), k, SQLparamValues.get(k).toString());
                             callableStatement.setString(2 + k, SQLparamValues.get(k));
                         }
 
@@ -279,14 +279,14 @@ public class XmlSQLStatement {
                         while (warning != null) {
                             // System.out.println(warning.getMessage());
                             if (isDebugged)
-                                MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] callableStatement.SQLWarning: " + warning.getMessage());
+                                MessegeSend_Log.warn("[{} ] callableStatement.SQLWarning: {}", messageQueueVO.getQueue_Id(), warning.getMessage());
                             warning = warning.getNextWarning();
                         }
                         // todo было: String countS = callableStatement.getString(1);
                         if (  isExtSystemAccess ) // Внешний вызов возвращает "0~Message"
                         {
                             String callableStatementResult = callableStatement.getString(1); // Внешняя функция возвращает строку
-                            MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] " + SQLcallableStatementExpression + " callableStatement.getString=`" + callableStatementResult + "`" );
+                            MessegeSend_Log.warn("[{} ] {} callableStatement.getString=`{}`", messageQueueVO.getQueue_Id(), SQLcallableStatementExpression, callableStatementResult);
                             callableStatement.close();
                             current_Connection_4_ExecuteSQL.commit();
                             // - Формируем Confirmation из пришедшей стороки
@@ -298,16 +298,16 @@ public class XmlSQLStatement {
                                 if (callableStatementResults.length > 1) {
                                     if (callableStatementResults[1] != null)
                                         callStatement_Message = callableStatementResults[1];
-                                    else callStatement_Message = "`пустое тектовое сообшение`";
+                                    else callStatement_Message = "`пустое текстовое сообшение`";
                                 } else
-                                    callStatement_Message = "`нет тектового сообшения`";
+                                    callStatement_Message = "`нет текстового сообшения`";
                             } else {
                                 callStatementResult = 12821;
                                 callStatement_Message = "`неожиданно пусто`";
                             }
                             if (isDebugged)
-                                MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] callStatementResult=" + callStatementResult +
-                                        " ; callableStatement_MessageResult =`" + StringEscapeUtils.escapeXml10(stripNonValidXMLCharacters(callStatement_Message))+"`");
+                                MessegeSend_Log.warn("[{}] callStatementResult={} ; callableStatement_MessageResult =`{}`", messageQueueVO.getQueue_Id(),
+                                                        callStatementResult, StringEscapeUtils.escapeXml10(stripNonValidXMLCharacters(callStatement_Message)));
                                 // Формируем псевдо XML_ClearBodyResponse из function, с учетом non-XML символов
                             MakeConfirmation4Function( callStatementResult, "Функция была успешно вызвана,callableStatement_MessageResult =" ,
                                                          StringEscapeUtils.escapeXml10(stripNonValidXMLCharacters(callStatement_Message)), messageDetails);
@@ -318,14 +318,14 @@ public class XmlSQLStatement {
                         }
                         else {
                             Integer callableStatementResult = callableStatement.getInt(1);
-                            MessegeSend_Log.warn("[" + messageQueueVO.getQueue_Id() + " ] " + SQLcallableStatementExpression + " callableStatement.getInt=" + callableStatementResult.toString());
+                            MessegeSend_Log.warn("[{} ] {} callableStatement.getInt={}", messageQueueVO.getQueue_Id(), SQLcallableStatementExpression, callableStatementResult.toString());
                             callableStatement.close();
                             current_Connection_4_ExecuteSQL.commit();
                         }
 
                     } catch (SQLException e) {
-                        messageDetails.MsgReason.append(OperTypeFunc +  " SQLException Connection.prepareCall :=" ); messageDetails.MsgReason.append( e.getMessage() ); //sStackTrace.strInterruptedException(e) );
-                        MessegeSend_Log.error(messageDetails.MsgReason.toString());
+                        messageDetails.MsgReason.append(OperTypeFunc +  " catch SQLException Connection.prepareCall :=" ); messageDetails.MsgReason.append( e.getMessage() ); //sStackTrace.strInterruptedException(e) );
+                        MessegeSend_Log.error("[{}] 328:`{}` {}", messageQueueVO.getQueue_Id(), SQLcallableStatementExpression, messageDetails.MsgReason.toString());
                         return -2;
                     }
                 if ( SQLStatement_functionORselect.equals( OperTypeRef ) )
@@ -335,16 +335,16 @@ public class XmlSQLStatement {
                         // Step 2.B: Creating JDBC CallableStatement
                         callableStatement =  current_Connection_4_ExecuteSQL.prepareCall (SQLcallableStatementExpression);
                         if (isDebugged)
-                            MessegeSend_Log.info( "SQLcallableStatementExpression_4_" + OperTypeRef + ":" + SQLcallableStatementExpression );
+                            MessegeSend_Log.info("[{}] SQLcallableStatementExpression_4_{}:{}", messageQueueVO.getQueue_Id(), OperTypeRef, SQLcallableStatementExpression);
                         // register OUT parameter
                         callableStatement.registerOutParameter(1, Types.REF_CURSOR); // OracleTypes.CURSOR);
                         for ( int k =1; k < SQLparamValues.size(); k++ ) {
                             if (isDebugged)
-                                MessegeSend_Log.warn("SQLparamValues.get(" + k + ")-> [" + (1 + k) + "]=" + SQLparamValues.get(k));
+                                MessegeSend_Log.warn("[{}] SQLparamValues.get({})-> [{}]={}", messageQueueVO.getQueue_Id(), k, 1 + k, SQLparamValues.get(k));
                             callableStatement.setString(( 1 + k), SQLparamValues.get(k));
                         }
                         if (isDebugged)
-                        MessegeSend_Log.warn("SQLparamValues.set All" );
+                        MessegeSend_Log.warn("[{}] SQLparamValues.set All", messageQueueVO.getQueue_Id() );
                         try {
                             // Step 2.C: Executing CallableStatement
                             callableStatement.execute();
@@ -360,16 +360,19 @@ public class XmlSQLStatement {
                                 if (theadDataAccess.rdbmsVendor.equalsIgnoreCase("postgresql")) {
                                     PgResultSet oraRs = (PgResultSet) callableStatement.getObject(1);
                                     ResultSetMetaData resultSetMetaData = callableStatement.getMetaData(); // getParameterMetaData(); .getMetaData();
-                                    MessegeSend_Log.warn("resultSetMetaData =" + resultSetMetaData);
+                                    if (isDebugged)
+                                    MessegeSend_Log.warn("[{}] resultSetMetaData ={}" , messageQueueVO.getQueue_Id(), resultSetMetaData);
                                      oraRsMetaDatasmd = oraRs.getMetaData();
                                 }
                                 else {
                                     OracleResultSet oraRs = (OracleResultSet) callableStatement.getObject(1);
                                     ResultSetMetaData resultSetMetaData = callableStatement.getMetaData(); // getParameterMetaData(); .getMetaData();
-                                    MessegeSend_Log.warn("resultSetMetaData =" + resultSetMetaData);
+                                    if (isDebugged)
+                                    MessegeSend_Log.warn("[{}] resultSetMetaData ={}" , messageQueueVO.getQueue_Id(), resultSetMetaData);
                                     oraRsMetaDatasmd = oraRs.getMetaData();
                                 }
-                                MessegeSend_Log.warn( "OraResultSetMetaData =" + oraRsMetaDatasmd ) ;
+                                if (isDebugged)
+                                MessegeSend_Log.warn( "[{}] OraResultSetMetaData ={}", messageQueueVO.getQueue_Id() , oraRsMetaDatasmd ) ;
                                 //ParameterMetaData resultSetMetaData = callableStatement.getParameterMetaData();
                                 int ColumnCount = oraRsMetaDatasmd.getColumnCount(); // Integer.parseInt(SQLStatement_ColumnCount); //
                                 int i;
@@ -423,14 +426,14 @@ public class XmlSQLStatement {
 
                                 rs.close();
                                 if (isDebugged)
-                                    MessegeSend_Log.warn( messageDetails.XML_MsgConfirmation.toString() );
+                                    MessegeSend_Log.warn( "[{}] {}" , messageQueueVO.getQueue_Id(), messageDetails.XML_MsgConfirmation.toString() );
 
                             } catch (SQLException e) {
                                 //e.printStackTrace();
                                 messageDetails.MsgReason.append(", SQLException callableStatement.getObject(`");
                                 messageDetails.MsgReason.append( StringEscapeUtils.escapeXml10(SQLcallableStatementExpression) );
                                 messageDetails.MsgReason.append("`):="); messageDetails.MsgReason.append( e.getMessage()); //sStackTrace.strInterruptedException(e));
-                                MessegeSend_Log.error(messageDetails.MsgReason.toString());
+                                MessegeSend_Log.error("[{}] {}" , messageQueueVO.getQueue_Id(),messageDetails.MsgReason.toString());
                                 callableStatement.close();
                                 return -3;
                             }
@@ -439,7 +442,7 @@ public class XmlSQLStatement {
                             current_Connection_4_ExecuteSQL.commit();
                         } catch (SQLException e) {
                             messageDetails.MsgReason.append(", [" + messageQueueVO.getOutQueue_Id() + "] SQLException refcursor callableStatement.execute(`"+  SQLcallableStatementExpression + "`):=" + sStackTrace.strInterruptedException(e) );
-                            MessegeSend_Log.error(messageDetails.MsgReason.toString());
+                            MessegeSend_Log.error("[{}] 445:`{}` {}", messageQueueVO.getQueue_Id(), SQLcallableStatementExpression, messageDetails.MsgReason.toString());
                             current_Connection_4_ExecuteSQL.rollback();
                             callableStatement.close();
                             return -3;
@@ -465,7 +468,7 @@ public class XmlSQLStatement {
                         current_Connection_4_ExecuteSQL.commit();
                     } catch (SQLException e) {
                         messageDetails.MsgReason.append(OperTypeRef +  " SQLException Connection.prepareCall:=" ); messageDetails.MsgReason.append( e.getMessage() ); //sStackTrace.strInterruptedException(e) );
-                        MessegeSend_Log.error(messageDetails.MsgReason.toString());
+                        MessegeSend_Log.error("[{}] 469:`{}` {}", messageQueueVO.getQueue_Id(), SQLcallableStatementExpression, messageDetails.MsgReason.toString());
                         return -2;
                     }
 
@@ -482,7 +485,7 @@ public class XmlSQLStatement {
 
                         for ( int k =0; k < SQLparamValues.size(); k++ ) {
                             if (isDebugged)
-                            MessegeSend_Log.warn("selectStatement.setString: SQLparamValues.get(" + 1+k + " )=" + SQLparamValues.get(k));
+                            MessegeSend_Log.warn("[{}] selectStatement.setString: SQLparamValues.get({} )={}", messageQueueVO.getQueue_Id(), (1+k), SQLparamValues.get(k));
                             selectStatement.setString(1 + k, SQLparamValues.get(k));
                             msg_Reason.append( SQLparamValues.get(k)); msg_Reason.append( ", " );
                         }
@@ -495,12 +498,9 @@ public class XmlSQLStatement {
                             int i;
                             if (isDebugged)
                             for (i=1; i < ColumnCount+1; i++ ) {
-                                MessegeSend_Log.warn(
-                                        "ColumnType: " + ResultSetMetaData.getColumnType(i) +
-                                                " , ColumnName: " + ResultSetMetaData.getColumnName(i) +
-                                                " , ColumnTypeName: " + ResultSetMetaData.getColumnTypeName(i) +
-                                                " , ColumnLabel: " + ResultSetMetaData.getColumnLabel(i)
-                                );
+                                MessegeSend_Log.warn("[{}] ColumnType: {} , ColumnName: {} , ColumnTypeName: {} , ColumnLabel: {}", messageQueueVO.getQueue_Id(),
+                                        ResultSetMetaData.getColumnType(i), ResultSetMetaData.getColumnName(i), ResultSetMetaData.getColumnTypeName(i),
+                                        ResultSetMetaData.getColumnLabel(i));
                             }
                             int num_Rows4Perform = 0;
                             // Формируем псевдо XML_MsgConfirmation из PIPEfunction
@@ -551,7 +551,7 @@ public class XmlSQLStatement {
                             messageDetails.MsgReason.append(", SQLException selectStatement.executeQuery(`");
                             messageDetails.MsgReason.append( StringEscapeUtils.escapeXml10(SQLcallableStatementExpression) );
                             messageDetails.MsgReason.append("`):="); messageDetails.MsgReason.append( e.getMessage()); //sStackTrace.strInterruptedException(e));
-                            MessegeSend_Log.error(messageDetails.MsgReason.toString());
+                            MessegeSend_Log.error("[{}] {}",messageQueueVO.getQueue_Id(),messageDetails.MsgReason.toString());
                             selectStatement.close();
                             current_Connection_4_ExecuteSQL.rollback();
                             return -3;
@@ -567,7 +567,7 @@ public class XmlSQLStatement {
                     } catch (SQLException e) {
                         messageDetails.MsgReason.append( OperTypeSel + " SQLException Hermes_Connection.prepareCall:=`"); messageDetails.MsgReason.append( SQLcallableStatementExpression); messageDetails.MsgReason.append("`"); messageDetails.MsgReason.append( sStackTrace.strInterruptedException(e) );
                         current_Connection_4_ExecuteSQL.rollback();
-                        MessegeSend_Log.error(messageDetails.MsgReason.toString());
+                        MessegeSend_Log.error("[{}] {}",messageQueueVO.getQueue_Id(),messageDetails.MsgReason.toString());
                         return -2;
                     }
                 ////------------- SelectTotalStatement ----------------
@@ -576,13 +576,13 @@ public class XmlSQLStatement {
                         try { selectStatement = current_Connection_4_ExecuteSQL.prepareStatement (SelectTotalStatement);
                             msg_Reason.append( SelectTotalStatement);
                             if (isDebugged)
-                                MessegeSend_Log.info( "[" + messageQueueVO.getQueue_Id() + "] SelectTotalStatement: " + SelectTotalStatement );
+                                MessegeSend_Log.info("[{}] SelectTotalStatement: {}", messageQueueVO.getQueue_Id(), SelectTotalStatement);
                                ResultSet rs = selectStatement.executeQuery();
                             while (rs.next()) {
                                 messageDetails.X_Total_Count = rs.getInt(1);
                             }
                             if (isDebugged)
-                                MessegeSend_Log.info( "[" + messageQueueVO.getQueue_Id() + "] SelectTotalStatement: X_Total_Count= " + messageDetails.X_Total_Count);
+                                MessegeSend_Log.info("[{}] SelectTotalStatement: X_Total_Count= {}", messageQueueVO.getQueue_Id(), messageDetails.X_Total_Count);
                                rs.close();
                             selectStatement.close();
 
@@ -602,14 +602,14 @@ public class XmlSQLStatement {
                 // ex.printStackTrace(System.err);
                 messageDetails.MsgReason.setLength(0);
                 messageDetails.MsgReason.append("ExecuteSQLincludedXML.XPathFactory.xpath.evaluateFirst fault: "); messageDetails.MsgReason.append( StringEscapeUtils.escapeXml10 ( sStackTrace.strInterruptedException(ex)) );
-                MessegeSend_Log.error("[" + messageQueueVO.getQueue_Id() + "] "+ messageDetails.MsgReason.toString());
+                MessegeSend_Log.error("[{}] {}", messageQueueVO.getQueue_Id(), messageDetails.MsgReason.toString());
                 return -1;
             }
         }catch (JDOMException | IOException ex) {
             //ex.printStackTrace(System.err);
             messageDetails.MsgReason.setLength(0);
             messageDetails.MsgReason.append("ExecuteSQLincludedXML.documentBuilder fault: "); messageDetails.MsgReason.append( StringEscapeUtils.escapeXml10 ( sStackTrace.strInterruptedException(ex)) );
-            MessegeSend_Log.error("[" + messageQueueVO.getQueue_Id() + "] "+ messageDetails.MsgReason.toString());
+            MessegeSend_Log.error("[{}] {}", messageQueueVO.getQueue_Id(), messageDetails.MsgReason.toString());
             return -4;
         }
 
