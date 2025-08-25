@@ -215,7 +215,18 @@ public class CustomJavaMethods {
 		XPathExpression<Element> xpathTemplate_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/x_Queue_Id", Filters.element());
 		Element elmtTemplate_Id = xpathTemplate_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
 		String Queue_Id_Value= elmtTemplate_Id.getText();
-		long Queue_Id= Long.parseLong(Queue_Id_Value);
+
+		long Queue_Id;
+		try {
+			Queue_Id = Long.parseLong(Queue_Id_Value);
+		} catch ( NumberFormatException e ) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append( "[").append( messageQueueVO.getQueue_Id() )
+					.append(" ] В запросе GetRequest_Confirmation4Message параметр Parametrs/QueryString/Queue_Id =`")
+					.append( Queue_Id_Value ).append( "` не может быть конвертирован в Long");
+			MessegeReceive_Log.error("[{}] ] В запросе GetRequest_Confirmation4Message параметр Parametrs/QueryString/Queue_Id =`{}` не может быть конвертирован в Long", messageQueueVO.getQueue_Id(), Queue_Id_Value);
+			return -34;
+		}
 
 		int nn = MessageUtils.ReadConfirmation(theadDataAccess, Queue_Id, messageDetails, MessegeReceive_Log);
 		messageDetails.XML_MsgResponse.setLength(0);
@@ -361,13 +372,23 @@ public class CustomJavaMethods {
 		}
 		String Pk_Value= elmtQueue_Id.getText();
 		//String ParamElements[] = Pk_Value.split("-@-");
-		long Queue_Id_4_ReplaceConfirmation = Long.parseLong(Pk_Value);
+		long Queue_Id_4_ReplaceConfirmation;
+		try {
+			Queue_Id_4_ReplaceConfirmation = Long.parseLong(Pk_Value);
+		} catch ( NumberFormatException e ) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append( "[").append( messageQueueVO.getQueue_Id() )
+					.append(" ] В запросе ReplaceConfirmation_4_MessageQueue параметр Parametrs/QueryString/Queue_Id =`")
+					.append( Pk_Value ).append( "` не может быть конвертирован в Long");
+			MessegeReceive_Log.error("[{}] ] В запросе ReplaceConfirmation_4_MessageQueue параметр Parametrs/QueryString/Queue_Id =`{}` не может быть конвертирован в Long", messageQueueVO.getQueue_Id(), Pk_Value);
+			return -34;
+		}
 
 		XPathExpression<Element> xpathConfirmationContent_4_Save = XPathFactory.instance().compile("/Envelope/Body/Parametrs/Data", Filters.element());
 		Element elmtConfirmationContent_4_Save = xpathConfirmationContent_4_Save.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
 		if ( elmtConfirmationContent_4_Save == null) {
 			messageDetails.MsgReason.setLength(0);
-			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе ReplaceConfirmation4MessageQueue не найден параметр Parametrs/Data");
+			messageDetails.MsgReason.append("[").append(messageQueueVO.getQueue_Id()).append(" ] В запросе ReplaceConfirmation4MessageQueue не найден параметр Parametrs/Data");
 			return -36;
 		}
 
@@ -385,8 +406,8 @@ public class CustomJavaMethods {
 
 		}
 		if ( Function_Result != 0) {
-			//messageDetails.MsgReason.append(" В системе Java метод:`ReplaceConfirmation4MessageQueue");
-			messageDetails.MsgReason.append("` , проконсультируйтесь с разработчиками");
+			messageDetails.MsgReason.append(" В системе Java метод:`ReplaceConfirmation4MessageQueue");
+			messageDetails.MsgReason.append("` не реализован, проконсультируйтесь с разработчиками");
 		}
 		else {
 			messageDetails.XML_MsgResponse.setLength(0);
@@ -409,18 +430,28 @@ public class CustomJavaMethods {
 		Element elmtQueue_Id = xpathQueue_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
 		if ( elmtQueue_Id== null) {
 			messageDetails.MsgReason.setLength(0);
-			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе SaveRequest4MessageQueue не найден параметр Parametrs/QueryString/Queue_Id");
+			messageDetails.MsgReason.append("[").append(messageQueueVO.getQueue_Id()).append(" ] В запросе SaveRequest4MessageQueue не найден параметр Parametrs/QueryString/Queue_Id");
 			return -33;
 		}
 		String Pk_Value= elmtQueue_Id.getText();
 		//String ParamElements[] = Pk_Value.split("-@-");
-		long Queue_Id_4_SaveRequest = Long.parseLong(Pk_Value);
+		long Queue_Id_4_SaveRequest;
+		try {
+			Queue_Id_4_SaveRequest = Long.parseLong(Pk_Value);
+		} catch ( NumberFormatException e ) {
+			messageDetails.MsgReason.setLength(0);
+			messageDetails.MsgReason.append( "[").append( messageQueueVO.getQueue_Id() )
+					.append(" ] В запросе SaveRequest_4_MessageQueue параметр Parametrs/QueryString/Queue_Id =`")
+					.append( Pk_Value ).append( "` не может быть конвертирован в Long");
+			MessegeReceive_Log.error("[{}] ] В запросе SaveRequest_4_MessageQueue параметр Parametrs/QueryString/Queue_Id =`{}` не может быть конвертирован в Long", messageQueueVO.getQueue_Id(), Pk_Value);
+			return -34;
+		}
 
 		XPathExpression<Element> xpathRequestContent_4_Save = XPathFactory.instance().compile("/Envelope/Body/Parametrs/Data", Filters.element());
 		Element elmtRequestContent_4_Save = xpathRequestContent_4_Save.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
 		if ( elmtRequestContent_4_Save == null) {
 			messageDetails.MsgReason.setLength(0);
-			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе SaveRequest4MessageQueue не найден параметр Parametrs/Data");
+			messageDetails.MsgReason.append("[").append(messageQueueVO.getQueue_Id()).append(" ] В запросе SaveRequest4MessageQueue не найден параметр Parametrs/Data");
 			return -36;
 		}
 		String requestContent_4_Save = elmtRequestContent_4_Save.getText();
@@ -431,13 +462,13 @@ public class CustomJavaMethods {
 		}
 		catch (Exception e) {
 			messageDetails.MsgReason.setLength(0);
-			messageDetails.MsgReason.append(" В системе Java метод:`SaveRequest4MessageQueue при вызове SaveRequestBody_4_MessageQueue=(" + requestContent_4_Save + ") fault" + e.getMessage() );
+			messageDetails.MsgReason.append(" В системе Java метод:`SaveRequest4MessageQueue при вызове SaveRequestBody_4_MessageQueue=(").append(requestContent_4_Save).append(") fault").append(e.getMessage());
 			Function_Result = -1;
 		}
 		if ( Function_Result != 0) {
 			messageDetails.MsgReason.append(" В системе Java метод:`SaveRequest4MessageQueue");
 			messageDetails.MsgReason.append("` не реализован, проконсультируйтесь с разработчиками");
-			MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "] В системе Java метод:`SaveRequest4MessageQueue` не реализован, проконсультируйтесь с разработчиками");
+            MessegeReceive_Log.error("[{}] В системе Java метод:`SaveRequest4MessageQueue` не реализован, проконсультируйтесь с разработчиками", messageQueueVO.getQueue_Id());
 		}
 		else {
 			messageDetails.XML_MsgResponse.setLength(0);
