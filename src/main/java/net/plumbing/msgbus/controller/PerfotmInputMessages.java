@@ -568,7 +568,12 @@ public class PerfotmInputMessages {
 
                     if ( isLink_Queue_Finish)
                     { // Считаем, что как то готово готово
-                       // MessegeReceive_Log.error("[" + Queue_Id + "] Считаем, что как то готово готово, " + "AckAnswXSLT: " + Message.MessageTemplate4Perform.getAckAnswXSLT());
+                        if ( Message.MessageTemplate4Perform.getIsDebugged() )
+                        MessegeReceive_Log.info("[{}] Считаем, что как то исходящее готово ExeMetod 4 PostExec =`{}`, is_NoWait4Sender=`{}` getMsgAnswXSLT:{} getMsgAnswXSLT: {}", Queue_Id,
+                                        Message.MessageTemplate4Perform.getPropExeMetodPostExec(), is_NoWait4Sender,
+                                (Message.MessageTemplate4Perform.getAckAnswXSLT() != null) ? "заполнен": "пуст",
+                                (Message.MessageTemplate4Perform.getMsgAnswXSLT() != null) ? "заполнен": "пуст"
+                        );
                         if ( (!is_NoWait4Sender) && //на Типе сообщения НЕ стоит "NoWait4Sender" - следовательно, рассчитываем считать Confirmation из порожденного OUT
                                 (Message.MessageTemplate4Perform.getAckAnswXSLT() != null) // наличие секции AckAnswXSLT является признаком, что Confirmation из порожденного OUT
                             )
@@ -734,7 +739,7 @@ public class PerfotmInputMessages {
                               // обработчик порожденного OUT-сообщения перезаписывает Confirmation, его надо перезачитать и обработать MsgAnswXSLT
 
                                 if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                                    MessegeReceive_Log.warn("[{}]: ожидается, что обработчик порожденного OUT-сообщения перезаписывает Confirmation, MsgAnswXSLT: {}", Queue_Id, Message.MessageTemplate4Perform.getMsgAnswXSLT());
+                                    MessegeReceive_Log.info("[{}]: ожидается, что обработчик порожденного OUT-сообщения перезаписывает Confirmation, MsgAnswXSLT: {}", Queue_Id, Message.MessageTemplate4Perform.getMsgAnswXSLT());
                                 // ReadConfirmation очищает Message.XML_MsgConfirmation и помещает туда чстанный из БД Confirmation
                                 int ConfirmationRowNum = MessageUtils.ReadConfirmation(theadDataAccess, Queue_Id, Message, MessegeReceive_Log);
                                 if (ConfirmationRowNum < 1) {
@@ -792,8 +797,10 @@ public class PerfotmInputMessages {
                 }
 
                 // преобразовываем результат
-                if ( Message.MessageTemplate4Perform.getIsDebugged() )
-                    MessegeReceive_Log.warn("[{}] преобразовываем результат getAckXSLT( {})", Queue_Id, Message.MessageTemplate4Perform.getAckXSLT());
+                if ( Message.MessageTemplate4Perform.getIsDebugged() ) {
+                    MessegeReceive_Log.warn("[{}] преобразовываем результат что: Confirmation`{}`", Queue_Id, Message.XML_MsgConfirmation );
+                    MessegeReceive_Log.warn("[{}] преобразовываем результат чем: getAckXSLT`{}`", Queue_Id, Message.MessageTemplate4Perform.getAckXSLT());
+                }
                 if (Message.MessageTemplate4Perform.getAckXSLT() != null)
                 {
                     String Passed_Confirmation4AckXSLT = null;

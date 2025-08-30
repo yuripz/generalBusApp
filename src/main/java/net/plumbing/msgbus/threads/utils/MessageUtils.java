@@ -1377,7 +1377,7 @@ public class MessageUtils {
                     XPathExpression<Element> xpathNext = XPathFactory.instance().compile(xpathNextExpression, Filters.element());
                     Element emtNext = xpathNext.evaluateFirst(document);
                     if ( emtNext != null ) {
-                        MessegeSend_Log.info(" [{}] XPath has result: <{}> :{}", messageQueueVO.getQueue_Id(), emtNext.getName(), emtNext.getText());
+                        MessegeSend_Log.info("[{}] XPath has result: <{}> :{}", messageQueueVO.getQueue_Id(), emtNext.getName(), emtNext.getText());
                         AnswXSLTQueue_Direction = emtNext.getText();
 
                         XPathExpression<Element> xpathResultCode = XPathFactory.instance().compile(xpathResultCodeExpression, Filters.element());
@@ -1387,10 +1387,14 @@ public class MessageUtils {
                                 iMsgStaus = Integer.parseInt(emtResultCode.getText());
                             } catch (NumberFormatException e) {
                                 iMsgStaus = 12345;
-                                messageDetails.MsgReason.append("Не не получили числового значения Статуса " + xpathResultCodeExpression + " в результате XSLT преобразования Response");
+                                messageDetails.MsgReason.append("Не не получили числового значения Статуса ")
+                                        .append(xpathResultCodeExpression)
+                                        .append(" в результате XSLT преобразования Response");
                             }
                         else {
-                            messageDetails.MsgReason.append("Не нашли " + xpathResultCodeExpression + " в результате XSLT преобразования Response");
+                            messageDetails.MsgReason.append("Не нашли ")
+                                    .append(xpathResultCodeExpression)
+                                    .append(" в результате XSLT преобразования Response");
                             iMsgStaus = 12346;
                         }
 
@@ -1399,7 +1403,8 @@ public class MessageUtils {
                         if ( emtMessage != null )
                             messageDetails.MsgReason.append(emtMessage.getText());
                         else
-                            messageDetails.MsgReason.append("Не нашли " + xpathMessageExpression + " в " + parsedMessageConfirmation);
+                            messageDetails.MsgReason.append("Не нашли ").append(xpathMessageExpression)
+                                    .append(" в ").append(parsedMessageConfirmation);
 
                         if ( emtConfirmation != null ) {
 
@@ -1423,7 +1428,7 @@ public class MessageUtils {
                                 theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT(messageQueueVO,
                                         "PrepareConfirmation.'" + org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4(messageDetails.MsgReason.toString()) + "' for (" + parsedMessageConfirmation + ")", 1233,
                                         messageQueueVO.getRetry_Count(), MessegeSend_Log);
-                                MessegeSend_Log.error("PrepareConfirmation.'{}' for({})", messageDetails.MsgReason.toString(), parsedMessageConfirmation);
+                                MessegeSend_Log.error("[{}] PrepareConfirmation.'{}' for({})", messageQueueVO.getQueue_Id(),messageDetails.MsgReason.toString(), parsedMessageConfirmation);
 
                                 return XMLchars.DirectERROUT;
                             }
@@ -1439,14 +1444,16 @@ public class MessageUtils {
                         theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT(messageQueueVO,
                                 "PrepareConfirmation.XPathFactory.xpath.evaluateFirst('" + xpathNextExpression + "') не нашёл <Next></Next> в (" + parsedMessageConfirmation + ")", 1233,
                                 messageQueueVO.getRetry_Count(), MessegeSend_Log);
-                        MessegeSend_Log.error("PrepareConfirmation.XPathFactory.xpath.evaluateFirst('\"+ xpathNextExpression  +\"') не нашёл <Next></Next> в ({})", parsedMessageConfirmation);
+                        MessegeSend_Log.error("[{}] PrepareConfirmation.XPathFactory.xpath.evaluateFirst('{}') не нашёл <Next></Next> в ({})",
+                                                messageQueueVO.getQueue_Id(),  xpathNextExpression,
+                                                parsedMessageConfirmation);
 
                         return AnswXSLTQueue_Direction;
                     }
                 }
                 catch (Exception ex) {
                     ex.printStackTrace();
-                    MessegeSend_Log.error("PrepareConfirmation.XPathFactory.xpath.evaluateFirst \"{}\" fault: {} for {}", xpathNextExpression, ex.getMessage(), parsedMessageConfirmation);
+                    MessegeSend_Log.error("[{}] PrepareConfirmation.XPathFactory.xpath.evaluateFirst `{}` fault: {} for {}", messageQueueVO.getQueue_Id(), xpathNextExpression, ex.getMessage(), parsedMessageConfirmation);
                     theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT(messageQueueVO,
                             "PrepareConfirmation.XPathFactory.xpath.evaluateFirst \""+ xpathNextExpression +"\" for (" + parsedMessageConfirmation + ") fault: " + ex.getMessage()  , 1233,
                             messageQueueVO.getRetry_Count(), MessegeSend_Log);
@@ -1454,7 +1461,7 @@ public class MessageUtils {
 
             } catch (Exception ex) {
                 ex.printStackTrace();
-                MessegeSend_Log.error("PrepareConfirmation.XPathFactory.xpath.evaluateFirst '/Confirmation' fault: {} for {}", ex.getMessage(), parsedMessageConfirmation);
+                MessegeSend_Log.error("[{}] PrepareConfirmation.XPathFactory.xpath.evaluateFirst '/Confirmation' fault: {} for {}", messageQueueVO.getQueue_Id(), ex.getMessage(), parsedMessageConfirmation);
                 theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT(messageQueueVO,
                         "PrepareConfirmation.XPathFactory.xpath.evaluateFirst \"/Confirmation\" for (" + parsedMessageConfirmation + ") fault: " + ex.getMessage()  , 1233,
                         messageQueueVO.getRetry_Count(), MessegeSend_Log);
@@ -1466,7 +1473,7 @@ public class MessageUtils {
 
 
         } catch (JDOMException | IOException ex) {
-            MessegeSend_Log.error("PrepareConfirmation.documentBuilder fault: {} for {}", ex.getMessage(), parsedMessageConfirmation);
+            MessegeSend_Log.error("[{}] PrepareConfirmation.documentBuilder fault: {} for {}", messageQueueVO.getQueue_Id(), ex.getMessage(), parsedMessageConfirmation);
             theadDataAccess.doUPDATE_MessageQueue_Send2ErrorOUT(messageQueueVO,
                     "PrepareConfirmation.documentBuilder fault: " + ex.getMessage() + " for " + parsedMessageConfirmation, 1233,
                     messageQueueVO.getRetry_Count(), MessegeSend_Log);
