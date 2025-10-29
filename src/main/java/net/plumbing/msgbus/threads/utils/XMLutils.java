@@ -227,7 +227,8 @@ public class XMLutils {
 
                 ConvXMLuseXSLTerr.setLength(0);
                 ConvXMLuseXSLTerr.trimToSize();
-
+                if (isDebugged)
+                    MessegeSend_Log.info("ProcessInputMessage(makeClearRequest): до XSLT={{}}", messageDetails.XML_MsgClear.toString());
                 messageDetails.XML_MsgConfirmation.append(
                         XMLutils.ConvXMLuseXSLT30(-1L,
                                 messageDetails.XML_MsgClear.toString(),
@@ -241,7 +242,7 @@ public class XMLutils {
                         //.substring(XMLchars.xml_xml.length()) // НЕ берем после <?xml version="1.0" encoding="UTF-8"?>, Property.OMIT_XML_DECLARATION = "yes"
                 );
                 if (isDebugged)
-                    MessegeSend_Log.info("ProcessInputMessage(makeClearRequest): после XSLT={" + messageDetails.XML_MsgConfirmation.toString() + "}");
+                    MessegeSend_Log.info("ProcessInputMessage(makeClearRequest): после XSLT={{}}", messageDetails.XML_MsgConfirmation.toString());
 
                 if (messageDetails.XML_MsgConfirmation.toString().equals(XMLchars.nanXSLT_Result)) {
                     if (isDebugged)

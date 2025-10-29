@@ -430,7 +430,10 @@ public class InitMessageRepository {
                     MessageType.AllMessageType.put( MessageType.RowNum, messageTypeVO );
                     MessageType.RowNum += 1;
 
-                log.info(" Types.size=" +   MessageType.AllMessageType.size() + ", MessageRowNum[" + MessageType.RowNum + "] :" + messageTypeVO.getMsg_Type() );
+                if ( messageTypeVO.getOperation_Id() == 0 )
+                    log.info(" Types.size={}, MessageRowNum[{}] Type:{} URL_SOAP_Send:{}", MessageType.AllMessageType.size(), MessageType.RowNum, messageTypeVO.getMsg_Type(), messageTypeVO.getURL_SOAP_Send());
+                    else
+                log.info(" Types.size={}, MessageRowNum[{}] Type::{}", MessageType.AllMessageType.size(), MessageType.RowNum, messageTypeVO.getMsg_Type());
             }
         } catch (Exception e) {
             e.printStackTrace();

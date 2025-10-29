@@ -114,7 +114,7 @@ public class MessageRepositoryHelper {
         for (int i = 0; i < MessageType.AllMessageType.size(); i++) {
             MessageTypeVO messageTypeVO = MessageType.AllMessageType.get(i);
             // messageSend_log.info("look4MessageTypeVO[" + i + "]:" + messageTypeVO.getURL_SOAP_Send() + " , " +messageTypeVO.getMsg_TypeDesc());
-            if (messageTypeVO.getOperation_Id() == 0 ){ // Это ИНТПРФЕЙС, тип, у которого № ОПЕРАЦИЯ == 0
+            if (messageTypeVO.getOperation_Id() == 0 ){ // Это ИНТЕРФЕЙС, тип, у которого № ОПЕРАЦИЯ == 0
                 String URL_SOAP_Send = messageTypeVO.getURL_SOAP_Send();
              //    messageSend_log.info("look4MessageTypeVO[" + i + "]:" + URL_SOAP_Send + " , " +messageTypeVO.getMsg_TypeDesc());
                 if ( URL_SOAP_Send != null ) {

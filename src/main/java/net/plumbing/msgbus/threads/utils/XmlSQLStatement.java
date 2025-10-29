@@ -227,7 +227,7 @@ public class XmlSQLStatement {
                         // Step 2.B: Creating JDBC CallableStatement
                         callableStatement = current_Connection_4_ExecuteSQL.prepareCall (SQLcallableStatementExpression);
                         if (isDebugged)
-                            MessegeSend_Log.info("[{}] SQLcallableStatementExpression_4_{}:{}", messageQueueVO.getQueue_Id(), OperTypeRef, SQLcallableStatementExpression);
+                            MessegeSend_Log.info("[{}] SQLcallableStatementExpression_4_{}:{}", messageQueueVO.getQueue_Id(), OperTypeFunc, SQLcallableStatementExpression);
                         // register OUT parameter
                         if (  isExtSystemAccess ) // Внешний вызов возвращает "0~Message"
                             callableStatement.registerOutParameter(1, Types.VARCHAR);
