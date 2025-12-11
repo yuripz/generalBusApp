@@ -590,7 +590,11 @@ public class PerfotmInputMessages {
                                 if (( Link_Queue_Direction != null ) && (!Message.XML_MsgConfirmation.isEmpty()) )
                                     switch ( Link_Queue_Direction )
                                     { case XMLchars.DirectERROUT:
-                                        Message.MsgReason.append("[" + Queue_Id + "] при взаимодействии с внешней система на событие (" + Link_Queue_Id + ") произошёл сбой {}").append( Message.XML_MsgConfirmation );
+                                        Message.MsgReason.append("[").append(Queue_Id).append("] при взаимодействии с внешней система на событие (")
+                                                          .append(Link_Queue_Id)
+                                                          .append(") произошёл сбой: `")
+                                                          .append( Message.XML_MsgConfirmation )
+                                                          .append("`");
                                             break;
                                         case XMLchars.DirectATTNOUT:
                                         case XMLchars.DirectDELOUT:
@@ -600,7 +604,7 @@ public class PerfotmInputMessages {
                                     Message.MsgReason.append("[" + Queue_Id + "] обработчик Исходящего события (" + Link_Queue_Id + ") не сформировал Confirmation, статус события неопределён, нарушено соглашение о взаимодействии с Шиной");
 
                                 }
-                                MessegeReceive_Log.error("[{}]{}", Queue_Id, Message.MsgReason.toString());
+                                MessegeReceive_Log.error( Message.MsgReason.toString());
                                 theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, Message.MsgReason.toString(), 3245,
                                         MessegeReceive_Log);
                                 return -40L;

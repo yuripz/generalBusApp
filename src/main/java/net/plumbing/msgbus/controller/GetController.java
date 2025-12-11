@@ -47,7 +47,7 @@ public class GetController  {
         HttpServletRequest httpRequest = (HttpServletRequest) getServletRequest;
         // Controller_log.warn("GetHttpRequest->RemoteAddr: \"" + getServletRequest.getRemoteAddr() + "\" ,RemoteHost: \"" + getServletRequest.getRemoteHost() + "\"" );
         String url = httpRequest.getRequestURL().toString();
-        boolean is_TextJsonResponse=true;
+        boolean is_TextJsonResponse;
         String queryString;
         try {
             queryString = URLDecoder.decode(httpRequest.getQueryString(), StandardCharsets.UTF_8);
@@ -58,6 +58,8 @@ public class GetController  {
             queryString = httpRequest.getQueryString();
         }
         if ( url.indexOf("/HermesSOAPService/") > 0 )  is_TextJsonResponse=false;
+        else
+            is_TextJsonResponse=true;
 
         getResponse.addHeader("Access-Control-Allow-Origin", "*");
         //Controller_log.warn("url= (" + url + ") queryString(" + queryString + ")");
@@ -245,7 +247,8 @@ public class GetController  {
                         return (jsonPrettyPrintString);
 
                     } catch (JSONException e) {
-                        System.err.println(e.toString());
+                        Controller_log.error("XML.toJSONObject(`{}`) fault:{}" , HttpResponse, e.getMessage());
+                        e.printStackTrace();
                     }
                 }
               // возвращаем XML

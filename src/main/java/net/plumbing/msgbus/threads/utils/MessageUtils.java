@@ -1260,7 +1260,12 @@ public class MessageUtils {
             while (rs.next()) {
                 Queue_Direction = rs.getString("Queue_Direction");
                 pXML_MsgConfirmation.setLength(0); pXML_MsgConfirmation.trimToSize();
-                pXML_MsgConfirmation.append( rs.getString("Msg_Reason"));
+                pXML_MsgConfirmation.append( // вот тут надо эйсарпить <> и прочее , потому как оно идёт в XML
+                        org.apache.commons.lang3.StringEscapeUtils.escapeXml10(
+                                stripNonValidXMLCharacters(rs.getString("Msg_Reason"))
+                        )
+
+                );
                 if ( isDebugged )
                     MessegeReceive_Log.info("[{}] get_Link_Queue_Finish:{} Msg_status:[ {}] Msg_Reason={}] Msg_Result={}", Queue_Id,
                                     rs.getString("Queue_Direction"), rs.getString("Msg_status"), rs.getString("Msg_Reason"), rs.getString("Msg_Result"));

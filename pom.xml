@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.4.9</version>
+		<version>3.4.11</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>net.plumbing.msgbus</groupId>
 	<artifactId>Receiver</artifactId>
-    <version>0.3.25.10.05b-SaX</version>
+    <version>0.3.25.12.11b-SaX</version>
     <name>Receiver</name>
     <description>servlet project for Spring Boot</description>
     	<properties>
@@ -22,7 +22,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>3.4.9</version>
+            <version>3.4.11</version>
             <exclusions>
                 <exclusion>
                     <artifactId>tomcat-embed-el</artifactId>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jetty</artifactId>
-            <version>3.4.9</version>
+            <version>3.4.11</version>
             <exclusions>
                 <exclusion>
                     <artifactId>tomcat-embed-el</artifactId>
@@ -301,7 +301,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>3.4.9</version>
+                <version>3.4.11</version>
                 <configuration>
                     <executable>true</executable>
                     <includeSystemScope>true</includeSystemScope>
