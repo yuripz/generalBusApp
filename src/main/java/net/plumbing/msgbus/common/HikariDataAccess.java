@@ -95,8 +95,9 @@ public class HikariDataAccess {
             ServletApplication.AppThead_log.info("HiDataSource.DataSourcePool ( at prepareStatement ): getMax: {}, getIdle: {}, getActive: {}, getMin: {}",
                                                 DataSourcePoolMetadata.getMax(), DataSourcePoolMetadata.getIdle(),
                                                 DataSourcePoolMetadata.getActive(),  DataSourcePoolMetadata.getMin());
+            // tryConn.commit(); //-- RA-17273: Не удалось выполнить фиксацию при включенной функции автофиксации. https://docs.oracle.com/error-help/db/ora-17273/
             tryConn.close();
-            ServletApplication.AppThead_log.info( "getJdbcUrl: "+ hikariConfig.getJdbcUrl());
+            ServletApplication.AppThead_log.info( "HiDataSource.dataSource.getJdbcUrl: "+ hikariConfig.getJdbcUrl());
         }
         catch (java.sql.SQLException e)
         { ServletApplication.AppThead_log.error( "HiDataSource.dataSource.getConnection fault: {}", e.getMessage());}

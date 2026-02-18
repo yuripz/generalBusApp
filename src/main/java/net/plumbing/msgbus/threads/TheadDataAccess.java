@@ -33,8 +33,8 @@ public class TheadDataAccess {
     public PreparedStatement stmtMsgQueueConfirmationDet=null;
     public PreparedStatement stmtMsgQueueConfirmationTag = null;
 
-    private PreparedStatement stmtUPDATE_MessageQueue_Out2ErrorOUT;
-    private String UPDATE_MessageQueue_Out2ErrorOUT ;
+    private PreparedStatement stmtUPDATE_MessageQueue_Out2ErrorOUT=null;
+    private String UPDATE_MessageQueue_Out2ErrorOUT=null;
 
     // private PreparedStatement stmtMsgQueueBody = null;
     //private PreparedStatement stmtMsgLastBodyTag = null;
@@ -59,7 +59,7 @@ public class TheadDataAccess {
     // private PreparedStatement stmt_UPDATE_MessageQueue_Temp2ErrIN;
 
 
-    public PreparedStatement stmtUPDATE_MessageQueue_Queue_Date4Send;
+    public PreparedStatement stmtUPDATE_MessageQueue_Queue_Date4Send=null;
     // HE-5481  Queue_Date = sysdate -> надо отображать дату первой попытки отправки
     public final String UPDATE_MessageQueue_Queue_Date4Send =
             "update ARTX_PROJ.MESSAGE_QUEUE Q " +
@@ -68,7 +68,7 @@ public class TheadDataAccess {
                     ", q.Prev_Queue_Direction='OUT', q.Prev_Msg_Date=sysdate " +
                     "where 1=1 and q.Queue_Id = ?  ";
 
-    public PreparedStatement stmtUPDATE_MessageQueue_Out2Send;
+    public PreparedStatement stmtUPDATE_MessageQueue_Out2Send=null;
     // HE-5481  q.Queue_Date = sysdate -> надо отображать дату первой попытки отправки
     private  String UPDATE_MessageQueue_Out2Send;
 
@@ -81,18 +81,18 @@ public class TheadDataAccess {
     private PreparedStatement stmtUPDATE_MessageQueue_In2ErrorIN=null;
     private  String UPDATE_MessageQueue_In2ErrorIN;
 
-    private PreparedStatement stmtUPDATE_MessageQueue_ExeIN2PostIN;
+    private PreparedStatement stmtUPDATE_MessageQueue_ExeIN2PostIN=null;
     private String UPDATE_MessageQueue_ExeIN2PostIN;
 
     public  String selectMessage4QueueIdSQL;
     public PreparedStatement stmtMsgQueueVO_Query;
 
-    private PreparedStatement stmt_UPDATE_MessageQueue_DirectionAsIS;
+    private PreparedStatement stmt_UPDATE_MessageQueue_DirectionAsIS=null;
     private  String UPDATE_MessageQueue_DirectionAsIS ;
 
-    private PreparedStatement stmtUPDATE_MessageQueue_Send2ErrorOUT;
+    private PreparedStatement stmtUPDATE_MessageQueue_Send2ErrorOUT=null;
     private String UPDATE_MessageQueue_Send2ErrorOUT;
-    private PreparedStatement stmtUPDATE_MessageQueue_Send2AttOUT;
+    private PreparedStatement stmtUPDATE_MessageQueue_Send2AttOUT=null;
     private String UPDATE_MessageQueue_Send2AttOUT;
 /*
     public final String UPDATE_MessageQueue_SetMsg_Reason=
@@ -104,11 +104,11 @@ public class TheadDataAccess {
     public PreparedStatement stmtUPDATE_MessageQueue_SetMsg_Reason;
 */
 
-    public PreparedStatement stmt_UPDATE_MessageQueue_Send2finishedOUT;
+    public PreparedStatement stmt_UPDATE_MessageQueue_Send2finishedOUT=null;
     public  String UPDATE_MessageQueue_Send2finishedOUT;
 
     private String selectMESSAGE_QUEUE ;
-    private PreparedStatement stmtSelectMESSAGE_QUEUE;
+    private PreparedStatement stmtSelectMESSAGE_QUEUE=null;
 
     public PreparedStatement stmt_UPDATE_MessageQueue_after_FaultResponse;
     public PreparedStatement stmt_UPDATE_after_FaultGet;
@@ -122,30 +122,30 @@ public class TheadDataAccess {
     // private PreparedStatement stmt_DELETE_Message_Details;
     // private String DELETE_Message_Details;
 
-    private PreparedStatement stmt_DELETE_Message_Confirmation;
+    private PreparedStatement stmt_DELETE_Message_Confirmation=null;
     private String DELETE_Message_Confirmation;
-    private PreparedStatement stmt_DELETE_Message_ConfirmationH;
+    private PreparedStatement stmt_DELETE_Message_ConfirmationH=null;
     private String DELETE_Message_ConfirmationH;
 
     public String SELECT_Link_Queue_Id ;
     public PreparedStatement stmt_SELECT_Link_Queue_Id;
 
-    public PreparedStatement stmt_INSERT_Message_Details;
+    public PreparedStatement stmt_INSERT_Message_Details=null;
     public String INSERT_Message_Details ;
 
     private String UPDATE_QUEUElog_Response;
-    private PreparedStatement stmt_UPDATE_QUEUElog;
+    private PreparedStatement stmt_UPDATE_QUEUElog=null;
 
     // TODO 4_Postgre
      private  String INSERT_QUEUElog_Request;
     // private PreparedStatement stmt_INSERT_QUEUElog;
     // TODO Для Oracle используется call insert into returning ROWID into
-    public CallableStatement stmt_INSERT_QUEUElog;
+    public CallableStatement stmt_INSERT_QUEUElog=null;;
     //private final String INSERT_QUEUElog_Request="{call insert into " + dbSchema + ".MESSAGE_QUEUElog L ( Queue_Id, Req_dt, request ) values( ?, systimestamp, ?) returning ROWID into ? }";
 
     public  String selectMessageStatement;
 
-    public PreparedStatement stmt_New_Queue_Prepare;
+    public PreparedStatement stmt_New_Queue_Prepare=null;
     /*
     public final String INSERT_Message_Queue= "INSERT into " + dbSchema + ".MESSAGE_Queue " +
                    "(QUEUE_ID, QUEUE_DIRECTION, QUEUE_DATE, MSG_STATUS, MSG_DATE, OPERATION_ID, OUTQUEUE_ID, MSG_TYPE) " +
@@ -245,7 +245,62 @@ public class TheadDataAccess {
               return ( null);
           }
     }
+        // Non lease make-xxx for
+        if (  make_Message_QueryConfirmation(dataAccess_log) == null ) {
+            dataAccess_log.error( "make_Message_QueryConfirmation() fault");
+            return null;
+        }
 
+        if (   make_MessageVO_Query(  dataAccess_log ) == null ) {
+            dataAccess_log.error( "make_MessageVO_Query() fault");
+            return null;
+        }
+
+        if (  make_MessageDet_Query(dataAccess_log) == null ) {
+            dataAccess_log.error( "make_MessageDet_Query() fault");
+            return null;
+        }
+
+        if (  make_Message_Query(dataAccess_log) == null ) {
+            dataAccess_log.error( "make_Message_Query() fault");
+            return null;
+        }
+
+        if (make_Message_LastBodyTag_Query(dataAccess_log) == null) {
+            dataAccess_log.error("make_Message_LastBodyTag_Query() fault");
+            return null;
+        }
+
+        if (  make_Message_ConfirmationTag_Query(dataAccess_log) == null ) {
+            dataAccess_log.error( "make_Message_ConfirmationTag_Query() fault");
+            return null;
+        }
+
+        if (make_update_MESSAGE_Template_Param( dataAccess_log) == null) {
+            dataAccess_log.error("make_Message_LastBodyTag_Query() fault");
+            return null;
+        }
+        if (make_SelectNew_Queue( dataAccess_log) == null) {
+            dataAccess_log.error("make_SelectNew_Queue() fault");
+            return null;
+        }
+
+        if (make_insert_Message_Queue( dataAccess_log) == null) {
+            dataAccess_log.error("make_insert_Message_Queue() fault");
+            return null;
+        }
+
+        if (make_insert_Message_Details( dataAccess_log) == null) {
+            dataAccess_log.error("make_insert_Message_Details() fault");
+            return null;
+        }
+
+        if (make_SelectLink_Queue_Id( dataAccess_log) == null) {
+            dataAccess_log.error("make_SelectLink_Queue_Id() fault");
+            return null;
+        }
+        // call lease make-xxx for should be commented
+        /*****************************************************************
         if (make_SelectNew_Queue(  dataAccess_log) == null ) {
             dataAccess_log.error( "make_SelectNew_Queue() fault");
             if ( Hermes_Connection != null)
@@ -257,37 +312,10 @@ public class TheadDataAccess {
             return null;
         }
 
-        if (  make_Message_Query(dataAccess_log) == null ) {
-            dataAccess_log.error( "make_Message_Query() fault");
-            return null;
-        }
-
-        if (  make_Message_QueryConfirmation(dataAccess_log) == null ) {
-               dataAccess_log.error( "make_Message_QueryConfirmation() fault");
-               return null;
-           }
-
-        if (  make_MessageDet_Query(dataAccess_log) == null ) {
-            dataAccess_log.error( "make_MessageDet_Query() fault");
-            return null;
-        }
-
-        if (  make_Message_ConfirmationTag_Query(dataAccess_log) == null ) {
-            dataAccess_log.error( "make_Message_ConfirmationTag_Query() fault");
-            return null;
-        }
-
         if (  make_update_MESSAGE_Template(dataAccess_log) == null ) {
             dataAccess_log.error( "make_update_MESSAGE_Template() fault");
             return null;
         }
-
-
-        if (   make_MessageVO_Query(  dataAccess_log ) == null ) {
-            dataAccess_log.error( "make_MessageVO_Query() fault");
-            return null;
-        }
-
 
         if (  make_Message_Update_In2ExeIn(dataAccess_log) == null ) {
             dataAccess_log.error( "make_MessageQueue_ExeIn2DelIN() fault");
@@ -303,12 +331,12 @@ public class TheadDataAccess {
             dataAccess_log.error( "make_Message_Update_Send2ErrorOUT() fault");
             return null;
         }
-/*
+
         if (  make_delete_Message_Details(dataAccess_log) == null ) {
             dataAccess_log.error( "make_delete_Message_Details() fault");
             return null;
         }
-        */
+
 
         if (  make_insert_Message_Details(dataAccess_log) == null ) {
             dataAccess_log.error( "make_insert_Message_Details() fault");
@@ -337,8 +365,6 @@ public class TheadDataAccess {
             return null;
         }
 
-
-
 //        if ( make_UPDATE_MessageQueue_DirectionAsIS(dataAccess_log) == null ) {
 //            dataAccess_log.error( "make_UPDATE_MessageQueue_DirectionAsIS() fault");
 //            return null;
@@ -354,16 +380,14 @@ public class TheadDataAccess {
             return null;
         }
 
-        /*if ( make_UPDATE_MessageQueue_SetMsg_Reason(dataAccess_log) == null ) {
+        if ( make_UPDATE_MessageQueue_SetMsg_Reason(dataAccess_log) == null ) {
             dataAccess_log.error( "make_UPDATE_MessageQueue_SetMsg_Reason() fault");
             return null;
-        }*/
-        /*
+        }
         if ( make_Message_Update_Queue_Queue_Date4Send( dataAccess_log) == null ) {
             dataAccess_log.error( "make_UPDATE_MessageQueue_SetMsg_Reason() fault");
             return null;
         }
-        */
 
         if (make_insert_Message_Queue( dataAccess_log) == null ) {
             dataAccess_log.error( "make_insert_Message_Queue() fault");
@@ -398,16 +422,8 @@ public class TheadDataAccess {
             dataAccess_log.error( "make_delete_Message_Details() fault");
             return null;
         }
-
-        if (make_Message_LastBodyTag_Query(dataAccess_log) == null) {
-            dataAccess_log.error("make_Message_LastBodyTag_Query() fault");
-            return null;
-        }
-
-        if (make_update_MESSAGE_Template_Param(HrmsSchema, dataAccess_log) == null) {
-            dataAccess_log.error("make_Message_LastBodyTag_Query() fault");
-            return null;
-        }
+         // call lease make-xxx for should be commented
+         *****************************************************************/
         return Target_Connection;
     }
 
@@ -429,28 +445,10 @@ public class TheadDataAccess {
         return  StmtMsg_Queue ;
     }
 
-    public PreparedStatement  make_Message_Update_Out2ErrorOUT( Logger dataAccess_log ) {
-        PreparedStatement StmtMsg_Queue;
-        UPDATE_MessageQueue_Out2ErrorOUT =
-                "update " + dbSchema + ".MESSAGE_QUEUE Q " +
-                        "set Queue_Direction = 'ERROUT', Msg_Reason = ?" +
-                        ", Msg_Date= current_timestamp, Msg_Status = 1030, Retry_Count=1 " + // 1030 = Ошибка преобразования из OUT в SEND
-                        ", Prev_Queue_Direction='OUT', Prev_Msg_Date=Msg_Date " +
-                        "where 1=1 and q.Queue_Id = ?";
-        try {
-            StmtMsg_Queue = (PreparedStatement)this.Hermes_Connection.prepareStatement(UPDATE_MessageQueue_Out2ErrorOUT );
-        } catch (Exception e) {
-            dataAccess_log.error("make_Message_Update_Out2ErrorOUT({}) fault: {}", UPDATE_MessageQueue_Out2ErrorOUT, e.getMessage());
-            e.printStackTrace();
-            return ( (PreparedStatement) null );
-        }
-        this.stmtUPDATE_MessageQueue_Out2ErrorOUT = StmtMsg_Queue;
-        return  StmtMsg_Queue ;
-    }
 
-    private  PreparedStatement make_update_MESSAGE_Template_Param( String HrmsSchema, Logger dataAccess_log ) {
+    private  PreparedStatement make_update_MESSAGE_Template_Param( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
-        update_MESSAGE_Template_Param = "update " + HrmsSchema +  ".Message_Templates set Lastmaker=?, Lastdate=current_timestamp where Template_Id =?";
+        update_MESSAGE_Template_Param = "update " + dbSchema +  ".Message_Templates set Lastmaker=?, Lastdate=current_timestamp where Template_Id =?";
         try {
 
             StmtMsg_Queue = this.Hermes_Connection.prepareStatement(update_MESSAGE_Template_Param);
@@ -465,6 +463,9 @@ public class TheadDataAccess {
 
     public int doUpdate_MESSAGE_Template_Param( long Queue_Id, Integer Template_Id, String Login_LastMaker, Logger dataAccess_log ) {
 
+        if (stmt_update_MESSAGE_Template_Param == null) {
+            make_update_MESSAGE_Template_Param(  dataAccess_log );
+        }
         if (stmt_update_MESSAGE_Template_Param != null) {
             try {
                 // String LastMaker = "ui." + Login_LastMaker ;
@@ -599,6 +600,9 @@ public class TheadDataAccess {
     }
 
     public int  do_SelectMESSAGE_QUEUE( MessageQueueVO messageQueueVO, Logger dataAccess_log ) {
+        if ( stmtSelectMESSAGE_QUEUE == null ) {
+            make_SelectMESSAGE_QUEUE(  dataAccess_log );
+        }
         long Queue_Id = messageQueueVO.getQueue_Id();
         messageQueueVO.setMsg_Date( java.sql.Timestamp.valueOf( LocalDateTime.now( ZoneId.of( "Europe/Moscow" ) ) ) );
         messageQueueVO.setPrev_Msg_Date( messageQueueVO.getMsg_Date() );
@@ -661,10 +665,13 @@ public class TheadDataAccess {
     //public final String UPDATE_QUEUElog_Response="update " + dbSchema + ".MESSAGE_QUEUElog L set l.Resp_DT = current_timestamp, l.Response = ? where l.Queue_Id = ?";
     //public PreparedStatement stmt_UPDATE_QUEUElog;
 
-    public int doUPDATE_QUEUElog( String ROWID_QUEUElog, // TODO RowId ROWID_QUEUElog, (oracle)
+    public int doUPDATE_QUEUElog( @NotNull String ROWID_QUEUElog, // TODO RowId ROWID_QUEUElog, (oracle)
                                   long Queue_Id, String sResponse,
                                                        Logger dataAccess_log ) {
         dataAccess_log.info("[{}] doUPDATE_QUEUElog: `update {}.MESSAGE_QUEUElog L set l.Resp_DT = current_timestamp, l.Response = '{}' where l.Queue_Id = {} and ROWID = '{}' ;`", Queue_Id, dbSchema, sResponse, Queue_Id, ROWID_QUEUElog);
+        if ( stmt_UPDATE_QUEUElog == null) {
+            make_UPDATE_QUEUElog(  dataAccess_log );
+        }
         try {
            // TODO for Postgree !!!
             stmt_UPDATE_QUEUElog.setString( 3,  ROWID_QUEUElog );
@@ -766,6 +773,10 @@ public class TheadDataAccess {
         dataAccess_log.info("[{}] {} Queue_Id={}, Request='{}' ", Queue_Id, INSERT_QUEUElog_Request, Queue_Id, sRequest);
         int count ;
         String ROWID_QUEUElog=null;
+        if ( stmt_INSERT_QUEUElog == null) {
+            make_INSERT_QUEUElog( dataAccess_log );
+        }
+
         try {
             stmt_INSERT_QUEUElog.setLong( 1, Queue_Id );
             stmt_INSERT_QUEUElog.setString( 2, sRequest );
@@ -947,6 +958,9 @@ public class TheadDataAccess {
                                             String Msg_Type, String Msg_Type_own,
                                             String Msg_Reason, String OutQueue_Id,
                                             Logger dataAccess_log ) {
+        if (stmt_UPDATE_MessageQueue_In2Ok==null) {
+            make_UPDATE_MessageQueue_In2Ok(  dataAccess_log );
+        }
         // dataAccess_log.info( "[" + Queue_Id + "] doUPDATE_MessageQueue_In2Ok: " + UPDATE_MessageQueue_In2Ok + " {"+ Queue_Id +"} SubSys_Cod=`" + SubSys_Cod+ "`" );
         try {
             stmt_UPDATE_MessageQueue_In2Ok.setInt( 1, Operation_Id );
@@ -1000,6 +1014,9 @@ public class TheadDataAccess {
     public  int doUPDATE_MessageQueue_IN2ExeIN(Long Queue_Id,
                                                        String pMsg_Reason,
                                                        Logger dataAccess_log ) {
+        if (stmt_UPDATE_Message_In2ExeIn==null) {
+            make_Message_Update_In2ExeIn(dataAccess_log);
+        }
 //        dataAccess_log.info( "[" + Queue_Id + "] doUPDATE_MessageQueue_IN2ExeIN: \"update ARTX_PROJ.MESSAGE_QUEUE Q " +
 //                "set  q.Msg_Reason = '"+ pMsg_Reason+ "' " +
 //                ", q.Msg_Date= current_timestamp,  " +
@@ -1046,6 +1063,7 @@ public class TheadDataAccess {
                                                     String pMsg_Reason,
                                                     int Msg_Status, int Retry_Count,
                                                     Logger dataAccess_log ) {
+        if ( stmt_UPDATE_MessageQueue_DirectionAsIS == null ) { make_UPDATE_MessageQueue_DirectionAsIS( dataAccess_log );}
         try {
             BigDecimal queueId = new BigDecimal( Queue_Id.toString() );
             //dataAccess_log.info("[" + Queue_Id + "] try UPDATE_MessageQueue_DirectionAsIS : ["+ UPDATE_MessageQueue_DirectionAsIS + "]" );
@@ -1092,6 +1110,7 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
     }
 
     public  int doDELETE_Message_Confirmation(long Queue_Id, Logger dataAccess_log ) {
+        if ( stmt_DELETE_Message_Confirmation == null ) { make_DELETE_Message_Confirmation( dataAccess_log );}
         dataAccess_log.info("[{}] doDELETE_Message_ConfirmationBody! {};", Queue_Id, DELETE_Message_Confirmation);
         try {
                 // сначала удаляем всЁ, что растет из Confirmation
@@ -1170,6 +1189,7 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
 
     public  int doUPDATE_MessageQueue_Out2Send(  MessageQueueVO  messageQueueVO,  String pMsg_Reason, Logger dataAccess_log ) {
         long Queue_Id = messageQueueVO.getQueue_Id();
+        if ( stmtUPDATE_MessageQueue_Out2Send == null) {  make_Message_Update_Out2Send(dataAccess_log);  }
         // устанавливаем признак "SEND"
         messageQueueVO.setMsg_Date( java.sql.Timestamp.valueOf( LocalDateTime.now( ZoneId.of( "Europe/Moscow" ) ) ) );
         messageQueueVO.setPrev_Msg_Date( messageQueueVO.getMsg_Date() );
@@ -1220,7 +1240,8 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
     public int doUPDATE_MessageQueue_Send2ErrorOUT( MessageQueueVO  messageQueueVO,  String pMsg_Reason, int pMsgStatus, int pMsgRetryCount,  Logger dataAccess_log) {
         // dataAccess_log.info( "doUPDATE_MessageQueue_Send2ErrorOUT:" + pMsg_Reason );
         long Queue_Id = messageQueueVO.getQueue_Id();
-
+        if (stmtUPDATE_MessageQueue_Send2ErrorOUT==null) {  make_Message_Update_Send2ErrorOUT(dataAccess_log);
+            }
         messageQueueVO.setMsg_Date( java.sql.Timestamp.valueOf( LocalDateTime.now( ZoneId.of( "Europe/Moscow" ) ) ) );
         messageQueueVO.setPrev_Msg_Date( messageQueueVO.getMsg_Date() );
         messageQueueVO.setPrev_Queue_Direction(messageQueueVO.getQueue_Direction());
@@ -1271,6 +1292,8 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
     public int doUPDATE_MessageQueue_Send2AttOUT(MessageQueueVO  messageQueueVO, String pMsg_Reason, int pMsgStatus, int pMsgRetryCount,  Logger dataAccess_log) {
         // dataAccess_log.info( "doUPDATE_MessageQueue_Send2ErrorOUT:" + pMsg_Reason );
         long Queue_Id = messageQueueVO.getQueue_Id();
+        if ( stmtUPDATE_MessageQueue_Send2AttOUT==null) {  make_UPDATE_MessageQueue_Send2AttOUT( dataAccess_log );
+        }
         messageQueueVO.setMsg_Date( java.sql.Timestamp.valueOf( LocalDateTime.now( ZoneId.of( "Europe/Moscow" ) ) ) );
         messageQueueVO.setPrev_Msg_Date( messageQueueVO.getMsg_Date() );
         messageQueueVO.setPrev_Queue_Direction(messageQueueVO.getQueue_Direction());
@@ -1320,6 +1343,8 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
                                                        String pMsg_Reason,
                                                        int Msg_Status, int Retry_Count,
                                                        Logger dataAccess_log ) {
+        if ( stmt_UPDATE_MessageQueue_Send2finishedOUT==null) {  make_UPDATE_MessageQueue_Send2finishedOUT( dataAccess_log );
+        }
         try {
             stmt_UPDATE_MessageQueue_Send2finishedOUT.setString( 1, Queue_Direction );
             stmt_UPDATE_MessageQueue_Send2finishedOUT.setString( 2, pMsg_Reason.length() > maxReasonLen ? pMsg_Reason.substring(0, maxReasonLen) : pMsg_Reason );
@@ -1398,6 +1423,8 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
 
     public int doUPDATE_MessageQueue_ExeIn2DelIN(Long Queue_Id, Logger dataAccess_log) {
         // dataAccess_log.info( "doUPDATE_MessageQueue_ExeIn2DelIN:" + pMsg_Reason );
+        if (stmtUPDATE_MessageQueue_ExeIn2DelIN==null) { make_Message_Update_ExeIn2DelIN( dataAccess_log );
+        }
         try {
             stmtUPDATE_MessageQueue_ExeIn2DelIN.setLong( 1, Queue_Id );
             stmtUPDATE_MessageQueue_ExeIn2DelIN.executeUpdate();
@@ -1440,6 +1467,9 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
 
     public int doUPDATE_MessageQueue_In2ErrorIN(Long Queue_Id, String pMsg_Reason, Integer pMsg_Status, Logger dataAccess_log) {
          // dataAccess_log.warn( "["+ Queue_Id + "] doUPDATE_MessageQueue_In2ErrorIN:" + pMsg_Reason );
+        if ( stmtUPDATE_MessageQueue_In2ErrorIN == null) {
+            make_Message_Update_In2ErrorIN(  dataAccess_log );
+        }
         try {
             stmtUPDATE_MessageQueue_In2ErrorIN.setString( 1, pMsg_Reason.length() > maxReasonLen ? pMsg_Reason.substring(0, maxReasonLen) : pMsg_Reason );
             stmtUPDATE_MessageQueue_In2ErrorIN.setInt( 2, pMsg_Status );
@@ -1462,8 +1492,29 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
         return 0;
     }
 
+    public PreparedStatement  make_Message_Update_Out2ErrorOUT( Logger dataAccess_log ) {
+        PreparedStatement StmtMsg_Queue;
+        UPDATE_MessageQueue_Out2ErrorOUT =
+                "update " + dbSchema + ".MESSAGE_QUEUE Q " +
+                        "set Queue_Direction = 'ERROUT', Msg_Reason = ?" +
+                        ", Msg_Date= current_timestamp, Msg_Status = 1030, Retry_Count=1 " + // 1030 = Ошибка преобразования из OUT в SEND
+                        ", Prev_Queue_Direction='OUT', Prev_Msg_Date=Msg_Date " +
+                        "where 1=1 and q.Queue_Id = ?";
+        try {
+            StmtMsg_Queue = (PreparedStatement)this.Hermes_Connection.prepareStatement(UPDATE_MessageQueue_Out2ErrorOUT );
+        } catch (Exception e) {
+            dataAccess_log.error("make_Message_Update_Out2ErrorOUT({}) fault: {}", UPDATE_MessageQueue_Out2ErrorOUT, e.getMessage());
+            e.printStackTrace();
+            return ( (PreparedStatement) null );
+        }
+        this.stmtUPDATE_MessageQueue_Out2ErrorOUT = StmtMsg_Queue;
+        return  StmtMsg_Queue ;
+    }
     public int doUPDATE_MessageQueue_Out2ErrorOUT(MessageQueueVO messageQueueVO , String pMsg_Reason, Logger dataAccess_log) {
         // dataAccess_log.info( "doUPDATE_MessageQueue_Out2ErrorOUT:" + pMsg_Reason );
+        if ( stmtUPDATE_MessageQueue_Out2ErrorOUT == null) {
+            make_Message_Update_Out2ErrorOUT(  dataAccess_log );
+        }
         long Queue_Id= messageQueueVO.getQueue_Id();
         messageQueueVO.setMsg_Reason(pMsg_Reason);
         messageQueueVO.setPrev_Msg_Date( messageQueueVO.getMsg_Date() );
@@ -1507,7 +1558,10 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
     }
 
     public int doUPDATE_MessageQueue_ExeIN2PostIN(Long Queue_Id, String pMsg_Reason, Logger dataAccess_log) {
-         dataAccess_log.info( "doUPDATE_MessageQueue_ExeIN2PostIN:" + pMsg_Reason );
+        dataAccess_log.info("[{}] doUPDATE_MessageQueue_ExeIN2PostIN:{}", Queue_Id, pMsg_Reason);
+        if ( stmtUPDATE_MessageQueue_ExeIN2PostIN == null) {
+            make_Message_Update_ExeIN2PostIN( dataAccess_log );
+        }
         try {
             stmtUPDATE_MessageQueue_ExeIN2PostIN.setString( 1, pMsg_Reason.length() > maxReasonLen ? pMsg_Reason.substring(0, maxReasonLen) : pMsg_Reason );
             stmtUPDATE_MessageQueue_ExeIN2PostIN.setLong( 2, Queue_Id );
@@ -1529,7 +1583,6 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
         }
         return 0;
     }
-
 
     private PreparedStatement  make_Message_QueryConfirmation( Logger dataAccess_log ) {
         PreparedStatement stmtMsgQueueConfirmationDet;
@@ -1611,7 +1664,7 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
     }
 
     private  String update_MESSAGE_Template;
-    private PreparedStatement stmt_update_MESSAGE_Template;
+    private PreparedStatement stmt_update_MESSAGE_Template=null;
     private  PreparedStatement make_update_MESSAGE_Template( Logger dataAccess_log ) {
         PreparedStatement StmtMsg_Queue;
         update_MESSAGE_Template = "update " + dbSchema +  ".Message_Templates set conf_text=?, Lastmaker=?, Lastdate=current_timestamp where Template_Id =?";
@@ -1627,7 +1680,9 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
         return StmtMsg_Queue;
     }
     public  int doUpdate_MESSAGE_Template( long Queue_Id, int updatedTemplate_Id, String Conf_Text , Logger dataAccess_log) {
-
+        if (stmt_update_MESSAGE_Template == null) {
+            make_update_MESSAGE_Template(  dataAccess_log );
+        }
         if (stmt_update_MESSAGE_Template != null) {
             try {
                 stmt_update_MESSAGE_Template.setString(1, Conf_Text );
@@ -1653,7 +1708,6 @@ private PreparedStatement  make_DELETE_Message_Confirmation( Logger dataAccess_l
         }
         return 0;
     }
-
 
     public PreparedStatement make_MessageVO_Query( Logger dataAccess_log ) {
         PreparedStatement StmtMsgQueueDet;
