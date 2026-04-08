@@ -367,7 +367,8 @@ public class CustomJavaMethods {
 		Element elmtQueue_Id = xpathQueue_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
 		if ( elmtQueue_Id== null) {
 			messageDetails.MsgReason.setLength(0);
-			messageDetails.MsgReason.append( "["+ messageQueueVO.getQueue_Id() +" ] В запросе ReplaceConfirmation4MessageQueue не найден параметр Parametrs/QueryString/Queue_Id");
+			messageDetails.MsgReason.append("[").append(messageQueueVO.getQueue_Id())
+                                    .append(" ] В запросе ReplaceConfirmation4MessageQueue не найден параметр Parametrs/QueryString/Queue_Id");
 			return -33;
 		}
 		String Pk_Value= elmtQueue_Id.getText();
@@ -388,20 +389,25 @@ public class CustomJavaMethods {
 		Element elmtConfirmationContent_4_Save = xpathConfirmationContent_4_Save.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
 		if ( elmtConfirmationContent_4_Save == null) {
 			messageDetails.MsgReason.setLength(0);
-			messageDetails.MsgReason.append("[").append(messageQueueVO.getQueue_Id()).append(" ] В запросе ReplaceConfirmation4MessageQueue не найден параметр Parametrs/Data");
+			messageDetails.MsgReason.append("[").append(messageQueueVO.getQueue_Id())
+                                    .append(" ] В запросе ReplaceConfirmation4MessageQueue не найден параметр Parametrs/Data");
 			return -36;
 		}
 
-		String confirmationContent_4_Replace = elmtConfirmationContent_4_Save.getText();
-		int Function_Result;
+		//String confirmationContent_4_Replace = XMLchars.OpenTag + XMLchars.TagConfirmation + XMLchars.CloseTag + elmtConfirmationContent_4_Save.getText() + XMLchars.OpenTag + XMLchars.EndTag + XMLchars.TagConfirmation + XMLchars.CloseTag;
+        String confirmationContent_4_Replace = elmtConfirmationContent_4_Save.getText();
+        int Function_Result;
 		try {
 			Function_Result = PerformSaveRequest.ReplaceConfirmation_4_MessageQueue(
 					theadDataAccess, Queue_Id_4_ReplaceConfirmation, messageDetails, confirmationContent_4_Replace, MessegeReceive_Log);
 		}
 		catch (Exception e) {
 			messageDetails.MsgReason.setLength(0);
-			messageDetails.MsgReason.append(" В системе Java метод:`ReplaceConfirmation4MessageQueue сбой при вызове SaveRequestBody_4_MessageQueue=(" + confirmationContent_4_Replace + ") fault" + e.getMessage() );
-			MessegeReceive_Log.error("[" + messageQueueVO.getQueue_Id() + "] В системе Java метод:`ReplaceConfirmation4MessageQueue` сбой при вызове SaveRequestBody_4_MessageQueue=(" + confirmationContent_4_Replace + ") fault" + e.getMessage() );
+			messageDetails.MsgReason.append(" В системе Java метод:`ReplaceConfirmation4MessageQueue сбой при вызове SaveRequestBody_4_MessageQueue=(")
+                                    .append(confirmationContent_4_Replace).append(") fault")
+                                    .append(e.getMessage());
+            MessegeReceive_Log.error("[{}] В системе Java метод:`ReplaceConfirmation4MessageQueue` сбой при вызове SaveRequestBody_4_MessageQueue=({}) fault{}",
+                                        messageQueueVO.getQueue_Id(), confirmationContent_4_Replace, e.getMessage());
 			Function_Result = -1;
 
 		}

@@ -418,7 +418,7 @@ public class PerfotmInputMessages {
                         int ConfirmationRowNum = MessageUtils.ReadConfirmation(theadDataAccess, Queue_Id, Message, MessegeReceive_Log);
                         if (ConfirmationRowNum < 1) {
                             // Ругаемся, что обработчик не сформировал Confirmation
-                            Message.MsgReason.append("[" + Queue_Id + "] прикладной обработчик входящего сообщения не сформировал Confirmation, нарушено соглашение о взаимодействии с Шиной");
+                            Message.MsgReason.append("[").append(Queue_Id).append("] прикладной обработчик входящего сообщения не сформировал Confirmation, нарушено соглашение о взаимодействии с Шиной");
                             MessegeReceive_Log.error("[{}] {}", Queue_Id, Message.MsgReason);
                             theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, Message.MsgReason.toString(), 3245,
                                     MessegeReceive_Log);
@@ -427,7 +427,7 @@ public class PerfotmInputMessages {
                       }
                     } else {
                         // Ругаемся, что обработчик не выставил признак статус EXEIN
-                        Message.MsgReason.append("[" + Queue_Id + "] обработчик не выставил признак статус EXEIN , нарушено соглашение о взаимодействии с Шиной");
+                        Message.MsgReason.append("[").append(Queue_Id).append("] обработчик не выставил признак статус EXEIN, нарушено соглашение о взаимодействии с Шиной");
                         MessegeReceive_Log.error("[{}] {}", Queue_Id, Message.MsgReason);
                         theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id, Message.MsgReason.toString(), 3247,
                                 MessegeReceive_Log);
@@ -800,7 +800,7 @@ public class PerfotmInputMessages {
 
                 }
 
-                // преобразовываем результат
+                // преобразовываем результат собственного обработчика (когда связанного OUT-сообщения нет)
                 if ( Message.MessageTemplate4Perform.getIsDebugged() ) {
                     MessegeReceive_Log.warn("[{}] преобразовываем результат что: Confirmation`{}`", Queue_Id, Message.XML_MsgConfirmation );
                     MessegeReceive_Log.warn("[{}] преобразовываем результат чем: getAckXSLT`{}`", Queue_Id, Message.MessageTemplate4Perform.getAckXSLT());

@@ -299,6 +299,11 @@ public class TheadDataAccess {
             dataAccess_log.error("make_SelectLink_Queue_Id() fault");
             return null;
         }
+
+        if (make_delete_Message_Details( dataAccess_log) == null) {
+            dataAccess_log.error("make_delete_Message_Details() fault");
+            return null;
+        }
         // call lease make-xxx for should be commented
         /*****************************************************************
         if (make_SelectNew_Queue(  dataAccess_log) == null ) {
@@ -894,6 +899,9 @@ public class TheadDataAccess {
         //        ", q.Msg_Date= current_timestamp,  q.Msg_Status = 0, q.Retry_Count= 1 " +
         //        ", q.Prev_Queue_Direction='TMP', q.Prev_Msg_Date=q.Msg_Date " +
         // "where 1=1 and q.Queue_Id = "+ Queue_Id +"  ;" );
+        if (stmt_UPDATE_MessageQueue_In2Ok==null) {
+            make_UPDATE_MessageQueue_In2Ok(  dataAccess_log );
+        }
         try {
             stmt_UPDATE_MessageQueue_In2Ok.setInt( 1, Operation_Id );
             stmt_UPDATE_MessageQueue_In2Ok.setLong( 2, OutQueue_Id );

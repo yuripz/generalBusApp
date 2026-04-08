@@ -106,7 +106,7 @@ public class PerformSaveRequest {
 
         if (RootElement.getName().equals(XMLchars.TagConfirmation)) //
         {
-            //MessegeReceive_Log.warn("SaveMessage4Input begin");
+           // MessegeReceive_Log.warn("[{}]SaveMessage4Input begin", Queue_Id);
             try {
 
                 messageDetails.Message_Tag_Num = 0;
@@ -147,7 +147,7 @@ public class PerformSaveRequest {
                 ex.printStackTrace(System.err);
                 MessegeReceive_Log.error("[{}] ReplaceConfirmation_4_MessageQueue fault:{}", Queue_Id, ex.getMessage());
                 messageDetails.XML_MsgResponse.setLength(0);
-                messageDetails.XML_MsgResponse.append("ReplaceConfirmation_4_MessageQueue fault:" + ex.getMessage());
+                messageDetails.XML_MsgResponse.append("ReplaceConfirmation_4_MessageQueue fault:").append(ex.getMessage());
                 return -24; // HE-5864 Спец.символ UTF-16 или любой другой invalid XML character
             }
         }
