@@ -47,7 +47,7 @@ public class PerformSaveRequest {
         if ( RootElement == null ) {
             // фиксируем ошибку
             messageDetails.XML_MsgResponse.setLength(0);
-            messageDetails.XML_MsgResponse.append( "documentBuilder.build(`" + requestContent_4_Save + "`) fault, document.getRootElement() is null" );
+            messageDetails.XML_MsgResponse.append("documentBuilder.build(`").append(requestContent_4_Save).append("`) fault, document.getRootElement() is null");
             return -2;
         }
 

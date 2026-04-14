@@ -469,8 +469,8 @@ public class InitMessageRepository {
                                 "t.lastmaker, " +
                                 "to_char(t.lastdate,'YYYY.MM.DD HH24:MI:SS') LastDate " +
                         "from " + DataAccess.HrmsSchema +  ".MESSAGE_TemplateS t " +
-                        "where (1=1) and t.template_dir like '%IN%' "
-                + " union all " +
+                        "where (1=1) and t.template_dir like '%IN%' " // + " and interface_id=71 "
+                + "union all " +
                         "select t.template_id, " +
                                 "t.interface_id, " +
                                 "t.operation_id, " + // 3

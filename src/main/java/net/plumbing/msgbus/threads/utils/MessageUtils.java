@@ -1059,9 +1059,12 @@ public class MessageUtils {
 
                 messageDetails.MessageRowNum += 1;
                 if ( messageDetails.MessageRowNum % 10000 == 0)
-                    MessegeSend_Log.info("[{}] чReadMessage: итаем из БД тело XML{} записей", Queue_Id, messageDetails.MessageRowNum);
+                    MessegeSend_Log.info("[{}] ReadMessage: читаем из БД тело XML{} записей", Queue_Id, messageDetails.MessageRowNum);
                 // MessegeSend_Log.info( "Tag_Id:" + rs.getString("Tag_Id") + " [" + rs.getString("Tag_Value") + "]");
             }
+            // закрываем курсор
+            rs.close();
+
         } catch (SQLException e) {
             MessegeSend_Log.error("Queue_Id=[{}] :{}", Queue_Id, sStackTrace.strInterruptedException(e));
             System.err.println("["+ Queue_Id +"] select  from MESSAGE_QUEUEdet  fault: " + e.getMessage());
@@ -1784,7 +1787,7 @@ public class MessageUtils {
 
             ElementPrefix = XMLelement.getNamespacePrefix();
             String ElementEntry;
-            if ( ElementPrefix.length() > 0 ) {
+            if (!ElementPrefix.isEmpty()) {
                 ElementEntry = ElementPrefix + ":" + XMLelement.getName();
             } else
                 ElementEntry = XMLelement.getName();
@@ -1794,8 +1797,8 @@ public class MessageUtils {
 
             messageDetails.Message_Tag_Num += 1;
 
-            if ( ElementContent.length() > 0 ) {
-                //MessegeReceive_Log.info("Tag_Par_Num[" + tag_Par_Num + "][" + messageDetails.Message_Tag_Num + "]: <" + ElementEntry + ">=" + ElementContent);
+            if (!ElementContent.trim().isEmpty()) { // если очищенный от пробелов и переносов и табуляций элемент НЕ пустой, то
+                //MessegeReceive_Log.info("Tag_Par_Num[{}][{}]: <{}> ==`{}`", tag_Par_Num, messageDetails.Message_Tag_Num, ElementEntry, ElementContent.trim());
                 messageDetailVO.setMessageQueue(ElementEntry, // "Tag_Id"
                         ElementContent, // Tag_Value
                         messageDetails.Message_Tag_Num,
@@ -1803,7 +1806,6 @@ public class MessageUtils {
                 );
             } else {
                 //MessegeReceive_Log.info("Tag_Par_Num[" + tag_Par_Num + "][" + messageDetails.Message_Tag_Num + "]: <" + ElementEntry + ">");
-
                 messageDetailVO.setMessageQueue(ElementEntry, // "Tag_Id"
                         "", // Tag_Value
                         messageDetails.Message_Tag_Num,
@@ -1871,18 +1873,21 @@ public class MessageUtils {
                 messageDetailVO = messageDetails.Message.get(i);
                 theadDataAccess.stmt_INSERT_Message_Details.setLong(1, Queue_Id);
                 theadDataAccess.stmt_INSERT_Message_Details.setString(2, messageDetailVO.Tag_Id);
-                theadDataAccess.stmt_INSERT_Message_Details.setString(3, StringEscapeUtils.unescapeXml(messageDetailVO.Tag_Value));
+                if ( messageDetailVO.Tag_Value.length() > (XMLchars.MAX_TAG_VALUE_BYTE_SIZE /2) ) {
+                    String ElementContentS = new String( XMLchars.cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE(messageDetailVO.Tag_Value, MessegeReceive_Log), StandardCharsets.UTF_8 );
+                    theadDataAccess.stmt_INSERT_Message_Details.setString(3, ElementContentS );
+                }
+                else {
+                    theadDataAccess.stmt_INSERT_Message_Details.setString(3, messageDetailVO.Tag_Value);
+                }
+                //theadDataAccess.stmt_INSERT_Message_Details.setString(3, StringEscapeUtils.unescapeXml(messageDetailVO.Tag_Value));
                 theadDataAccess.stmt_INSERT_Message_Details.setInt(4, messageDetailVO.Tag_Num);
                 theadDataAccess.stmt_INSERT_Message_Details.setInt(5, messageDetailVO.Tag_Par_Num);
                 // Insert data in Oracle with Java … Batched mode
                 // theadDataAccess.stmt_INSERT_Message_Details.executeUpdate();
                 theadDataAccess.stmt_INSERT_Message_Details.addBatch();
-        /*MessegeReceive_Log.info( i + ">" + theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "]" +
-                "\n Tag_Id=" + MessageDetailVO.Tag_Id +
-                "\n Tag_Value=" + MessageDetailVO.Tag_Value +
-                "\n Tag_Num=" + MessageDetailVO.Tag_Num +
-                "\n Tag_Par_Num=" + MessageDetailVO.Tag_Par_Num +
-                " done");
+                /*MessegeReceive_Log.info("[{}] `{}`: [{}] Tag_Id={}\n Tag_Value=`{}`\n Tag_Num={} Tag_Par_Num={} done", Queue_Id,
+                        theadDataAccess.INSERT_Message_Details, i, messageDetailVO.Tag_Id, StringEscapeUtils.unescapeXml(messageDetailVO.Tag_Value), messageDetailVO.Tag_Num, messageDetailVO.Tag_Par_Num);
                 */
                 nn = i;
             }
@@ -1891,6 +1896,9 @@ public class MessageUtils {
 
         } catch (SQLException e) {
             MessegeReceive_Log.error("[{}] {}: :{}", Queue_Id, theadDataAccess.INSERT_Message_Details, sStackTrace.strInterruptedException(e));
+            MessegeReceive_Log.error("[{}] `{}` fault: Tag_Id={}\n Tag_Value=`{}`\n Tag_Num={} Tag_Par_Num={} done", Queue_Id,
+                    theadDataAccess.INSERT_Message_Details, messageDetailVO.Tag_Id, StringEscapeUtils.unescapeXml(messageDetailVO.Tag_Value), messageDetailVO.Tag_Num, messageDetailVO.Tag_Par_Num);
+
             System.err.println(":Queue_Id=[" + Queue_Id + "] :" + theadDataAccess.INSERT_Message_Details );
             System.err.println(StringEscapeUtils.unescapeXml(messageDetailVO.Tag_Value));
             e.printStackTrace();
@@ -1934,26 +1942,22 @@ public class MessageUtils {
 
         try {
             for (int i = 0; i < messageDetails.Message.size(); i++) {
-                MessageDetailVO MessageDetailVO = messageDetails.Message.get(i);
+                MessageDetailVO messageDetailVO = messageDetails.Message.get(i);
                 theadDataAccess.stmt_INSERT_Message_Details.setLong(1, Queue_Id);
-                theadDataAccess.stmt_INSERT_Message_Details.setString(2, MessageDetailVO.Tag_Id);
-                if ( MessageDetailVO.Tag_Value.length() > (XMLchars.MAX_TAG_VALUE_BYTE_SIZE /2) ) {
-                    String ElementContentS = new String( XMLchars.cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE(MessageDetailVO.Tag_Value, MessegeReceive_Log), StandardCharsets.UTF_8 );
+                theadDataAccess.stmt_INSERT_Message_Details.setString(2, messageDetailVO.Tag_Id);
+                if ( messageDetailVO.Tag_Value.length() > (XMLchars.MAX_TAG_VALUE_BYTE_SIZE /2) ) {
+                    String ElementContentS = new String( XMLchars.cutUTF8ToMAX_TAG_VALUE_BYTE_SIZE(messageDetailVO.Tag_Value, MessegeReceive_Log), StandardCharsets.UTF_8 );
                     theadDataAccess.stmt_INSERT_Message_Details.setString(3, ElementContentS );
                 }
                 else {
-                    theadDataAccess.stmt_INSERT_Message_Details.setString(3, MessageDetailVO.Tag_Value);
+                    theadDataAccess.stmt_INSERT_Message_Details.setString(3, messageDetailVO.Tag_Value);
                 }
-                theadDataAccess.stmt_INSERT_Message_Details.setInt(4, MessageDetailVO.Tag_Num);
-                theadDataAccess.stmt_INSERT_Message_Details.setInt(5, MessageDetailVO.Tag_Par_Num);
+                theadDataAccess.stmt_INSERT_Message_Details.setInt(4, messageDetailVO.Tag_Num);
+                theadDataAccess.stmt_INSERT_Message_Details.setInt(5, messageDetailVO.Tag_Par_Num);
                 //theadDataAccess.stmt_INSERT_Message_Details.executeUpdate();
                 theadDataAccess.stmt_INSERT_Message_Details.addBatch();
-        /*MessegeSend_Log.info( i + ">" + theadDataAccess.INSERT_Message_Details + ":Queue_Id=[" + Queue_Id + "]" +
-                "\n Tag_Id=" + MessageDetailVO.Tag_Id +
-                "\n Tag_Value=" + MessageDetailVO.Tag_Value +
-                "\n Tag_Num=" + MessageDetailVO.Tag_Num +
-                "\n Tag_Par_Num=" + MessageDetailVO.Tag_Par_Num +
-                " done");
+                /*MessegeReceive_Log.info("[{}] `{}`: [{}] Tag_Id={}\n Tag_Value=`{}`\n Tag_Num={} Tag_Par_Num={} done", Queue_Id,
+                        theadDataAccess.INSERT_Message_Details, i, messageDetailVO.Tag_Id, StringEscapeUtils.unescapeXml(messageDetailVO.Tag_Value), messageDetailVO.Tag_Num, messageDetailVO.Tag_Par_Num);
                 */
                 nn = i;
             }
