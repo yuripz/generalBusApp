@@ -598,10 +598,14 @@ public class PerfotmInputMessages {
                                             break;
                                         case XMLchars.DirectATTNOUT:
                                         case XMLchars.DirectDELOUT:
-                                            Message.MsgReason.append("[" + Queue_Id + "] обработчик Исходящего события (" + Link_Queue_Id + ") не сформировал Confirmation, выствлен статус события ("+ Link_Queue_Direction +"), нарушено соглашение о взаимодействии с Шиной");
+                                            Message.MsgReason.append("[").append(Queue_Id).append("] обработчик Исходящего события (")
+                                                             .append(Link_Queue_Id).append(") не сформировал Confirmation, выставлен статус события (")
+                                                             .append(Link_Queue_Direction).append("), нарушено соглашение о взаимодействии с Шиной");
                                     }
                                 else {
-                                    Message.MsgReason.append("[" + Queue_Id + "] обработчик Исходящего события (" + Link_Queue_Id + ") не сформировал Confirmation, статус события неопределён, нарушено соглашение о взаимодействии с Шиной");
+                                       Message.MsgReason.append("[").append(Queue_Id)
+                                                        .append("] обработчик Исходящего события (")
+                                                        .append(Link_Queue_Id).append(") не сформировал Confirmation, статус события неопределён, нарушено соглашение о взаимодействии с Шиной");
 
                                 }
                                 MessegeReceive_Log.error( Message.MsgReason.toString());

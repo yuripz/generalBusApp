@@ -114,42 +114,51 @@ public class ClientIpHelper {
         return clientIp;
     }
     public static String getIsDebuged(int MessageTemplateVOkey, boolean isDebugged, Logger Controller_log ) {
-        String ConfigExecute = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getConfigExecute();
-        if (isDebugged) Controller_log.info("ConfigExecute:" + ConfigExecute);
-        if (ConfigExecute != null) {
-            String isDebuggedStr= "false";
-            Properties properties = new Properties();
-            InputStream propertiesStream = new ByteArrayInputStream(ConfigExecute.getBytes(StandardCharsets.UTF_8));
-            try {
-                properties.load(propertiesStream);
-                for (String key : properties.stringPropertyNames()) {
-                    if (key.equals(MessageTemplateVO.PropDebug)) {
-                        Controller_log.info("PropDebug Property[" + key + "]=[" + properties.getProperty(key) + "]");
-                        if ((properties.getProperty(key).equalsIgnoreCase("on")) ||
-                                (properties.getProperty(key).equalsIgnoreCase("full"))
-                        ) {
-                            isDebuggedStr = "true";
-                        }
-                        if ((properties.getProperty(key).equalsIgnoreCase("ON")) ||
-                                (properties.getProperty(key).equalsIgnoreCase("FULL"))
-                        ) {
-                            isDebuggedStr = "true";
+        if ( MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey) !=null) {
+            String ConfigExecute = MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getConfigExecute();
+            if (isDebugged) Controller_log.info("ConfigExecute:" + ConfigExecute);
+            if (ConfigExecute != null) {
+                String isDebuggedStr = "false";
+                Properties properties = new Properties();
+                InputStream propertiesStream = new ByteArrayInputStream(ConfigExecute.getBytes(StandardCharsets.UTF_8));
+                try {
+                    properties.load(propertiesStream);
+                    for (String key : properties.stringPropertyNames()) {
+                        if (key.equals(MessageTemplateVO.PropDebug)) {
+                            Controller_log.info("PropDebug Property[" + key + "]=[" + properties.getProperty(key) + "]");
+                            if ((properties.getProperty(key).equalsIgnoreCase("on")) ||
+                                    (properties.getProperty(key).equalsIgnoreCase("full"))
+                            ) {
+                                isDebuggedStr = "true";
+                            }
+                            if ((properties.getProperty(key).equalsIgnoreCase("ON")) ||
+                                    (properties.getProperty(key).equalsIgnoreCase("FULL"))
+                            ) {
+                                isDebuggedStr = "true";
+                            }
                         }
                     }
+                } catch (IOException ioException) {
+                    // postResponse.setStatus(500);
+                    ioException.printStackTrace(System.err);
+                    Controller_log.error("properties.load('{}') fault:{}", ConfigExecute, ioException.getMessage());
+                    String OutResponse = XMLchars.Envelope_Begin + XMLchars.Empty_Header + XMLchars.Body_Begin + XMLchars.Fault_Client_Begin +
+                            "properties.load('" + ConfigExecute + "') fault:" + ioException.getMessage() +
+                            XMLchars.Fault_End + XMLchars.Body_End + XMLchars.Envelope_End;
+                    return OutResponse;
                 }
-            } catch (IOException ioException) {
+                return isDebuggedStr;
+            } else return "false";
+        }
+    else {
                 // postResponse.setStatus(500);
-                ioException.printStackTrace(System.err);
-                Controller_log.error("properties.load('" + ConfigExecute + "') fault:" + ioException.getMessage());
+
+                Controller_log.error("properties load for index('{}') fault:{}", MessageTemplateVOkey, "Такого элемента в коллекции MessageTemplate.AllMessageTemplate нет");
                 String OutResponse = XMLchars.Envelope_Begin + XMLchars.Empty_Header + XMLchars.Body_Begin + XMLchars.Fault_Client_Begin +
-                        "properties.load('" + ConfigExecute + "') fault:" + ioException.getMessage() +
+                        "properties load for index ('" + MessageTemplateVOkey + "') fault: Такого элемента в коллекции MessageTemplate.AllMessageTemplate нет" +
                         XMLchars.Fault_End + XMLchars.Body_End + XMLchars.Envelope_End;
                 return OutResponse;
             }
-            return isDebuggedStr;
-        }
-        else return "false";
-
     }
 
     public static String toCamelCase(final String init, final String separator) {

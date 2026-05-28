@@ -65,7 +65,7 @@ public class InitMessageRepository {
                         "order by t.interface_id, t.operation_id";
         try {
             stmtMsgTypeReRead = DataAccess.Hermes_Connection.prepareStatement( selectMsgTypeReRead );
-            AppThead_log.info( "selectMsgTypeReRead: \n" + selectMsgTypeReRead + " ;" );
+            AppThead_log.info("selectMsgTypeReRead:``{} ;`", selectMsgTypeReRead);
 
             PreparedStatement stmtMsgType = stmtMsgTypeReRead;
             //stmtMsgType.setTimestamp(1, DataAccess.InitDate );
@@ -76,11 +76,13 @@ public class InitMessageRepository {
                         rs.getInt("interface_id"),
                          rs.getInt("operation_id"), AppThead_log );
                 if ( MessageTypeVOkey >= 0 ) {
-                    AppThead_log.info("Update MessageTypes[" +   MessageTypeVOkey + "]: Msg_Type " + MessageType.AllMessageType.get( MessageTypeVOkey ).getMsg_Type() );
+                    AppThead_log.info("Update MessageTypes[{}]: Msg_Type {}", MessageTypeVOkey, MessageType.AllMessageType.get(MessageTypeVOkey).getMsg_Type());
                     MessageType.AllMessageType.get( MessageTypeVOkey ).setURL_SOAP_Send( rs.getString("url_soap_send") );
                     MessageType.AllMessageType.get( MessageTypeVOkey ).setMax_Retry_Count( rs.getInt("max_retry_count") );
                     MessageType.AllMessageType.get( MessageTypeVOkey ).setMax_Retry_Time( rs.getInt("max_retry_time"));
-                    AppThead_log.info(" Types ["+ MessageTypeVOkey + "] URL_SOAP_Send=" + MessageType.AllMessageType.get( MessageTypeVOkey ).getURL_SOAP_Send());
+                    MessageType.AllMessageType.get( MessageTypeVOkey ).setURL_SOAP_Send( rs.getString("url_soap_ack") );
+                    AppThead_log.info("ReReadMsgTypes: Types [{}] URL_SOAP_Send=`{}`, URL_SOAP_Ask=`{}`", MessageTypeVOkey,
+                            MessageType.AllMessageType.get(MessageTypeVOkey).getURL_SOAP_Send(), MessageType.AllMessageType.get(MessageTypeVOkey).getURL_SOAP_Ack());
                 }
                 else {
                     MessageTypeVO messageTypeVO = new MessageTypeVO();
@@ -101,7 +103,7 @@ public class InitMessageRepository {
 
                     MessageType.AllMessageType.put(MessageType.RowNum, messageTypeVO);
                     MessageType.RowNum += 1;
-                    AppThead_log.info(" Types.size=" + MessageType.AllMessageType.size() + ", MessageRowNum[" + MessageType.RowNum + "] :" + messageTypeVO.getMsg_Type());
+                    AppThead_log.info("ReReadMsgTypes: Add messageType,  Types.size={}, MessageRowNum[{}] :{}", MessageType.AllMessageType.size(), MessageType.RowNum, messageTypeVO.getMsg_Type());
                 }
             }
             rs.close();
@@ -111,7 +113,7 @@ public class InitMessageRepository {
             DataAccess.Hermes_Connection.commit();
             //stmtMsgType.close();
         } catch (Exception e) {
-            AppThead_log.error("ReReadMsgTypes (" + selectMsgTypeReRead + ") fault: " + sStackTrace.strInterruptedException(e));
+            AppThead_log.error("ReReadMsgTypes: ({}) fault: {}", selectMsgTypeReRead, sStackTrace.strInterruptedException(e));
             System.err.println("ReReadMsgTypes fault: " + selectMsgTypeReRead);
             e.printStackTrace();
             try {
@@ -119,8 +121,8 @@ public class InitMessageRepository {
                 if ( stmtMsgTypeReRead != null) stmtMsgTypeReRead.close();
                 DataAccess.Hermes_Connection.rollback();
             } catch ( SQLException SQLe) {
-                AppThead_log.error("rollback (" + selectMsgTypeReRead + ") fault: " + sStackTrace.strInterruptedException(SQLe));
-                System.err.println("rollback fault: " + selectMsgTypeReRead);
+                AppThead_log.error("ReReadMsgTypes: rollback ({}) fault: {}", selectMsgTypeReRead, sStackTrace.strInterruptedException(SQLe));
+                System.err.println("ReReadMsgTypes: rollback fault: " + selectMsgTypeReRead);
                 SQLe.printStackTrace();
             }
             // e.printStackTrace();
@@ -137,7 +139,7 @@ public class InitMessageRepository {
         Logger log = AppThead_log;
 
         if ( DataAccess.Hermes_Connection == null )
-        {  AppThead_log.error("ReReadMsgTypes: DataAccess.Hermes_Connection == null");
+        {  AppThead_log.error("ReReadMsgTemplates: DataAccess.Hermes_Connection == null");
             return -3;
         }
         PreparedStatement stmtMsgTemplateReRead = null;
@@ -170,7 +172,9 @@ public class InitMessageRepository {
             // stmtMsgTemplate.setTimestamp(1, DataAccess.InitDate );
             rs = stmtMsgTemplate.executeQuery();
             while (rs.next()) {
-                AppThead_log.info("ReReadMsgTemplates: Обновляем template_id[" + rs.getInt("template_id") + "]");
+                AppThead_log.info("ReReadMsgTemplates: Обновляем template_id[{}] для операции {} под систему {}/[{}]",
+                        rs.getInt("template_id"), rs.getString("Msg_Type"),
+                        rs.getInt("Source_Id"), rs.getString("Src_SubCod"));
                 MessageTemplateVOkey  = MessageRepositoryHelper.look4MessageTemplate(rs.getInt("template_id"), AppThead_log );
                 if ( MessageTemplateVOkey >= 0 ) {
                     MessageTemplateVO messageTemplateVO = MessageTemplate.AllMessageTemplate.get( MessageTemplateVOkey );
@@ -192,6 +196,8 @@ public class InitMessageRepository {
                     MessageTemplate.AllMessageTemplate.get( MessageTemplateVOkey ).setLastMaker(rs.getString("LastMaker"));
                     MessageTemplate.AllMessageTemplate.get( MessageTemplateVOkey ).setLastDate(rs.getString("LastDate"));
                     parseResult = ConfigMsgTemplates.performConfig(MessageTemplate.AllMessageTemplate.get( MessageTemplateVOkey ), log);
+                    log.info("ReReadMsgTemplates: update MessageTemplateVO, parseConfigResult ={}",
+                            parseResult);
                 }
                 else {
 
@@ -216,19 +222,17 @@ public class InitMessageRepository {
                     );
                     //messageTypeVO.LogMessageDirections( log );
                     //log.info(" MessageTemplateVO :", MessageTemplateVO. );
-
-
                     // log.info(" Directions.size :" +  MessageTemplate.AllMessageTemplate.size() );
 
                     parseResult = ConfigMsgTemplates.performConfig(messageTemplateVO, log);
                     MessageTemplate.AllMessageTemplate.put(MessageTemplate.RowNum, messageTemplateVO);
 
-                    log.info(" AllMessageTemplate.size :" + MessageTemplate.AllMessageTemplate.size() + " MessageRowNum =" + MessageTemplate.RowNum +
-                            " Template_name:" + MessageTemplate.AllMessageTemplate.get(MessageTemplate.RowNum).getTemplate_name() + " parseConfigResult=" + parseResult);
+                    log.info("ReReadMsgTemplates: AllMessageTemplate.size :{} MessageRowNum ={} Template_name:{} parseConfigResult={}",
+                            MessageTemplate.AllMessageTemplate.size(), MessageTemplate.RowNum, MessageTemplate.AllMessageTemplate.get(MessageTemplate.RowNum).getTemplate_name(),
+                            parseResult);
 
                     MessageTemplate.RowNum += 1;
                 }
-
             }
             rs.close();
             rs = null;
@@ -237,7 +241,7 @@ public class InitMessageRepository {
             DataAccess.Hermes_Connection.commit();
             // stmtMsgTemplate.close();
         } catch (Exception e) {
-            AppThead_log.error("ReReadMsgTemplates: (" + selectMsgTemplateReRead + ") fault: " + sStackTrace.strInterruptedException(e));
+            AppThead_log.error("ReReadMsgTemplates: ({}) fault: {}", selectMsgTemplateReRead, sStackTrace.strInterruptedException(e));
             System.err.println("ReReadMsgTypes fault: " + selectMsgTemplateReRead);
             e.printStackTrace();
             try {
@@ -245,7 +249,7 @@ public class InitMessageRepository {
                 if ( stmtMsgTemplateReRead != null) stmtMsgTemplateReRead.close();
                 DataAccess.Hermes_Connection.rollback();
             } catch ( SQLException SQLe) {
-                AppThead_log.error("ReReadMsgTemplates: rollback() fault: " + sStackTrace.strInterruptedException(SQLe));
+                AppThead_log.error("ReReadMsgTemplates: rollback() fault: {}", sStackTrace.strInterruptedException(SQLe));
                 System.err.println("ReReadMsgTemplates: rollback() fault: ");
                 SQLe.printStackTrace();
             }
@@ -289,6 +293,8 @@ public class InitMessageRepository {
                         " order by f.msgdirection_iD,  f.subsys_cod,  f.msgdirection_cod");
                 
             } catch (Exception e) {
+                AppThead_log.error("SelectMsgDirections: (`SELECT * from {}.Message_Directions`) fault: {}", DataAccess.HrmsSchema, sStackTrace.strInterruptedException(e));
+                System.err.println("SelectMsgDirections fault: `SELECT * from Message_Directions`");
                 e.printStackTrace();
                 return -2;
             }
@@ -345,6 +351,8 @@ public class InitMessageRepository {
             rs.close();
             stmtMsgDirection.close();
         } catch (Exception e) {
+            AppThead_log.error("SelectMsgDirections: rs.next() (`SELECT * from {}.Message_Directions`) fault: {}", DataAccess.HrmsSchema, sStackTrace.strInterruptedException(e));
+            System.err.println("SelectMsgDirections rs.next() fault: `SELECT * from Message_Directions`");
             e.printStackTrace();
             return -2;
         }
@@ -362,8 +370,7 @@ public class InitMessageRepository {
         if ( DataAccess.Hermes_Connection != null )
             try {
 
-                String select_MESSAGE_typeS =
-             "select i.interface_id, " +
+                String select_MESSAGE_typeS = "select i.interface_id, " +
                         "i.operation_id, " +
                         "i.msg_type, " +
                         "i.msg_type_own, " +
@@ -393,7 +400,7 @@ public class InitMessageRepository {
                      "where (1=1) " +
                      "and o.msg_direction like '%OUT%' and o.operation_id in (7512,7513) " + //  TODO: отправить запрос на поднесение карты к считывателю SKUD_Action_CARD_READ & SKUD_Request_ACCESS_Point
                      "order by 1, 2";
-                log.info(" select_MESSAGE_typeS=`{}`" , select_MESSAGE_typeS  );
+                log.info("select_MESSAGE_typeS: select=`{}`" , select_MESSAGE_typeS  );
                 stmtMsgType = DataAccess.Hermes_Connection.prepareStatement(select_MESSAGE_typeS );
 
             } catch (Exception e) {
@@ -452,7 +459,6 @@ public class InitMessageRepository {
 
         if ( DataAccess.Hermes_Connection != null )
             try {
-
                 stmtMsgTemplate = DataAccess.Hermes_Connection.prepareStatement(
                         "select t.template_id, " +
                                 "t.interface_id, " +
@@ -469,7 +475,7 @@ public class InitMessageRepository {
                                 "t.lastmaker, " +
                                 "to_char(t.lastdate,'YYYY.MM.DD HH24:MI:SS') LastDate " +
                         "from " + DataAccess.HrmsSchema +  ".MESSAGE_TemplateS t " +
-                        "where (1=1) and t.template_dir like '%IN%' " // + " and interface_id=71 "
+                        "where (1=1) and t.template_dir like '%IN%' " // + " and interface_id=70 "
                 + "union all " +
                         "select t.template_id, " +
                                 "t.interface_id, " +
@@ -491,6 +497,8 @@ public class InitMessageRepository {
                 );
 
             } catch (Exception e) {
+                AppThead_log.error("SelectMsgTemplates: (`SELECT * from {}.MESSAGE_TemplateS`) fault: {}", DataAccess.HrmsSchema, sStackTrace.strInterruptedException(e));
+                System.err.println("SelectMsgTemplates fault: `SELECT * from MESSAGE_TemplateS`");
                 e.printStackTrace();
                 return -2;
             }
@@ -523,8 +531,6 @@ public class InitMessageRepository {
                 );
                 //messageTypeVO.LogMessageDirections( log );
                 //log.info(" MessageTemplateVO :", MessageTemplateVO. );
-
-
                 // log.info(" Directions.size :" +  MessageTemplate.AllMessageTemplate.size() );
 
                 parseResult = ConfigMsgTemplates.performConfig(messageTemplateVO, log);
@@ -538,6 +544,8 @@ public class InitMessageRepository {
 
             }
         } catch (Exception e) {
+            AppThead_log.error("SelectMsgTemplates: (`SELECT * from {}.MESSAGE_TemplateS`) fault: {}", DataAccess.HrmsSchema, sStackTrace.strInterruptedException(e));
+            System.err.println("SelectMsgTemplates fault: `SELECT * from MESSAGE_TemplateS`");
             e.printStackTrace();
             return -2;
         }
