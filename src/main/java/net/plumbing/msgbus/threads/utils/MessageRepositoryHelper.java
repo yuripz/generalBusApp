@@ -182,16 +182,16 @@ public class MessageRepositoryHelper {
             {
                 String isNoWait4Sender = messageTypeVO.getURL_SOAP_Ack();
                 if ( isNoWait4Sender != null ) {
-                    messageSend_log.info("NoWait4Sender on MessageTypeURL_SOAP_Ack_2_Operation: found [" + isNoWait4Sender + "] for " + pOperation_Id);
+                    messageSend_log.info("NoWait4Sender on MessageTypeURL_SOAP_Ack_2_Operation: found [{}] for {}", isNoWait4Sender, pOperation_Id);
                     return isNoWait4Sender.equalsIgnoreCase("NoWait4Sender");
                 }
                 else {
-                    messageSend_log.info("NoWait4Sender on MessageTypeURL_SOAP_Ack_2_Operation: found as NULL for Operation_Id=" + pOperation_Id);
+                    messageSend_log.info("NoWait4Sender on MessageTypeURL_SOAP_Ack_2_Operation: found as NULL for Operation_Id={}, return false", pOperation_Id);
                     return false;
                 }
             }
         }
-        messageSend_log.warn( "в MessageType.AllMessageType не нашли pOperation_Id=" +pOperation_Id );
+        messageSend_log.warn("в MessageType.AllMessageType не нашли pOperation_Id={}, return false", pOperation_Id);
         // не нашли
         return false;
     }
@@ -215,7 +215,7 @@ public class MessageRepositoryHelper {
                 }
             }
         }
-        messageSend_log.warn( "в MessageType.AllMessageType не нашли pOperation_Id=" +pOperation_Id );
+        messageSend_log.warn("в MessageType.AllMessageType не нашли pOperation_Id={}", pOperation_Id);
         // не нашли
         return false;
     }
@@ -238,7 +238,7 @@ public class MessageRepositoryHelper {
                 }
             }
         }
-        messageSend_log.warn("isLooked4MessageTypeURL_SOAP_Ack_Rest_2_Interface[0-" + MessageType.AllMessageType.size() + "]:" + Url_Soap_Send + " не нашёл итерфейса по URL");
+        messageSend_log.warn("isLooked4MessageTypeURL_SOAP_Ack_Rest_2_Interface[0-{}]:{} не нашёл интерфейса по URL", MessageType.AllMessageType.size(), Url_Soap_Send);
         return false;
     }
 
@@ -260,7 +260,7 @@ public class MessageRepositoryHelper {
                 }
             }
         }
-        messageSend_log.warn("isLooked4MessageTypeURL_SOAP_Ack_RestExel_2_Interface[0-" + MessageType.AllMessageType.size() + "]:" + Url_Soap_Send + " не нашёл итерфейса по URL");
+        messageSend_log.warn("isLooked4MessageTypeURL_SOAP_Ack_RestExel_2_Interface[0-{}]:{} не нашёл интерфейса по URL", MessageType.AllMessageType.size(), Url_Soap_Send);
         return false;
     }
 
@@ -283,7 +283,7 @@ public class MessageRepositoryHelper {
                 }
             }
         }
-        messageSend_log.warn("isLooked4MessageTypeURL_SOAP_Ack_RestXML_2_Interface[0-" + MessageType.AllMessageType.size() + "]:" + Url_Soap_Send + " не нашёл итерфейса по URL");
+        messageSend_log.warn("isLooked4MessageTypeURL_SOAP_Ack_RestXML_2_Interface[0-{}]:{} не нашёл итерфейса по URL", MessageType.AllMessageType.size(), Url_Soap_Send);
         return false;
     }
 /*  не используется, вместо неё isNoConfirmation4MessageTypeURL_SOAP_Ack_2_Operation
@@ -322,7 +322,7 @@ public class MessageRepositoryHelper {
     }
 */
     public static  int look4MessageTemplate_2_Interface(int look4_Interface_Id,  Logger messageSend_log) {
-        messageSend_log.info("look4MessageTemplate_2_Interface[" + MessageTemplate.AllMessageTemplate.size() + "]:" + look4_Interface_Id);
+        messageSend_log.info("look4MessageTemplate_2_Interface[{}]:{}", MessageTemplate.AllMessageTemplate.size(), look4_Interface_Id);
         int MessageTemplateVOkey=-1;
 
         for (int i = 0; i < MessageTemplate.AllMessageTemplate.size(); i++) {
@@ -334,13 +334,13 @@ public class MessageRepositoryHelper {
             if ((Interface_Id == look4_Interface_Id) && ( Operation_Id== 0)) {
                 // №№ Шаблонов совпали,  Template_Id = i;
                 MessageTemplateVOkey = i;
-                messageSend_log.info( "look4MessageTemplate_2_Interface: используем [" + MessageTemplateVOkey +"]: Template_Id=" +
-                        MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getTemplate_Id() +
-                        ", Template_name:" + MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getTemplate_name() );
+                messageSend_log.info("look4MessageTemplate_2_Interface: используем [{}]: Template_Id={}, Template_name:{}",
+                                    MessageTemplateVOkey, MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getTemplate_Id(),
+                                    MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getTemplate_name());
                 return MessageTemplateVOkey;
             }
         }
-        messageSend_log.info("look4MessageTemplate, получаем MessageTemplateVOkey=[" + MessageTemplateVOkey +"]: значит, не нашли");
+        messageSend_log.warn("look4MessageTemplate, получаем MessageTemplateVOkey=[{}]: значит, не нашли", MessageTemplateVOkey);
 
         return MessageTemplateVOkey;
     }
@@ -356,14 +356,13 @@ public class MessageRepositoryHelper {
             if (Template_Id == look4Template_Id) {
                 // №№ Шаблонов совпали,  Template_Id = i;
                 MessageTemplateVOkey = i;
-                messageSend_log.info( "look4MessageTemplate: используем [" + MessageTemplateVOkey +"]: Template_Id=" +
-                        MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getTemplate_Id() +
-                        ", Template_name:" + MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getTemplate_name()
-                );
+                messageSend_log.info("look4MessageTemplate: используем [{}]: Template_Id={}, Template_name:{}",
+                                        MessageTemplateVOkey, MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getTemplate_Id(),
+                                        MessageTemplate.AllMessageTemplate.get(MessageTemplateVOkey).getTemplate_name());
                 return MessageTemplateVOkey;
             }
         }
-        messageSend_log.info("look4MessageTemplate, получаем MessageTemplateVOkey=[" + MessageTemplateVOkey +"]: значит, не нашли");
+        messageSend_log.warn("look4MessageTemplate, получаем MessageTemplateVOkey=[{}]: значит, не нашли", MessageTemplateVOkey);
 
         return MessageTemplateVOkey;
     }
@@ -392,7 +391,7 @@ public class MessageRepositoryHelper {
         }
 
         if ( Type_Id < 0) {
-            messageSend_log.info("Operation[" + Operation_Id + "] is not found in any MessageType");
+            messageSend_log.error("Operation[{}] is not found in any MessageType", Operation_Id);
             return Template_Id;
         }
         for (int i = 0; i < MessageTemplate.AllMessageTemplate.size(); i++) {
@@ -442,9 +441,9 @@ public class MessageRepositoryHelper {
         if ( Template_4_Direction_Id >= 0 ) Template_Id = Template_4_Direction_Id;
         if ( Template_4_Direction_SubSys_Id >= 0 ) Template_Id = Template_4_Direction_SubSys_Id;
         if ( Template_Id >= 0 )
-            messageSend_log.info("Итого, используем [" + Template_Id +"]: Template_Id=" + MessageTemplate.AllMessageTemplate.get(Template_Id).getTemplate_Id());
+            messageSend_log.info("Итого, используем [{}]: Template_Id={}", Template_Id, MessageTemplate.AllMessageTemplate.get(Template_Id).getTemplate_Id());
         else
-            messageSend_log.error("Итого, получаем Template_Id=[" + Template_Id +"]: значит, не нашли");
+            messageSend_log.error("Итого, получаем Template_Id=[{}]: значит, не нашли", Template_Id);
 
         return Template_Id;
 

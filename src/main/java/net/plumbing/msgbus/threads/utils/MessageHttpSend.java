@@ -1285,14 +1285,18 @@ public class MessageHttpSend {
                 .encodeToString((messageTemplate4Perform.getPropUserPostExec() + ":" + messageTemplate4Perform.getPropPswdPostExec() ).getBytes(StandardCharsets.UTF_8));
 
         HttpRequest.Builder requestBuilder = java.net.http.HttpRequest.newBuilder();
-
-        if ( messageTemplate4Perform.getPreemptive()  // adding the header to the HttpRequest
+/*
+        if ( messageTemplate4Perform.getIsDebugged() )
+            MessageSend_Log.info("[{}] WebRestExePostExec: Authorization Basic `{}` isPreemptive `{}` (using User=`{}` Pswd=`{}`)", Queue_Id,
+                                 encodedAuth, messageTemplate4Perform.getPreemptivePostExec(), messageTemplate4Perform.getPropUserPostExec(), messageTemplate4Perform.getPropPswdPostExec());
+*/
+        if ( messageTemplate4Perform.getPreemptivePostExec()  // adding the header to the HttpRequest
         ) {  // добавляем Authorization заголовки через HttpRequest.Builder
             requestBuilder = requestBuilder
                     .header("Authorization", "Basic " + encodedAuth );
             if ( messageTemplate4Perform.getIsDebugged() )
-                MessageSend_Log.info("[" + Queue_Id + "] Authorization Basic " + encodedAuth +
-                        " (using User=`" + messageTemplate4Perform.getPropUserPostExec() + "` Pswd=`" + messageTemplate4Perform.getPropPswdPostExec() + "`)" );
+                MessageSend_Log.info("[{}] WebRestExePostExec: Authorization Basic {} (using User=`{}` Pswd=`{}`)",
+                        Queue_Id, encodedAuth, messageTemplate4Perform.getPropUserPostExec(), messageTemplate4Perform.getPropPswdPostExec());
         }
 
         java.net.http.HttpRequest request = requestBuilder

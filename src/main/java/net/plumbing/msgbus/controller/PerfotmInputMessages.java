@@ -64,7 +64,7 @@ public class PerfotmInputMessages {
 
         // ищем Шаблон под оперрацию, с учетом системы приёмника MessageRepositoryHelper.look4MessageTemplateVO_2_Perform
         int Template_Id = MessageRepositoryHelper.look4MessageTemplateVO_2_Perform(Operation_Id, MsgDirection_Id, SubSys_Cod, MessegeReceive_Log);
-        MessegeReceive_Log.info("[{}] `{}` look4MessageTemplateVO_2_Perform Шаблон под оперрацию ({}), с учетом системы приёмника MsgDirection_Id={}, SubSys_Cod ={} : вернул Template_Id={}", Queue_Id, Queue_Direction, Operation_Id, MsgDirection_Id, SubSys_Cod, Template_Id);
+        MessegeReceive_Log.info("[{}] `{}` look4MessageTemplateVO_2_Perform Шаблон под операцию ({}), с учетом системы приёмника MsgDirection_Id={}, SubSys_Cod ={} : вернул Template_Id={}", Queue_Id, Queue_Direction, Operation_Id, MsgDirection_Id, SubSys_Cod, Template_Id);
 
         //MessegeReceive_Log.info(Queue_Direction + " [" + Queue_Id + "]  Шаблон под оперрацию =" + Template_Id);
 
@@ -664,12 +664,22 @@ public class PerfotmInputMessages {
                                 if ((Message.MessageTemplate4Perform.getPropHostPostExec() == null) ||
                                         (Message.MessageTemplate4Perform.getPropUserPostExec() == null) ||
                                         (Message.MessageTemplate4Perform.getPropPswdPostExec() == null) ||
-                                        (Message.MessageTemplate4Perform.getPropUrlPostExec() == null) ||
-                                        (Message.MessageTemplate4Perform.getPropQueryPostExec() == null) ) {
+                                        (Message.MessageTemplate4Perform.getPropUrlPostExec() == null)
+                                        // || (Message.MessageTemplate4Perform.getPropQueryPostExec() == null) // раньше СУСу нужны были специфические параметры в виде
+                                   ) {
                                     // Нет параметров для Rest-HttpGet - надо орать!
-                                    MessegeReceive_Log.error("[{}] В шаблоне для пост-обработки {} нет параметров для Rest-HttpGet вклюая логин/пароль", Queue_Id, Message.MessageTemplate4Perform.getPropExeMetodPostExec());
+                                    Message.MsgReason.setLength(0);Message.MsgReason.trimToSize();
+                                    Message.MsgReason.append("[" ).append(Queue_Id).append("] В шаблоне для пост-обработки не хватает параметров для Rest-HttpGet: PropHostPostExec || PropUserPostExec || PropPswdPostExec || PropUrlPostExec");
+
+                                    MessegeReceive_Log.error("[{}] В шаблоне для пост-обработки {} нет параметров для Rest-HttpGet, включая логин/пароль", Queue_Id, Message.MessageTemplate4Perform.getPropExeMetodPostExec());
+                                    MessegeReceive_Log.error("[{}] В шаблоне для пост-обработки `{}` не хватает параметров для Rest-HttpGet: " +
+                                                    "getPropHostPostExec `{}` || getPropUserPostExec `{}` || getPropPswdPostExec `{}` || getPropUrlPostExec `{}` || getPropQueryPostExec `{}`",
+                                            Queue_Id, Message.MessageTemplate4Perform.getConfigPostExec(),
+                                            Message.MessageTemplate4Perform.getPropHostPostExec(), Message.MessageTemplate4Perform.getPropUserPostExec(), Message.MessageTemplate4Perform.getPropPswdPostExec(),
+                                            Message.MessageTemplate4Perform.getPropUrlPostExec(), Message.MessageTemplate4Perform.getPropQueryPostExec()
+                                            );
                                     theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id,
-                                            "В шаблоне для пост-обработки " + Message.MessageTemplate4Perform.getPropExeMetodPostExec() + " нет параметров для Rest-HttpGet вклюая логин/пароль", 3253,
+                                            "В шаблоне для пост-обработки " + Message.MessageTemplate4Perform.getPropExeMetodPostExec() + " нет параметров для Rest-HttpGet, включая логин/пароль", 3253,
                                             MessegeReceive_Log);
                                     return -46L;
                                 }
@@ -686,7 +696,7 @@ public class PerfotmInputMessages {
                                     else
                                         EndPointUrl = "http://" + Message.MessageTemplate4Perform.getPropHostPostExec() +
                                                                   Message.MessageTemplate4Perform.getPropUrlPostExec();
-                                    // Ставим своенго клиента !
+                                    // Ставим своего клиента !
                                     ApiRestHttpClient = getCloseableHttpClient( messageQueueVO,  Message, true, theadDataAccess, MessegeReceive_Log);
                                     // SSLUtil.turnOffSslChecking();
                                     if ( ApiRestHttpClient == null) // ErrIN выставлен, выходим
@@ -1031,11 +1041,21 @@ public class PerfotmInputMessages {
             PropUser= Message.MessageTemplate4Perform.getPropUserPostExec();
             PropPswd = Message.MessageTemplate4Perform.getPropPswdPostExec();
             isPreemptive = Message.MessageTemplate4Perform.getPreemptivePostExec();
+
+            MessegeReceive_Log.error("[{}] В шаблоне для пост-обработки `{}` не хватает параметров для Rest-HttpGet: " +
+                            "getPropHostPostExec `{}` || getPropUserPostExec `{}` || getPropPswdPostExec `{}` || getPropUrlPostExec `{}` || getPreemptivePostExec `{}`",
+                    messageQueueVO.getQueue_Id(), Message.MessageTemplate4Perform.getConfigPostExec(),
+                    Message.MessageTemplate4Perform.getPropHostPostExec(), Message.MessageTemplate4Perform.getPropUserPostExec(), Message.MessageTemplate4Perform.getPropPswdPostExec(),
+                    Message.MessageTemplate4Perform.getPropUrlPostExec(), Message.MessageTemplate4Perform.getPreemptivePostExec()
+            );
         }
         else {
             PropUser = Message.MessageTemplate4Perform.getPropUser();
             PropPswd = Message.MessageTemplate4Perform.getPropPswd();
             isPreemptive = Message.MessageTemplate4Perform.getPreemptive();
+        }
+        if ( IsDebugged ) {
+            MessegeReceive_Log.info("[{}] try getCloseableHttpClient: PropUser=`{}` PropPswd=`{}` , isPreemptive=`{}`", messageQueueVO.getQueue_Id(), PropUser, PropPswd, isPreemptive);
         }
    try {
         if ( (PropUser!= null)
@@ -1043,9 +1063,9 @@ public class PerfotmInputMessages {
             )
         {
             RestPasswordAuthenticator restPasswordAuthenticator = new RestPasswordAuthenticator();
-            Authenticator restApiPasswordAuthenticator  = restPasswordAuthenticator.getPasswordAuthenticator(PropUser, PropPswd);
+            Authenticator restApiPasswordAuthenticator  = restPasswordAuthenticator.getPasswordAuthenticator( PropUser, PropPswd );
             if ( IsDebugged ) {
-                MessegeReceive_Log.info("[{}] getCloseableHttpClient: PropUser=`{}` PropPswd=`{}`", messageQueueVO.getQueue_Id(), PropUser, PropPswd);
+                MessegeReceive_Log.info("[{}] getCloseableHttpClient 4 Basic auth: PropUser=`{}` PropPswd=`{}`", messageQueueVO.getQueue_Id(), PropUser, PropPswd);
             }
             ApiRestHttpClient = HttpClient.newBuilder()
                     .authenticator( restApiPasswordAuthenticator )
@@ -1054,9 +1074,9 @@ public class PerfotmInputMessages {
                     .connectTimeout(Duration.ofSeconds( ConnectTimeout ) )
                     .build();
         }
-        else {
+        else { // adding the header to the HttpRequest
             if ( IsDebugged )
-                MessegeReceive_Log.info("[{}] getCloseableHttpClient: PropUser== null or isPreemptive= (`{}`)", messageQueueVO.getQueue_Id(), isPreemptive);
+                MessegeReceive_Log.info("[{}] getCloseableHttpClient 4 Preemptive auth : PropUser=`{}` or isPreemptive= (`{}`)", messageQueueVO.getQueue_Id(), PropUser, isPreemptive);
             ApiRestHttpClient = HttpClient.newBuilder()
                     .version(HttpClient.Version.HTTP_1_1)
                     .followRedirects(HttpClient.Redirect.ALWAYS)
