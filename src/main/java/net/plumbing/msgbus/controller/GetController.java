@@ -52,7 +52,7 @@ public class GetController  {
         try {
             queryString = URLDecoder.decode(httpRequest.getQueryString(), StandardCharsets.UTF_8);
         } catch (NullPointerException | IllegalArgumentException e) {
-            Controller_log.error( "httpRequest.getRequestURL `" + url + "` URLDecoder.decode `" + httpRequest.getQueryString() +" `fault "  + e.getMessage());
+            Controller_log.error("httpRequest.getRequestURL `{}` URLDecoder.decode `{} `fault {}", url, httpRequest.getQueryString(), e.getMessage());
             System.err.println( "httpRequest.getRequestURL `" + url + "` URLDecoder.decode `" + httpRequest.getQueryString() +" `fault "  + e.getMessage());
             e.printStackTrace();
             queryString = httpRequest.getQueryString();
@@ -63,7 +63,7 @@ public class GetController  {
 
         getResponse.addHeader("Access-Control-Allow-Origin", "*");
         //Controller_log.warn("url= (" + url + ") queryString(" + queryString + ")");
-        Controller_log.warn("httpRequest.getMethod()" + httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")");
+        Controller_log.warn("httpRequest.getMethod() {}: url=`{}` queryString({})", httpRequest.getMethod(), url, queryString);
         String HttpResponse= Fault_Client_noNS_Begin +
                 XML.escape(httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")") +
                 Fault_noNS_End;
@@ -74,7 +74,7 @@ public class GetController  {
                     XML.escape(httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")" ) +
                     " параметры в запросе" +
                     Fault_noNS_End ;
-            Controller_log.warn("HttpResponse:\n" + HttpResponse);
+            Controller_log.warn("HttpResponse: `{}`", HttpResponse);
             if (is_TextJsonResponse )
             {
                 try {
@@ -87,6 +87,7 @@ public class GetController  {
 
                 } catch (JSONException e) {
                     System.err.println(e.toString());
+                    Controller_log.error("XML.toJSONObject: JSONException`{}`", e.getMessage());
                 }
             }
             getResponse.setContentType("text/xml;charset=UTF-8");
@@ -104,7 +105,7 @@ public class GetController  {
                     XML.escape(httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")" ) +
                     " в системе не сконфигурирован" +
                     Fault_noNS_End ;
-            Controller_log.warn("HttpResponse: [" + HttpResponse + "]");
+            Controller_log.error("HttpResponse: `{}`", HttpResponse);
             if (is_TextJsonResponse ) {
                 try {
                     JSONObject xmlJSONObj = XML.toJSONObject(HttpResponse);
@@ -176,10 +177,12 @@ public class GetController  {
                 else {
                     isDebugged = getIsDebugedResponse.equalsIgnoreCase("true");
                 }
-                Controller_log.warn("isDebugged after ClientIpHelper.getIsDebuged():`{}`" , isDebugged );
+                Controller_log.info("isDebugged after ClientIpHelper.getIsDebuged():`{}`, getIsDebugedResponse `{}`" , isDebugged, getIsDebugedResponse );
 
-                Long Queue_ID;
-                Queue_ID = messageReceiveTask.ProcessInputMessage(Interface_id, Message, MessageTemplateVOkey, isDebugged);
+                Long Queue_ID; //!! Do ProcessInputMessage!
+                Queue_ID = messageReceiveTask.ProcessInputMessage(Interface_id, Message,
+                                                                                MessageTemplateVOkey,
+                                                                                isDebugged);
                 // Тут не закрываем соединение, оно нужно для журнала
                 /*
                 try {
@@ -217,14 +220,14 @@ public class GetController  {
                 }
 
                 if (isDebugged)
-                Controller_log.info("HttpResponse:[" + HttpResponse + "]");
+                    Controller_log.info("is_TextJsonResponse {} , HttpResponse:[{}]", is_TextJsonResponse, HttpResponse);
                 getResponse.setHeader("Access-Control-Allow-Origin", "*");
                 getResponse.setContentType("application/json;Charset=UTF-8");
                 // getResponse.setContentType("text/xml;charset=UTF-8");
                 if (is_TextJsonResponse ) {
                     try {
                         JSONObject xmlJSONObj = XML.toJSONObject(HttpResponse);
-                        // TODO внутри XML.toJSONObject метод stringToValue делает аналогично StringEscapeUtils.escapeJson()
+                        // TODOdone внутри XML.toJSONObject метод stringToValue делает аналогично StringEscapeUtils.escapeJson()
 
                         String jsonPrettyPrintString = xmlJSONObj.toString(4); //StringEscapeUtils.unescapeXml (xmlJSONObj.toString(4) );
                         getResponse.setContentType("application/json;Charset=UTF-8");
@@ -237,13 +240,13 @@ public class GetController  {
                                 messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                             }
                         } catch (SQLException SQLe) {
-                            Controller_log.error(SQLe.getMessage());
-                            Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                            //Controller_log.error(SQLe.getMessage());
+                            Controller_log.error("Hermes_Connection.close() fault:{}" , SQLe.getMessage());
                             SQLe.printStackTrace();
                         }
                         if (isDebugged)
-                        Controller_log.warn( "jsonPrettyPrintString : " + jsonPrettyPrintString);
-                        Controller_log.info("DataSourcePool " + DataSourcePoolMetadata.getActive());
+                            Controller_log.warn("jsonPrettyPrintString : {}", jsonPrettyPrintString);
+                        Controller_log.info("DataSourcePool size {}" , DataSourcePoolMetadata.getActive());
                         return (jsonPrettyPrintString);
 
                     } catch (JSONException e) {
@@ -260,8 +263,8 @@ public class GetController  {
                                 messageReceiveTask.theadDataAccess.Hermes_Connection.close();
                             messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                         } catch (SQLException SQLe) {
-                            Controller_log.error(SQLe.getMessage());
-                            Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                            //Controller_log.error(SQLe.getMessage());
+                            Controller_log.error("Hermes_Connection.close() fault:{}" , SQLe.getMessage());
                             SQLe.printStackTrace();
                         }
                     }
@@ -276,10 +279,10 @@ public class GetController  {
                                 messageReceiveTask.theadDataAccess.Hermes_Connection.close();
                             messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                         } catch (SQLException SQLe) {
-                            Controller_log.error(SQLe.getMessage());
-                            Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                            //Controller_log.error(SQLe.getMessage());
+                            Controller_log.error("at finally Hermes_Connection.close() fault:{}", SQLe.getMessage());
                             SQLe.printStackTrace();
-                            return HttpResponse;
+                            //return HttpResponse;
                         }
                     }
 
@@ -299,11 +302,7 @@ public class GetController  {
         String url = httpRequest.getRequestURL().toString();
         String queryString;
 
-        try {
-            queryString = URLDecoder.decode(httpRequest.getQueryString(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            queryString = httpRequest.getQueryString();
-        }
+        queryString = URLDecoder.decode(httpRequest.getQueryString(), StandardCharsets.UTF_8);
         Controller_log.warn("url= (" + url + ") queryString(" + queryString + ")");
         Controller_log.warn("httpRequest.getMethod()" + httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")");
 
@@ -419,7 +418,7 @@ public class GetController  {
 
         int  Interface_id =
                 MessageRepositoryHelper.look4MessageTypeVO_2_Interface(Url_Soap_Send, Controller_log);
-        Controller_log.warn("Interface_id=" + Interface_id );
+        Controller_log.warn("Interface_id={} by MessageRepositoryHelper.look4MessageTypeVO_2_Interface (`{}`)" , Interface_id, Url_Soap_Send );
         if ( Interface_id < 0 )
         {   getResponse.setStatus(500);
             HttpResponse= Fault_Client_Rest_Begin +
@@ -428,7 +427,7 @@ public class GetController  {
                     // + httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")"
                     " в системе не сконфигурирован" +
                     Fault_Rest_End ;
-            Controller_log.warn("HttpResponse:" + HttpResponse);
+            Controller_log.warn("HttpResponse: `{}`" , HttpResponse);
             getResponse.setContentType("application/json;Charset=UTF-8");
             return HttpResponse;
         }
@@ -446,7 +445,7 @@ public class GetController  {
                 getResponse.setContentType("application/json;Charset=UTF-8");
                 return HttpResponse;
             }
-            Controller_log.warn("try look4MessageTypeVO_by_MesssageType: [" + BusOperationMesssageType + "]");
+            Controller_log.warn("try look4MessageTypeVO_by_MesssageType: [{}]", BusOperationMesssageType);
             // формируем НАСТОЯЩИЙ тип операции из полученнго от URL + в зависимости от  queryString
 
 //                if ( queryString == null) // Значит, в "InternalRestApi/"+ Url_Soap_Send +"/" может  быть ПК для зачитывания записи для GetOne
@@ -529,7 +528,7 @@ public class GetController  {
                             Fault_Rest_End;
                 }
 
-                Controller_log.warn("HttpResponse:" + HttpResponse);
+                Controller_log.warn("HttpResponse: `{}`" , HttpResponse);
                 getResponse.setStatus(422);
                 return HttpResponse;
             }
@@ -542,7 +541,7 @@ public class GetController  {
                         org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")" ) +
                         " параметры в запросе" +
                         Fault_Rest_End ;
-                Controller_log.warn("HttpResponse:" + HttpResponse);
+                Controller_log.warn("HttpResponse: `{}`" , HttpResponse);
                 getResponse.setContentType("application/json;Charset=UTF-8");
                 return HttpResponse;
             }
@@ -561,7 +560,7 @@ public class GetController  {
                 // String ParamElementName = ClientIpHelper.toCamelCase(ParamElements[0], "_");
                 //int ParamElementNameLength = (ParamElementName.indexOf(']') > 0) ? ParamElementName.indexOf(']') : ParamElementName.length();
                 try { // ?_end=5&_order=DESC&_sort=username&_start=0
-                    Controller_log.warn("ParamElements[0]=" + ParamElements[0] + " indexOf(Filter)=" + ParamElements[0].indexOf("Filter") );
+                    Controller_log.warn("ParamElements[0]={} indexOf(Filter)={}", ParamElements[0], ParamElements[0].indexOf("Filter"));
                     if ( ParamElements[0].contains("Filter") )
                         try {
                             ClientIpHelper.add2XML_Request_Method_FilterTags(Message.XML_Request_Method, queryParamIndex, queryParams, ParamElements, Controller_log);
@@ -570,7 +569,7 @@ public class GetController  {
                           HttpResponse= Fault_Client_Rest_Begin +
                                   "Клиент передал  в запросе фильтр не в формате JSON, " + JSe.getMessage() +
                                   Fault_Rest_End ;
-                          Controller_log.warn("HttpResponse: Filter=`" + ParamElements[0].indexOf("Filter")  + "` ==> " + HttpResponse);
+                          Controller_log.warn("HttpResponse: Filter=`{}` ==> {}", ParamElements[0].indexOf("Filter"), HttpResponse);
                           getResponse.setContentType("application/json;Charset=UTF-8");
                           return HttpResponse;
                       }
@@ -600,7 +599,7 @@ public class GetController  {
                     HttpResponse= Fault_Client_Rest_Begin + org.apache.commons.text.StringEscapeUtils.escapeJson(
                             "Ошибка при разборе параметров от клиента (" + queryString + ") " + e.getMessage() ) +
                             Fault_Rest_End ;
-                    Controller_log.warn("HttpResponse:[" + HttpResponse + "]");
+                    Controller_log.warn("HttpResponse: `{}`" , HttpResponse);
                     getResponse.setContentType("application/json;Charset=UTF-8");
                     //getResponse.setHeader("x-total-count", "0" );
                     //getResponse.setStatus(422);
@@ -663,7 +662,7 @@ public class GetController  {
                 }
 
                 if (isDebugged)
-                    Controller_log.info("HttpResponse:`" + HttpResponse + "`");
+                    Controller_log.info("HttpResponse:`{}`", HttpResponse);
                 // Controller_log.warn("XML-HttpResponse готов" );
 
                 if (MessageRepositoryHelper.isLooked4MessageTypeURL_SOAP_Ack_RestXML_2_Interface(Url_Soap_Send, Controller_log))
@@ -757,7 +756,7 @@ public class GetController  {
                         /////////////////////////////////
 
 //                    Controller_log.warn(jsonPrettyPrintString);
-                        if (isDebugged) Controller_log.info("return jsonPrettyPrintString:" + jsonPrettyPrintString);
+                        if (isDebugged) Controller_log.info("return jsonPrettyPrintString:{}", jsonPrettyPrintString);
                         return (jsonPrettyPrintString);
 
                     } catch (JSONException e) {
@@ -776,8 +775,8 @@ public class GetController  {
                             messageReceiveTask.theadDataAccess.Hermes_Connection.close();
                         messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                     } catch (SQLException SQLe) {
-                        Controller_log.error(SQLe.getMessage());
-                        Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                        //Controller_log.error(SQLe.getMessage());
+                        Controller_log.error("Hermes_Connection.close() fault:{}" , SQLe.getMessage());
                         SQLe.printStackTrace();
                     }
                 }
@@ -785,8 +784,8 @@ public class GetController  {
                 getResponse.setHeader("Access-Control-Expose-Headers", "X-Total-Count");
                 getResponse.setHeader("Access-Control-Expose-Headers", "Content-Range");
 
-                if (isDebugged) Controller_log.info("return HttpResponse:" + HttpResponse);
-                Controller_log.info("Response.Status=" + ResponseStatus + "DataSourcePool=" + DataSourcePoolMetadata.getActive());
+                if (isDebugged) Controller_log.info("return HttpResponse:{}", HttpResponse);
+                Controller_log.info("Response.Status={} DataSourcePool={}", ResponseStatus, DataSourcePoolMetadata.getActive());
 
                 return HttpResponse;
             } finally {
@@ -797,8 +796,8 @@ public class GetController  {
                                 messageReceiveTask.theadDataAccess.Hermes_Connection.close();
                             messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                         } catch (SQLException SQLe) {
-                            Controller_log.error(SQLe.getMessage());
-                            Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                            //Controller_log.error(SQLe.getMessage());
+                            Controller_log.error("Hermes_Connection.close() fault: {}" , SQLe.getMessage());
                             SQLe.printStackTrace();
                             // return HttpResponse;
                         }
