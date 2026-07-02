@@ -51,7 +51,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.6.05.29SaX";
+    public static final String ApplicationName="*Receiver_BUS* v.6.05.30SaX";
     public static String propJDBC;
     public static String propExtJDBC;
 
@@ -141,9 +141,14 @@ public class ServletApplication implements CommandLineRunner {
         if ( (connectionProperties.gethrmsPgSetupConnection() != null) &&
                 (!connectionProperties.gethrmsPgSetupConnection().isEmpty()) ) {
             ApplicationProperties.InternalDbPgSetupConnection =  connectionProperties.gethrmsPgSetupConnection();
+            AppThead_log.info("InternalDbPgSetupConnection by gethrmsPgSetupConnection = `{}`", ApplicationProperties.InternalDbPgSetupConnection);
         }
         else
+        {
             ApplicationProperties.InternalDbPgSetupConnection = "set SESSION time zone 3; set enable_bitmapscan to off; set max_parallel_workers_per_gather = 0;";
+            AppThead_log.info("InternalDbPgSetupConnection by default = `{}`", ApplicationProperties.InternalDbPgSetupConnection);
+        }
+
 
         ApplicationProperties.ConnectMsgBus = connectionProperties.getconnectMsgBus();
         ApplicationProperties.ExtSysSchema = connectionProperties.getextsysDbSchema();
@@ -153,13 +158,13 @@ public class ServletApplication implements CommandLineRunner {
         if (connectionProperties.getjmsReceiveTaskEnabled().equalsIgnoreCase("true") )
             jmsReceiveTaskEnabled = true;
         else  jmsReceiveTaskEnabled = false;
-        AppThead_log.info("jmsReceiveTaskEnabled = " + jmsReceiveTaskEnabled );
+        AppThead_log.info("jmsReceiveTaskEnabled = {}", jmsReceiveTaskEnabled);
 
 //        int FirstInfoStreamId = 101;
 //        if ( connectionProperties.getfirstInfoStreamId() != null) FirstInfoStreamId = Integer.parseInt( connectionProperties.getfirstInfoStreamId() );
         String psqlFunctionRun = connectionProperties.getpsqlFunctionRun();
         ApplicationProperties.pSQLFunctionRun = connectionProperties.getpsqlFunctionRun();
-        AppThead_log.info("psqlFunctionRun = " + psqlFunctionRun );
+        AppThead_log.info("psqlFunctionRun = {}", psqlFunctionRun);
         // DefaultApplicationFactory myApplicationFactory = new DefaultApplicationFactory();
 
         try {
@@ -170,7 +175,7 @@ public class ServletApplication implements CommandLineRunner {
         );
             ApplicationProperties.DataSourcePoolMetadata = HikariDataAccess.DataSourcePoolMetadata;
     } catch (Exception e) {
-        AppThead_log.error("НЕ удалось подключится к базе данных (`" + connectionProperties.gethrmsPoint() + "` ) транспортных сообщений:" + e.getMessage());
+            AppThead_log.error("НЕ удалось подключится к базе данных (`{}` ) транспортных сообщений:{}", connectionProperties.gethrmsPoint(), e.getMessage());
             NotifyByChannel.Telegram_sendMessage( "Do stopping " + ApplicationName + " *DB problem* `" +  e.getMessage() +  "` ip:" + InetAddress.getLocalHost().getHostAddress()+ ", db `" + connectionProperties.gethrmsPoint() + "` as `"+ connectionProperties.gethrmsDbLogin() + "`), *stopping*", AppThead_log );
             System.exit(-19);
     }
@@ -178,12 +183,11 @@ public class ServletApplication implements CommandLineRunner {
         AppThead_log.info("message DataSource = " + ApplicationProperties.dataSource );
         if ( ApplicationProperties.dataSource != null )
         {
-            AppThead_log.info("message DataSource = " + ApplicationProperties.dataSource
-                    + " JdbcUrl:" + ApplicationProperties.dataSource.getJdbcUrl()
-                    + " isRunning:" + ApplicationProperties.dataSource.isRunning()
-                    + " 4 dbSchema:" + ApplicationProperties.HrmsSchema);
+            AppThead_log.info("message DataSource = {} JdbcUrl:{} isRunning:{} 4 dbSchema:{}",
+                                ApplicationProperties.dataSource, ApplicationProperties.dataSource.getJdbcUrl(),
+                                ApplicationProperties.dataSource.isRunning(), ApplicationProperties.HrmsSchema);
         } else {
-            AppThead_log.error("НЕ удалось подключится к базе данных (`" + connectionProperties.gethrmsPoint() + "` ) транспортных сообщений:" );
+            AppThead_log.error("НЕ удалось подключится к базе данных (`{}` ) транспортных сообщений:", connectionProperties.gethrmsPoint());
             NotifyByChannel.Telegram_sendMessage( "Do stopping " + ApplicationName + " *DB problem* `"  +  "` ip:" + InetAddress.getLocalHost().getHostAddress()+ ", db `" + connectionProperties.gethrmsPoint() + "` as `"+ connectionProperties.gethrmsDbLogin() + "`), *stopping*", AppThead_log );
             System.exit(-19);
         }
