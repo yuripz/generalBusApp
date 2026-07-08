@@ -51,7 +51,7 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.6.05.30SaX";
+    public static final String ApplicationName="*Receiver_BUS* v.6.07.07SaX";
     public static String propJDBC;
     public static String propExtJDBC;
 
@@ -67,7 +67,7 @@ public class ServletApplication implements CommandLineRunner {
         //Application myApplication = Application.create("SpringApplication").healthUrl("http://localhost:8005/actuator/health").serviceUrl("http://localhost:8005/instances").build();
         // ApplicationRegistrator myApplicationRegistrator = new ApplicationRegistrator();
 
-        AppThead_log.info("Hellow for ServletApplication ");
+        AppThead_log.info("Hello for {} ", ApplicationName);
 
         NotifyByChannel.Telegram_setHttpProxyHost( telegramProperties.gethttpProxyHost() , AppThead_log );
         NotifyByChannel.Telegram_setHttpProxyPort( telegramProperties.gethttpProxyPort() , AppThead_log );
