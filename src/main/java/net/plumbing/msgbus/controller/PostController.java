@@ -64,13 +64,12 @@ public class PostController {
         HttpServletRequest httpRequest = (HttpServletRequest) postServletRequest;
 
         String url = httpRequest.getRequestURL().toString();
-        String soapAction;
-        soapAction = httpRequest.getHeader("soapAction");
+        String soapAction =  httpRequest.getHeader("soapAction");
         if (soapAction == null) {
             if (url.indexOf("SoapRequest") > 0)
                 soapAction = "SoapRequest";
         }
-        Controller_log.info("PostHttpRequest: from \"" + ClientIpHelper.getClientIp(httpRequest) + "\" url= (" + url + ") soapAction:" + soapAction + " Real-IP:" + ClientIpHelper.getRealIP(httpRequest));
+        Controller_log.info("PostHttpRequest: from \"{}\" url= ({}) soapAction:{} Real-IP:{}", ClientIpHelper.getClientIp(httpRequest), url, soapAction, ClientIpHelper.getRealIP(httpRequest));
 
         String Url_Soap_Send = ClientIpHelper.findUrl_Soap_Send(url);
 
@@ -78,7 +77,7 @@ public class PostController {
                 MessageRepositoryHelper.look4MessageTypeVO_2_Interface(Url_Soap_Send, Controller_log);
 
         if (Interface_id < 0) {
-            Controller_log.error("look4MessageTypeVO_2_Interface('" + Url_Soap_Send + "') fault:  Интерфейс для обработки в системе не сконфигурирован");
+            Controller_log.error("look4MessageTypeVO_2_Interface('{}') fault:  Интерфейс для обработки в системе не сконфигурирован", Url_Soap_Send);
             postResponse.setStatus(404);
             String OutResponse;
             if (soapAction != null)
@@ -153,7 +152,7 @@ public class PostController {
                 } catch (IOException ioException) {
                     postResponse.setStatus(500);
                     ioException.printStackTrace(System.err);
-                    Controller_log.error("properties.load('" + ConfigExecute + "') fault:" + ioException.getMessage());
+                    Controller_log.error("properties.load('{}') fault:{}", ConfigExecute, ioException.getMessage());
                     String OutResponse;
                     if (soapAction != null)
                         OutResponse = Envelope_Begin + Empty_Header + Body_Begin + Fault_Client_Begin +
@@ -183,7 +182,7 @@ public class PostController {
         try (InputStreamReader reader = new InputStreamReader(inputStream, Charsets.toCharset(PropEncoding_In))// Charsets.UTF_8)
         ) {
             if ( isDebugged ) {
-                Controller_log.warn("Message.soapAction[" + soapAction + "]");
+                Controller_log.warn("Message.soapAction[{}]", soapAction);
             }
             if (soapAction != null)
                 Message.XML_MsgInput = CharStreams.toString(reader);
@@ -195,7 +194,7 @@ public class PostController {
                  */
                 Message.XML_MsgConfirmation.append(CharStreams.toString(reader));
                 if ( isDebugged ) {
-                    Controller_log.warn("Message.XML_MsgConfirmation.substring(0, 2)[" + Message.XML_MsgConfirmation.substring(0, 2) + "] Message.XML_MsgConfirmation.indexOf(\"?>\") =" + Message.XML_MsgConfirmation.indexOf("?>"));
+                    Controller_log.warn("Message.XML_MsgConfirmation.substring(0, 2)[{}] Message.XML_MsgConfirmation.indexOf(\"?>\") ={}", Message.XML_MsgConfirmation.substring(0, 2), Message.XML_MsgConfirmation.indexOf("?>"));
 
                 }
                 if (Message.XML_MsgConfirmation.substring(0, 2).equals("<?")) {
@@ -209,14 +208,14 @@ public class PostController {
                         + Body_noNS_End + Envelope_noNS_End
                 ;
                 if ( isDebugged )
-                    Controller_log.warn("Message.XML_MsgConfirmation.substring("+xmlVersionEncoding_pos + ") [" +  Message.XML_MsgConfirmation.substring(xmlVersionEncoding_pos) + "]");
+                    Controller_log.warn("Message.XML_MsgConfirmation.substring({}) [{}]", xmlVersionEncoding_pos, Message.XML_MsgConfirmation.substring(xmlVersionEncoding_pos));
                  }
             if ( isDebugged )
-            Controller_log.warn("InputStreamReader to Message.XML_MsgInput[" +  Message.XML_MsgInput + "]");
+            Controller_log.warn("InputStreamReader to Message.XML_MsgInput[`{}`]", Message.XML_MsgInput);
             inputStream.close();
         } catch (IOException ioException) {
             postResponse.setStatus(500);
-            Controller_log.error("CharStreams.toString(getInputStream) fault:" + ioException.getMessage());
+            Controller_log.error("CharStreams.toString(getInputStream) fault:{}", ioException.getMessage());
             if (soapAction != null) {
                 String OutResponse = Envelope_Begin + Empty_Header + Body_Begin + Fault_Client_Begin +
                         "CharStreams.toString(getInputStream) fault:" + ioException.getMessage() +
@@ -253,7 +252,7 @@ public class PostController {
                 if ( messageReceiveTask.theadDataAccess != null)
                 {
                     if (isDebugged) {
-                        Controller_log.warn("OutResponse:[" + OutResponse + "]" );
+                        Controller_log.warn("OutResponse:[{}]", OutResponse);
                         messageReceiveTask.theadDataAccess.doUPDATE_QUEUElog(Message.ROWID_QUEUElog, Message.Queue_Id, OutResponse, Controller_log);
                     }
                     try {
@@ -261,8 +260,7 @@ public class PostController {
                             messageReceiveTask.theadDataAccess.Hermes_Connection.close();
                         messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                     } catch (SQLException SQLe) {
-                        Controller_log.error(SQLe.getMessage());
-                        Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                        Controller_log.error("Hermes_Connection.close() fault: {}" , SQLe.getMessage());
                         SQLe.printStackTrace();
                     }
                 }
@@ -277,7 +275,7 @@ public class PostController {
                     byte[] OutResponse = Message.XML_MsgResponse.toString().getBytes(PropEncoding_Out);
                     Message.XML_MsgConfirmation.append(new String(OutResponse));
                     if (isDebugged)
-                        Controller_log.warn("XML_MsgResponse Encoding  (" + PropEncoding_Out + "):" + Message.XML_MsgConfirmation);
+                        Controller_log.warn("XML_MsgResponse Encoding  ({}):{}", PropEncoding_Out, Message.XML_MsgConfirmation);
                     if ( messageReceiveTask.theadDataAccess != null) {
                         if (isDebugged)
                             messageReceiveTask.theadDataAccess.doUPDATE_QUEUElog(Message.ROWID_QUEUElog, Message.Queue_Id, Message.XML_MsgResponse.toString(), Controller_log);
@@ -286,8 +284,7 @@ public class PostController {
                                 messageReceiveTask.theadDataAccess.Hermes_Connection.close();
                             messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                         } catch (SQLException SQLe) {
-                            Controller_log.error(SQLe.getMessage());
-                            Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                            Controller_log.error("Hermes_Connection.close() fault: {}" , SQLe.getMessage());
                             SQLe.printStackTrace();
                         }
                     }
@@ -297,7 +294,7 @@ public class PostController {
                 } catch (UnsupportedEncodingException e) {
                     System.err.println("[ XML_MsgResponse Encoding:" + PropEncoding_Out + "] UnsupportedEncodingException");
                     e.printStackTrace();
-                    Controller_log.error("XML_MsgResponse Encoding fault (" + PropEncoding_Out + ") UnsupportedEncodingException:" + e.getMessage());
+                    Controller_log.error("XML_MsgResponse Encoding fault (`{}`) UnsupportedEncodingException: {}", PropEncoding_Out,  e.getMessage());
                     String OutResponse = Fault_Server_noNS_Begin  + "XML_MsgResponse Encoding fault (" + PropEncoding_Out + ") UnsupportedEncodingException:" + e.getMessage() +
                                          Fault_noNS_End;
                     if ( messageReceiveTask.theadDataAccess != null)
@@ -309,12 +306,11 @@ public class PostController {
                                 messageReceiveTask.theadDataAccess.Hermes_Connection.close();
                             messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                         } catch (SQLException SQLe) {
-                            Controller_log.error(SQLe.getMessage());
-                            Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                            Controller_log.error("Hermes_Connection.close() fault:{}", SQLe.getMessage());
                             SQLe.printStackTrace();
                         }
                     }
-                    Controller_log.info("Post DataSourcePool " + DataSourcePoolMetadata.getActive());
+                    Controller_log.info("Post DataSourcePool Active size={}" , DataSourcePoolMetadata.getActive());
                     return OutResponse.getBytes();
                 }
             }
@@ -334,12 +330,11 @@ public class PostController {
                                 messageReceiveTask.theadDataAccess.Hermes_Connection.close();
                             messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                         } catch (SQLException SQLe) {
-                            Controller_log.error(SQLe.getMessage());
-                            Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                            Controller_log.error("Hermes_Connection.close() fault:{}", SQLe.getMessage());
                             SQLe.printStackTrace();
                         }
                     }
-                    Controller_log.info("Post DataSourcePool " + DataSourcePoolMetadata.getActive());
+                    Controller_log.info("Post DataSourcePool Active size={}" , DataSourcePoolMetadata.getActive());
                     return OutResponse.getBytes();
 
                 } else {
@@ -355,12 +350,11 @@ public class PostController {
                                 messageReceiveTask.theadDataAccess.Hermes_Connection.close();
                             messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                         } catch (SQLException SQLe) {
-                            Controller_log.error(SQLe.getMessage());
-                            Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                            Controller_log.error("Hermes_Connection.close() fault:{}", SQLe.getMessage());
                             SQLe.printStackTrace();
                         }
                     }
-                    Controller_log.info("Post DataSourcePool " + DataSourcePoolMetadata.getActive());
+                    Controller_log.info("Post DataSourcePool Active size={}" , DataSourcePoolMetadata.getActive());
                     return OutResponse.getBytes();
                 }
             } else {  // это ЛИРА или СИП или O2O : может быть использовано PropCustomFault_Server_Begin
@@ -378,8 +372,6 @@ public class PostController {
 
                 }
 
-
-
                 if ( messageReceiveTask.theadDataAccess != null) {
                     if (isDebugged)
                         messageReceiveTask.theadDataAccess.doUPDATE_QUEUElog(Message.ROWID_QUEUElog, Message.Queue_Id, OutResponse, Controller_log);
@@ -388,18 +380,17 @@ public class PostController {
                             messageReceiveTask.theadDataAccess.Hermes_Connection.close();
                         messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                     } catch (SQLException SQLe) {
-                        Controller_log.error(SQLe.getMessage());
-                        Controller_log.error("Hermes_Connection.close() fault:" + SQLe.getMessage());
+                        Controller_log.error("Hermes_Connection.close() fault:{}", SQLe.getMessage());
                         SQLe.printStackTrace();
                     }
                 }
-                Controller_log.info("Post DataSourcePool " + DataSourcePoolMetadata.getActive());
+                Controller_log.info("Post DataSourcePool Active size={}" , DataSourcePoolMetadata.getActive());
                 try  {
                 return OutResponse.getBytes(PropEncoding_Out);
             } catch (UnsupportedEncodingException e) {
                     System.err.println("[ XML_MsgResponse Encoding:" + PropEncoding_Out + "] UnsupportedEncodingException");
                     e.printStackTrace();
-                    Controller_log.error("XML_MsgResponse Encoding fault (" + PropEncoding_Out + ") UnsupportedEncodingException:" + e.getMessage());
+                    Controller_log.error("XML_MsgResponse Encoding fault ({}) UnsupportedEncodingException:{}", PropEncoding_Out, e.getMessage());
                     return OutResponse.getBytes();
                 }
             }
@@ -411,7 +402,7 @@ public class PostController {
                         messageReceiveTask.theadDataAccess.Hermes_Connection.close();
                         messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                 } catch (SQLException SQLe) {
-                    Controller_log.error("finally: Hermes_Connection.close() fault:" + SQLe.getMessage());
+                    Controller_log.error("finally: Hermes_Connection.close() fault:{}", SQLe.getMessage());
                     SQLe.printStackTrace();
 
                 }
@@ -432,6 +423,7 @@ public class PostController {
         HttpServletRequest httpRequest = (HttpServletRequest) postServletRequest;
 
         String url = httpRequest.getRequestURL().toString();
+        Controller_log.warn("PostHermesRestApi-> RemoteAddr: `{}` ,RemoteHost: `{}`", httpRequest.getRemoteAddr(), httpRequest.getRemoteHost());
         String OperationId = httpRequest.getHeader("BusOperationId");
         String BusOperationMesssageType=null;
         String queryString;
@@ -440,10 +432,10 @@ public class PostController {
         } catch (NullPointerException e) {
             queryString = httpRequest.getQueryString();
         }
-        Controller_log.warn("BusOperationId= " + OperationId );
+        Controller_log.warn("PostHermesRestApi-> BusOperationId= {}", OperationId);
         postResponse.setHeader("Access-Control-Allow-Origin", "*");
 
-        Controller_log.info("PostHermesRestApi: from \"" + ClientIpHelper.getClientIp(httpRequest) + "\" url= (" + url + ") BusOperationId:" + OperationId + " Real-IP:" + ClientIpHelper.getRealIP(httpRequest));
+        Controller_log.info("PostHermesRestApi: from \"{}\" url= ({}) BusOperationId:{} Real-IP:{}", ClientIpHelper.getClientIp(httpRequest), url, OperationId, ClientIpHelper.getRealIP(httpRequest));
         String HttpResponse= Fault_Client_Rest_Begin +
                 XML.escape(httpRequest.getMethod() + ": url= (" + url + ")") +
                 Fault_Rest_End;
@@ -501,7 +493,7 @@ public class PostController {
                 postResponse.setContentType("application/json;Charset=UTF-8");
                 return HttpResponse;
             }
-            Controller_log.warn("BusOperationMesssageType: [{}]", BusOperationMesssageType);
+            Controller_log.warn("BusOperationMessageType: [{}]", BusOperationMesssageType);
             // формируем НАСТОЯЩИЙ тип операции из полученнго от URL + в зависимости от  queryString
 
 //                if ( queryString == null) // Значит, в "InternalRestApi/"+ Url_Soap_Send +"/" может  быть ПК для зачитывания записи для GetOne

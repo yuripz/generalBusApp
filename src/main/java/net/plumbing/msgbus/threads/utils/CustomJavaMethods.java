@@ -23,9 +23,11 @@ import org.slf4j.Logger;
 import net.plumbing.msgbus.common.XMLchars;
 import net.plumbing.msgbus.init.ConfigMsgTemplates;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.Base64;
@@ -139,8 +141,80 @@ public class CustomJavaMethods {
 		return 0;
 	}
 
+    public static int GetRequest_TextLog4Message(MessageQueueVO messageQueueVO, MessageDetails messageDetails,
+                                                 boolean isDebugged, Logger MessegeReceive_Log) {
+        messageDetails.Message.clear();
+        messageDetails.MessageRowNum = 0;
+        messageDetails.Message_Tag_Num = 0;
+        messageDetails.MsgReason.setLength(0);
+        messageDetails.XML_MsgResponse.setLength(0);
+        XPathExpression<Element> xpathQueue_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/x_Queue_Id", Filters.element());
+        Element elmtQueue_Id = xpathQueue_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
+        if ( elmtQueue_Id== null) {
+            messageDetails.MsgReason.setLength(0);
+            messageDetails.MsgReason.append( "[").append( messageQueueVO.getQueue_Id() ).append(" ] В запросе GetRequest_TextLog4Message не найден параметр Parametrs/QueryString/Queue_Id");
+            MessegeReceive_Log.error("[{}] ] В запросе GetRequest_TextLog4Message не найден параметр Parametrs/QueryString/Queue_Id", messageQueueVO.getQueue_Id());
+            return -33;
+        }
+        String Queue_Id_Value= elmtQueue_Id.getText();
+        long Queue_Id_4_FindRequest;
+        try {
+            Queue_Id_4_FindRequest = Long.parseLong(Queue_Id_Value);
+            // ищем дату-время сообщения в таблице
+
+            //
+        } catch ( NumberFormatException e ) {
+            MessegeReceive_Log.warn("[{}] ] В запросе GetRequest_TextLog4Message параметр Parametrs/QueryString/Queue_Id =`{}` не может быть конвертирован в Long", messageQueueVO.getQueue_Id(), Queue_Id_Value);
+
+        }
+
+        int nn = 0;
+        Path loggingFilePath = Paths.get(ApplicationProperties.loggingFileName);
+        if ( isDebugged )
+            MessegeReceive_Log.info("[{}] GetRequest_TextLog4Message from {}, look for pattern ='{}'", messageQueueVO.getQueue_Id(), ApplicationProperties.loggingFileName, Queue_Id_Value);
+
+        // Проверяем, существует ли файл, чтобы избежать лишних ошибок
+        if (!Files.exists(loggingFilePath)) {
+            MessegeReceive_Log.warn("[{}] В запросе GetRequest_TextLog4Message файл лога {}, не найден по пути ='{}'", messageQueueVO.getQueue_Id(), ApplicationProperties.loggingFileName, loggingFilePath.toAbsolutePath());
+            messageDetails.MsgReason.setLength(0);
+            messageDetails.MsgReason.append( "[").append( messageQueueVO.getQueue_Id() )
+                    .append(" ] В запросе GetRequest_TextLog4Message файл лога не найден по пути: ").append(loggingFilePath.toAbsolutePath());
+            return -35;
+        }
+        File loggingFile = new File(ApplicationProperties.loggingFileName);
+        // Построчное чтение файла через буфер, память не перегружается
+        try (BufferedReader reader = new BufferedReader(new FileReader(loggingFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.contains(Queue_Id_Value)) {
+                    messageDetails.XML_MsgResponse.append(line).append(System.lineSeparator());
+                    nn++;
+                }
+            }
+            } catch (IOException e) {
+            MessegeReceive_Log.error("[{}] В запросе GetRequest_TextLog4Message проблема с чтением файла лога `{}`, '{}'", messageQueueVO.getQueue_Id(),
+                                        ApplicationProperties.loggingFileName, e.getMessage());
+            messageDetails.MsgReason.setLength(0);
+            messageDetails.MsgReason.append( "[").append( messageQueueVO.getQueue_Id() )
+                                                .append(" ] В запросе GetRequest_TextLog4Message проблема с чтением файла `")
+                                                .append(loggingFilePath.toAbsolutePath()).append("` :")
+                                                .append(e.getMessage());
+            return -36;
+        }
+        if (nn == 0) {
+            MessegeReceive_Log.warn("[{}] В запросе GetRequest_TextLog4Message проблема с поиском фрагмента `{}` в файле  '{}'", messageQueueVO.getQueue_Id(),
+                    Queue_Id_Value, loggingFilePath.toAbsolutePath());
+            messageDetails.XML_MsgResponse.setLength(0);
+            messageDetails.XML_MsgResponse.append( "[").append( messageQueueVO.getQueue_Id() )
+                    .append(" ] В запросе GetRequest_TextLog4Message проблема с поиском фрагмента `").append(Queue_Id_Value).append("` в файле `")
+                    .append(loggingFilePath.toAbsolutePath()).append("`");
+            return nn;
+        }
+        else return 0;
+
+    }
 	public static int GetRequest_Body4Message(MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-                                              TheadDataAccess theadDataAccess, Logger MessegeReceive_Log) {
+                                              TheadDataAccess theadDataAccess, boolean isDebugged, Logger MessegeReceive_Log) {
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
@@ -173,8 +247,8 @@ public class CustomJavaMethods {
 				"\t<ResponseCode>10</ResponseCode><ResponseMessage>106891449</ResponseMessage>\n" +
 				"</SaveGeoObjectResponse>" );
 		*/
-		boolean IsDebugged = false; //true;
-		int nn = MessageUtils.ReadMessage( theadDataAccess,  Queue_Id,  messageDetails, IsDebugged, MessegeReceive_Log);
+		//boolean IsDebugged = false; //true;
+		int nn = MessageUtils.ReadMessage( theadDataAccess,  Queue_Id,  messageDetails, isDebugged, MessegeReceive_Log);
 		if (nn >= 0) {
 			// -- без formatXml - в одну строку, некрасиво на Форнте
 
@@ -249,12 +323,12 @@ public class CustomJavaMethods {
 	}
 
 	public static int GetRequest4MessageQueueLog( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-													   TheadDataAccess theadDataAccess, String dbSchema, Logger MessegeReceive_Log) {
+													   TheadDataAccess theadDataAccess, String dbSchema, boolean isDebugged, Logger MessegeReceive_Log) {
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
 		messageDetails.MsgReason.setLength(0);
-		boolean isDebugged=true;
+		// boolean isDebugged=false;
 
 		XPathExpression<Element> xpathTemplate_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/x_RowId", Filters.element());
 		Element elmtRow_Id = xpathTemplate_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме
@@ -281,15 +355,14 @@ public class CustomJavaMethods {
 				messageDetails.XML_MsgClear.append( rs.getString("Request"));
 				//MessageQueueLogResponse = rs.getString("Request");
 				if ( isDebugged )
-					MessegeReceive_Log.info( "["+ messageQueueVO.getQueue_Id() +"] select Request from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "'");
+                    MessegeReceive_Log.info("[{}] select Request from {}.MESSAGE_QUEUElog where ROWID ='{}'", messageQueueVO.getQueue_Id(), dbSchema, QueueLog_RowId_Value);
 			}
 			rs.close();
 			stmt_SELECT_QUEUElog_Response.close();
 			stmt_SELECT_QUEUElog_Response = null;
 
 		}catch (SQLException e) {
-			MessegeReceive_Log.info( "["+ messageQueueVO.getQueue_Id() +"] select Request from " + dbSchema + ".MESSAGE_QUEUElog where ROWID ='" + QueueLog_RowId_Value + "'; fault {}",
-					e.getMessage() );
+            MessegeReceive_Log.info("[{}] select Request from {}.MESSAGE_QUEUElog where ROWID ='{}'; fault {}", messageQueueVO.getQueue_Id(), dbSchema, QueueLog_RowId_Value, e.getMessage());
 
 			e.printStackTrace();
 			if ( stmt_SELECT_QUEUElog_Response != null )
@@ -312,12 +385,12 @@ public class CustomJavaMethods {
 	}
 
 	public static int GetResponse4MessageQueueLog( MessageQueueVO messageQueueVO, MessageDetails messageDetails,
-												  TheadDataAccess theadDataAccess, String dbSchema, Logger MessegeReceive_Log) {
+												  TheadDataAccess theadDataAccess, String dbSchema, boolean isDebugged, Logger MessegeReceive_Log) {
 		messageDetails.Message.clear();
 		messageDetails.MessageRowNum = 0;
 		messageDetails.Message_Tag_Num = 0;
 		messageDetails.MsgReason.setLength(0);
-		boolean isDebugged=true;
+		//boolean isDebugged=false;
 
 		XPathExpression<Element> xpathTemplate_Id = XPathFactory.instance().compile("/Envelope/Body/Parametrs/x_RowId", Filters.element());
 		Element elmtRow_Id = xpathTemplate_Id.evaluateFirst(messageDetails.Input_Clear_XMLDocument); // формируется в XMLutils.makeMessageDetailsRestApi на приёме

@@ -14,6 +14,8 @@ public  class ApplicationProperties {
     public static String ExtSysPoint;
     public static String ExtSysDbLogin;
     public static String ExtSysDbPasswd;
+
+    public static String loggingFileName;
     // extSystemDataSource
     public static Long TotalTimeTasks;
     public static Integer WaitTimeBetweenScan;

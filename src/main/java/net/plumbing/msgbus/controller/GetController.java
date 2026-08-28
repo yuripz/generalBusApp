@@ -49,6 +49,7 @@ public class GetController  {
         String url = httpRequest.getRequestURL().toString();
         boolean is_TextJsonResponse;
         String queryString;
+        Controller_log.warn("GetHttpRequest-> RemoteAddr: `{}` ,RemoteHost: `{}`", getServletRequest.getRemoteAddr(), getServletRequest.getRemoteHost());
         try {
             queryString = URLDecoder.decode(httpRequest.getQueryString(), StandardCharsets.UTF_8);
         } catch (NullPointerException | IllegalArgumentException e) {
@@ -372,7 +373,7 @@ public class GetController  {
     public String GetHermesRestApi(ServletRequest getServletRequest, HttpServletResponse getResponse, Authentication httpRequestAuthentication, Principal httpRequestUserPrincipal) {
         //@PathVariable
         HttpServletRequest httpRequest = (HttpServletRequest) getServletRequest;
-        Controller_log.warn("GetHermesRestApi-> RemoteAddr: `" + getServletRequest.getRemoteAddr() + "` ,RemoteHost: `" + getServletRequest.getRemoteHost() + "`");
+        Controller_log.warn("GetHermesRestApi-> RemoteAddr: `{}` ,RemoteHost: `{}`", getServletRequest.getRemoteAddr(), getServletRequest.getRemoteHost());
         String url = httpRequest.getRequestURL().toString();
         String OperationId = httpRequest.getHeader("BusOperationId");
         String BusOperationMesssageType = null;
@@ -400,7 +401,7 @@ public class GetController  {
         // Controller_log.warn("BusOperationId= " + OperationId );
         getResponse.setHeader("Access-Control-Allow-Origin", "*");
         //Controller_log.warn("GetHermesRestApi : url= (" + url + ") queryString(" + queryString + ")");
-        Controller_log.warn("httpRequest.getMethod()" + httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")");
+        Controller_log.warn("GetHermesRestApi httpRequest.getMethod() {}: url= ({}) queryString({})", httpRequest.getMethod(), url, queryString );
         String HttpResponse= Fault_Client_Rest_Begin +
                 org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")") +
                 Fault_Rest_End;
@@ -418,7 +419,7 @@ public class GetController  {
 
         int  Interface_id =
                 MessageRepositoryHelper.look4MessageTypeVO_2_Interface(Url_Soap_Send, Controller_log);
-        Controller_log.warn("Interface_id={} by MessageRepositoryHelper.look4MessageTypeVO_2_Interface (`{}`)" , Interface_id, Url_Soap_Send );
+        Controller_log.warn("GetHermesRestApi Interface_id={} by MessageRepositoryHelper.look4MessageTypeVO_2_Interface (`{}`)" , Interface_id, Url_Soap_Send );
         if ( Interface_id < 0 )
         {   getResponse.setStatus(500);
             HttpResponse= Fault_Client_Rest_Begin +
@@ -427,7 +428,7 @@ public class GetController  {
                     // + httpRequest.getMethod() + ": url= (" + url + ") queryString(" + queryString + ")"
                     " в системе не сконфигурирован" +
                     Fault_Rest_End ;
-            Controller_log.warn("HttpResponse: `{}`" , HttpResponse);
+            Controller_log.warn("GetHermesRestApi HttpResponse: `{}`" , HttpResponse);
             getResponse.setContentType("application/json;Charset=UTF-8");
             return HttpResponse;
         }
@@ -446,64 +447,6 @@ public class GetController  {
                 return HttpResponse;
             }
             Controller_log.warn("try look4MessageTypeVO_by_MesssageType: [{}]", BusOperationMesssageType);
-            // формируем НАСТОЯЩИЙ тип операции из полученнго от URL + в зависимости от  queryString
-
-//                if ( queryString == null) // Значит, в "InternalRestApi/"+ Url_Soap_Send +"/" может  быть ПК для зачитывания записи для GetOne
-//                {
-//                    // проверяем, есть ли ПК для зачитывания записи
-//                    String EntityPK = ClientIpHelper.find_BusOperationMesssageType(url, "InternalRestApi/"+Url_Soap_Send+"/" + BusOperationMesssageType+"/" , Controller_log);
-//                    Controller_log.warn("EntityPK: [" + EntityPK +"]");
-//                    if (EntityPK != null ) { //  получен ПК для зачитывания записи
-//                        OperationId = MessageRepositoryHelper.look4MessageTypeVO_by_MesssageType(BusOperationMesssageType + "GetOne", Interface_id, Controller_log);
-//                        if (OperationId == null) {
-//                            HttpResponse = Fault_Client_Rest_Begin +
-//                                    "Ресурса нет на сервере: Орерация с типом " + BusOperationMesssageType + "GetOne" + " для обработки " +
-//                                    org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ")") +
-//                                    " в системе не сконфигурирована" +
-//                                    Fault_Rest_End;
-//                            Controller_log.warn("HttpResponse:" + HttpResponse);
-//                            getResponse.setContentType("application/json;Charset=UTF-8");
-//                            getResponse.setStatus(422);
-//                            return HttpResponse;
-//                        } else {
-//                            queryString = "Id=" + EntityPK;
-//                        }
-//                    }
-//                    else { // ПК для зачитывания записи в URL не прислали - значит готовим список всего без фильтров и сортировки
-//                        OperationId = MessageRepositoryHelper.look4MessageTypeVO_by_MesssageType(BusOperationMesssageType + "GetList", Interface_id, Controller_log);
-//                        if (OperationId == null) {
-//                            HttpResponse = Fault_Client_Rest_Begin +
-//                                    "Ресурса нет на сервере: Орерация с типом " + BusOperationMesssageType + "GetList" + " для обработки " +
-//                                    org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ")") +
-//                                    " в системе не сконфигурирована" +
-//                                    Fault_Rest_End;
-//                            Controller_log.warn("HttpResponse:" + HttpResponse);
-//                            getResponse.setContentType("application/json;Charset=UTF-8");
-//                            getResponse.setStatus(422);
-//                            return HttpResponse;
-//                        }
-//                        // формируем дефалтовую  queryString что бы не упасть на разборе параметров, которых нет
-//                        queryString = "page[number]=1&page[size]=100&sort=id";
-//                        // TODO: 01.11.2020   в дальнейшем можно /нужно это брать их типа операции, есть "свободное" под это поле URL_SOAP_SEND:
-//                    }
-//
-//                }
-//                else // считаем, что пригнали параметры для получения списка записей GetList
-//                {
-//                    OperationId = MessageRepositoryHelper.look4MessageTypeVO_by_MesssageType(BusOperationMesssageType + "GetList", Interface_id, Controller_log);
-//                    if (OperationId == null) {
-//                        HttpResponse = Fault_Client_Rest_Begin +
-//                                "Ресурса нет на сервере: Орерация с типом " + BusOperationMesssageType + "GetList" + " для обработки " +
-//                                org.apache.commons.text.StringEscapeUtils.escapeJson(httpRequest.getMethod() + ": url= (" + url + ")") +
-//                                " в системе не сконфигурирована" +
-//                                Fault_Rest_End;
-//                        Controller_log.warn("HttpResponse:" + HttpResponse);
-//                        getResponse.setContentType("application/json;Charset=UTF-8");
-//                        getResponse.setStatus(422);
-//                        return HttpResponse;
-//                    }
-//                    Controller_log.warn("Орерация с типом:" + BusOperationMesssageType + "GetList" + " NN=" + OperationId);
-//                }
 
             OperationId = MessageRepositoryHelper.look4MessageTypeVO_by_MesssageType(BusOperationMesssageType, Interface_id, Controller_log);
         }
@@ -636,7 +579,7 @@ public class GetController  {
                                 Controller_log.info("на интерфейсе прописан `REST-EXCEL` , надо сказать браузеру, что возвращаем MML-файл в Excel-формат");
                             HttpResponse = """
                                     <?xml version="1.0" encoding="UTF-8"?>
-                                    <?mso-application progid="Excel.Sheet"?>                                                                           
+                                    <?mso-application progid="Excel.Sheet"?>
                                     """
                                     + Message.XML_MsgResponse.toString();
                         }
@@ -817,13 +760,13 @@ public class GetController  {
     public String GetHttpRowRequest( ServletRequest getServletRequest, HttpServletResponse getResponse) {
         //@PathVariable
         HttpServletRequest httpRequest = (HttpServletRequest) getServletRequest;
-        Controller_log.warn("GetHttpRequest->RemoteAddr: \"" + getServletRequest.getRemoteAddr() + "\" ,RemoteHost: \"" + getServletRequest.getRemoteHost() + "\"" );
+        Controller_log.warn("GetHttpRequest->RemoteAddr: \"{}\" ,RemoteHost: \"{}\"", getServletRequest.getRemoteAddr(), getServletRequest.getRemoteHost());
         String url = httpRequest.getRequestURL().toString();
         boolean is_TextJsonResponse=true;
         String queryString;
         try {
-            queryString = URLDecoder.decode(httpRequest.getQueryString(), "UTF-8");
-        } catch (UnsupportedEncodingException | NullPointerException e) {
+            queryString = URLDecoder.decode(httpRequest.getQueryString(), StandardCharsets.UTF_8);
+        } catch (NullPointerException e) {
             queryString = httpRequest.getQueryString();
         }
         if ( url.indexOf("/HermesSOAPService/") > 0 )  is_TextJsonResponse=false;
@@ -940,7 +883,7 @@ public class GetController  {
                         messageReceiveTask.theadDataAccess.Hermes_Connection = null;
                     }
                 } catch (SQLException e) {
-                    Controller_log.error("Проблемы с закрытием theadDataAccess соединения " + e.getMessage());
+                    Controller_log.error("Проблемы с закрытием theadDataAccess соединения {}", e.getMessage());
                     e.printStackTrace();
                 }
                 if (Queue_ID == 0L) {

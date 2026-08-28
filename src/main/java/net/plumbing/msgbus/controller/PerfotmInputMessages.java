@@ -181,7 +181,7 @@ public class PerfotmInputMessages {
                                 break;
                                 //
                             case "GetRequest_Body4Message":
-                                resultSQL = CustomJavaMethods.GetRequest_Body4Message(  messageQueueVO, Message, theadDataAccess, MessegeReceive_Log);
+                                resultSQL = CustomJavaMethods.GetRequest_Body4Message(  messageQueueVO, Message, theadDataAccess, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
                                 break;
                             case "GetDBConfigEntry":
                                 resultSQL = CustomJavaMethods.GetDBConfigEntry(  messageQueueVO, Message, MessegeReceive_Log);
@@ -192,11 +192,11 @@ public class PerfotmInputMessages {
                                 break;
 
                             case "GetResponse4MessageQueueLog":
-                                resultSQL = CustomJavaMethods.GetResponse4MessageQueueLog( messageQueueVO, Message, theadDataAccess, ApplicationProperties.HrmsSchema, MessegeReceive_Log);
+                                resultSQL = CustomJavaMethods.GetResponse4MessageQueueLog( messageQueueVO, Message, theadDataAccess, ApplicationProperties.HrmsSchema, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
                                 break;
 
                             case "GetRequest4MessageQueueLog":
-                                resultSQL = CustomJavaMethods.GetRequest4MessageQueueLog( messageQueueVO, Message, theadDataAccess, ApplicationProperties.HrmsSchema, MessegeReceive_Log);
+                                resultSQL = CustomJavaMethods.GetRequest4MessageQueueLog( messageQueueVO, Message, theadDataAccess, ApplicationProperties.HrmsSchema, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
                                 break;
                             case "MessageTemplates_SaveConfig" :
                                 resultSQL = CustomJavaMethods.MessageTemplates_SaveConfig(  messageQueueVO, Message, theadDataAccess, ApplicationProperties.HrmsSchema, MessegeReceive_Log);
@@ -208,6 +208,10 @@ public class PerfotmInputMessages {
                             case "ReplaceConfirmation4MessageQueue":
                                 resultSQL = CustomJavaMethods.ReplaceConfirmation_4_MessageQueue(  messageQueueVO, Message, theadDataAccess, MessegeReceive_Log);
                                 break;
+
+                            case "GetRequest_TextLog4Message":
+                                resultSQL = CustomJavaMethods.GetRequest_TextLog4Message( messageQueueVO, Message,  Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
+                                break;
                             default:
                                 Message.MsgReason.append(" попытка вызова незарегистрированного в системе Java метода:` ");
                                 Message.MsgReason.append(JavaMethodName);
@@ -217,7 +221,7 @@ public class PerfotmInputMessages {
                         }
                         if (resultSQL != 0) {
 
-                            MessegeReceive_Log.error("[{}] Ошибка CustomJavaMethods:{}", Queue_Id, Message.MsgReason.toString());
+                            MessegeReceive_Log.error("[{}] Ошибка CustomJavaMethods:{}, {}", Queue_Id, resultSQL, Message.MsgReason.toString());
                             theadDataAccess.doUPDATE_MessageQueue_In2ErrorIN(Queue_Id,"Ошибка GetConfig_Text_Template: " + Message.MsgReason.toString(), 3232,
                                     MessegeReceive_Log);
                             return -33L;

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.core.env.Environment;
 
 import org.springframework.boot.CommandLineRunner;
 import jakarta.jms.JMSException; //javax.jms.JMSException;
@@ -51,9 +52,14 @@ public class ServletApplication implements CommandLineRunner {
     @Autowired
     public TelegramProperties telegramProperties;
 
-    public static final String ApplicationName="*Receiver_BUS* v.6.07.07SaX";
+    public static final String ApplicationName="*Receiver_BUS* v.6.08.02";
     public static String propJDBC;
     public static String propExtJDBC;
+    private final Environment ApplicationEnv;
+    // Spring автоматически внедрит Environment через этот единственный конструктор без @Autowired
+    public ServletApplication(Environment applicationEnv) {
+        this.ApplicationEnv = applicationEnv;
+    }
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ServletApplication.class, args);
@@ -66,8 +72,8 @@ public class ServletApplication implements CommandLineRunner {
         ApplicationContext context = new AnnotationConfigApplicationContext(Receiver_AppConfig.class);
         //Application myApplication = Application.create("SpringApplication").healthUrl("http://localhost:8005/actuator/health").serviceUrl("http://localhost:8005/instances").build();
         // ApplicationRegistrator myApplicationRegistrator = new ApplicationRegistrator();
-
-        AppThead_log.info("Hello for {} ", ApplicationName);
+        ApplicationProperties.loggingFileName = ApplicationEnv.getProperty("logging.file.name");
+        AppThead_log.info("Hello for {}, logging file is `{}` ", ApplicationName, ApplicationProperties.loggingFileName);
 
         NotifyByChannel.Telegram_setHttpProxyHost( telegramProperties.gethttpProxyHost() , AppThead_log );
         NotifyByChannel.Telegram_setHttpProxyPort( telegramProperties.gethttpProxyPort() , AppThead_log );
@@ -430,7 +436,7 @@ public class ServletApplication implements CommandLineRunner {
                     try {
                         activeMQService.MakeActiveMQConnectionFactory( ApplicationProperties.ConnectMsgBus );
                         activeMQService.StartJMSQueueConnection("ServletApplication.java: string no.123-362");
-                        AppThead_log.warn("Удалось пере-подключится к встренному брокеру сообщений ActiveMQ :" + ApplicationProperties.ConnectMsgBus );
+                        AppThead_log.warn("Удалось пере-подключится к встроенному брокеру сообщений ActiveMQ :" + ApplicationProperties.ConnectMsgBus );
                     } catch (JMSException e) {
                         AppThead_log.error("НЕ удалось подключится встренному  к брокеру сообщений ActiveMQ [" + ApplicationProperties.ConnectMsgBus + "] :" + e.getMessage());
                         System.err.println("НЕ удалось подключится к брокеру сообщений ActiveMQ:");
