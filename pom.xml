@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>net.plumbing.msgbus</groupId>
 	<artifactId>Receiver</artifactId>
-    <version>0.3.26.08.28</version>
+    <version>0.4.26.08.28</version>
     <name>Receiver</name>
     <description>servlet project for Spring Boot</description>
     <url>https://github.com/yuripz/generalBusApp</url>
