@@ -83,7 +83,7 @@ public class JMSReceiveTask  implements Runnable {
         try {
             localHostAddress = InetAddress.getLocalHost().getHostAddress() + "-" + Thread.currentThread().getId();
         } catch (java.net.UnknownHostException e) {
-            JMSReceiveTask_Log.warn("InetAddress.getLocalHost().getHostAddress(): " + e.getMessage());
+            JMSReceiveTask_Log.warn("InetAddress.getLocalHost().getHostAddress(): {}", e.getMessage());
             localHostAddress = "xxx-" + Thread.currentThread().getId();;
         }
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(brokerURL);
@@ -96,9 +96,15 @@ public class JMSReceiveTask  implements Runnable {
         connectionFactory.setDispatchAsync(false);
         connectionFactory.setCopyMessageOnSend(false);
         if (pUserName != null) connectionFactory.setUserName(pUserName);
-        else connectionFactory.setUserName("");
+        else {
+            connectionFactory.setUserName("");
+            JMSReceiveTask_Log.warn("Client JMS.Receiver.Q for brokerURL {} set Empty User Name!", brokerURL);
+        }
         if (pPassword != null) connectionFactory.setPassword(pPassword);
-        else connectionFactory.setPassword("");
+        else {
+            connectionFactory.setPassword("");
+            JMSReceiveTask_Log.warn("Client JMS.Receiver.Q for brokerURL {} set Empty User Password!", brokerURL);
+        }
 
         // Create a Connection Factory
 
