@@ -235,7 +235,6 @@ public class PostController {
         MessageReceiveTask messageReceiveTask = new MessageReceiveTask();// (MessageSendTask) context.getBean("MessageSendTask");
     try
     {
-// TODO ! isDebugged надо брать из PropDebug, но для этого у интерфейса должен быть шаблон
         //isDebugged = false; // для локальной отладки
     Long Queue_ID = messageReceiveTask.ProcessInputMessage(Interface_id, Message, MessageTemplateVOkey, isDebugged);
 

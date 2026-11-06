@@ -1,7 +1,7 @@
 package net.plumbing.msgbus.threads.utils;
 
 //import oracle.jdbc.OracleCallableStatement;
-import net.plumbing.msgbus.common.sStackTrace;
+//import net.plumbing.msgbus.common.sStackTrace;
 import net.plumbing.msgbus.model.MessageDetails4Send;
 import net.plumbing.msgbus.threads.TheadDataAccess;
 import oracle.jdbc.OracleResultSet;
@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static net.plumbing.msgbus.common.ClientIpHelper.toCamelCase;
+import static net.plumbing.msgbus.common.sStackTrace.strInterruptedException;
 import static net.plumbing.msgbus.threads.utils.MessageUtils.XML_CurrentConfirmation_Tags;
 import static net.plumbing.msgbus.threads.utils.MessageUtils.stripNonValidXMLCharacters;
 
@@ -54,8 +55,8 @@ public class XmlSQLStatement {
     private static final String  TagNamePSTMT      = "PSTMT";
     private static final String  TagNameParam      = "Param";
     private static final String  AttrNameParamNum  = "pnum";
-    private static final String  AttrNameParamType = "type";
-    private static final String  AttrNameParamDir  = "dir";
+    //private static final String  AttrNameParamType = "type";
+    //private static final String  AttrNameParamDir  = "dir";
 /*
     public static final String  TagNameResultSet  = "ResultSet";
     public static final String  TagNameResult     = "Result";
@@ -190,11 +191,11 @@ public class XmlSQLStatement {
 
                 if ( SQLcallableStatementExpression == null )
                 {
-                    messageDetails.MsgReason.append("ExecuteSQLincludedXML: Не нашли " + "/"+ TagNameHead+ "/"+ TagNameSQLStatement + "/" + TagNamePSTMT + " в результате XSLT прообразования " + Passed_Envelope4XSLTPost);
+                    messageDetails.MsgReason.append("ExecuteSQLincludedXML: Не нашли /"+ TagNameHead+ "/"+ TagNameSQLStatement + "/" + TagNamePSTMT + " в результате XSLT прообразования " + Passed_Envelope4XSLTPost);
                     MessegeSend_Log.error("[{}] {}", messageQueueVO.getQueue_Id(), messageDetails.MsgReason.toString());
                     return -2;
                 }
-/*************************************************************************
+/*//////////////////////////////////////////////////////////
                 String xpathSQLStatementParamExpression = "/"+ TagNameHead +"/"+ TagNameStatement + "/Param[2]"; ///SQLRequest/SQLStatement/Param[2]
                 Integer iMsgStaus = 1233;
 
@@ -209,7 +210,7 @@ public class XmlSQLStatement {
                     MessegeSend_Log.error(messageDetails.MsgReason.toString());
                     return -2;
                 }
-      /////////////////////////////**********************************************/
+      /////////////////////////////////////////////////////////*/
 
                 if (isDebugged) {
                     for ( int k =0; k < SQLparamValues.size(); k++ )
@@ -246,7 +247,7 @@ public class XmlSQLStatement {
 
                         } catch (SQLException e) {
                             e.printStackTrace();
-                            messageDetails.MsgReason.append( (", SQLException callableStatement.execute(`"+ messageQueueVO.getOutQueue_Id() + "`):=" + sStackTrace.strInterruptedException(e)) );
+                            messageDetails.MsgReason.append( (", SQLException callableStatement.execute(`"+ messageQueueVO.getOutQueue_Id() + "`):=" + strInterruptedException(e)) );
                             MessegeSend_Log.error("[{}] , SQLException callableStatement.execute(`{}`):= {}", messageQueueVO.getQueue_Id(), messageQueueVO.getQueue_Id(), e.getMessage());
                             //MessegeSend_Log.error(messageDetails.MsgReason.toString());
                             SQLWarning warning = callableStatement.getWarnings();
@@ -441,7 +442,7 @@ public class XmlSQLStatement {
 //----------------------------------------------------------------------------------------------------------------/
                             current_Connection_4_ExecuteSQL.commit();
                         } catch (SQLException e) {
-                            messageDetails.MsgReason.append(", [" + messageQueueVO.getOutQueue_Id() + "] SQLException refcursor callableStatement.execute(`"+  SQLcallableStatementExpression + "`):=" + sStackTrace.strInterruptedException(e) );
+                            messageDetails.MsgReason.append(", [" + messageQueueVO.getOutQueue_Id() + "] SQLException refcursor callableStatement.execute(`"+  SQLcallableStatementExpression + "`):=" + strInterruptedException(e) );
                             MessegeSend_Log.error("[{}] 445:`{}` {}", messageQueueVO.getQueue_Id(), SQLcallableStatementExpression, messageDetails.MsgReason.toString());
                             current_Connection_4_ExecuteSQL.rollback();
                             callableStatement.close();
@@ -565,7 +566,7 @@ public class XmlSQLStatement {
                         messageQueueVO.setQueue_Direction(XMLchars.DirectEXEIN);
                         current_Connection_4_ExecuteSQL.commit();
                     } catch (SQLException e) {
-                        messageDetails.MsgReason.append( OperTypeSel + " SQLException Hermes_Connection.prepareCall:=`"); messageDetails.MsgReason.append( SQLcallableStatementExpression); messageDetails.MsgReason.append("`"); messageDetails.MsgReason.append( sStackTrace.strInterruptedException(e) );
+                        messageDetails.MsgReason.append( OperTypeSel + " SQLException Hermes_Connection.prepareCall:=`"); messageDetails.MsgReason.append( SQLcallableStatementExpression); messageDetails.MsgReason.append("`"); messageDetails.MsgReason.append( strInterruptedException(e) );
                         current_Connection_4_ExecuteSQL.rollback();
                         MessegeSend_Log.error("[{}] {}",messageQueueVO.getQueue_Id(),messageDetails.MsgReason.toString());
                         return -2;
@@ -590,9 +591,10 @@ public class XmlSQLStatement {
 
                         messageDetails.MsgReason.append( OperTypeSel +  " SelectTotal SQLException Hermes_Connection.prepareCall(`");
                         messageDetails.MsgReason.append( StringEscapeUtils.escapeXml10(SelectTotalStatement)); messageDetails.MsgReason.append("`" );
-                        messageDetails.MsgReason.append( StringEscapeUtils.escapeXml10 ( sStackTrace.strInterruptedException(e)) );
+                        messageDetails.MsgReason.append( StringEscapeUtils.escapeXml10 ( strInterruptedException(e)) );
                         MessegeSend_Log.error("[" + messageQueueVO.getQueue_Id() + "] "+ messageDetails.MsgReason.toString());
-                            selectStatement.close();
+                            if ( selectStatement != null )
+                                { selectStatement.close(); }
                             current_Connection_4_ExecuteSQL.rollback();
                         return -2;
                     }
@@ -601,19 +603,19 @@ public class XmlSQLStatement {
             } catch (Exception ex) {
                 // ex.printStackTrace(System.err);
                 messageDetails.MsgReason.setLength(0);
-                messageDetails.MsgReason.append("ExecuteSQLincludedXML.XPathFactory.xpath.evaluateFirst fault: "); messageDetails.MsgReason.append( StringEscapeUtils.escapeXml10 ( sStackTrace.strInterruptedException(ex)) );
+                messageDetails.MsgReason.append("ExecuteSQLincludedXML.XPathFactory.xpath.evaluateFirst fault: "); messageDetails.MsgReason.append( StringEscapeUtils.escapeXml10 ( strInterruptedException(ex)) );
                 MessegeSend_Log.error("[{}] {}", messageQueueVO.getQueue_Id(), messageDetails.MsgReason.toString());
                 return -1;
             }
         }catch (JDOMException | IOException ex) {
             //ex.printStackTrace(System.err);
             messageDetails.MsgReason.setLength(0);
-            messageDetails.MsgReason.append("ExecuteSQLincludedXML.documentBuilder fault: "); messageDetails.MsgReason.append( StringEscapeUtils.escapeXml10 ( sStackTrace.strInterruptedException(ex)) );
+            messageDetails.MsgReason.append("ExecuteSQLincludedXML.documentBuilder fault: "); messageDetails.MsgReason.append( StringEscapeUtils.escapeXml10 ( strInterruptedException(ex)) );
             MessegeSend_Log.error("[{}] {}", messageQueueVO.getQueue_Id(), messageDetails.MsgReason.toString());
             return -4;
         }
 
-/******************** ПОТОМ
+/*//////////////////ПОТОМ
         try {
             theadDataAccess.stmtMsgQueueDet.setLong(1, messageQueueVO.getQueue_Id());
             ResultSet rs = theadDataAccess.stmtMsgQueueDet.executeQuery();
@@ -635,7 +637,7 @@ public class XmlSQLStatement {
             e.printStackTrace();
             return nn;
         }
-************************************************************/
+//////////////////////////////*/
         return nn;
     }
 
@@ -677,8 +679,8 @@ public class XmlSQLStatement {
             }
             rs.close();
         } catch (SQLException e) {
-            MessegeReceive_Log.error("Queue_Id=[" + Queue_Id + "] :" + sStackTrace.strInterruptedException(e));
-            System.err.println("Queue_Id=[" + Queue_Id + "] :" + sStackTrace.strInterruptedException(e));
+            MessegeReceive_Log.error("Queue_Id=[" + Queue_Id + "] :" + strInterruptedException(e));
+            System.err.println("Queue_Id=[" + Queue_Id + "] :" + strInterruptedException(e));
             return -2;
         }
         if ( messageDetails.ConfirmationRowNum > 0 )
@@ -817,7 +819,7 @@ public class XmlSQLStatement {
                         // COMMIT! ( Мало ли кто не закоммитил )
                         theadDataAccess.Hermes_Connection.commit();
                     } catch (SQLException e) {
-                        messageDetails.MsgReason.append(", SQLException callableStatement.execute():=" + e.toString());
+                        messageDetails.MsgReason.append(", SQLException callableStatement.execute():=").append(strInterruptedException(e));
                         MessegeSend_Log.error("[" + messageQueueVO.getQueue_Id() + " ] " + messageDetails.MsgReason.toString());
                         callableStatement.close();
                         theadDataAccess.Hermes_Connection.rollback();
@@ -836,7 +838,7 @@ public class XmlSQLStatement {
                     int count = callableStatement.getInt(1);
                     callableStatement.close();
                 } catch (SQLException e) {
-                    messageDetails.MsgReason.append("SQLExceptio Hermes_Connection.prepareCall:=" + e.toString());
+                    messageDetails.MsgReason.append("SQLExceptio Hermes_Connection.prepareCall:=").append(strInterruptedException(e));
                     MessegeSend_Log.error("[" + messageQueueVO.getQueue_Id() + " ] " + messageDetails.MsgReason.toString());
                     return -2;
                 }
@@ -844,17 +846,17 @@ public class XmlSQLStatement {
             } catch (Exception ex) {
                 ex.printStackTrace(System.err);
                 messageDetails.MsgReason.setLength(0);
-                messageDetails.MsgReason.append("ExecuteSQLincludedXML.XPathFactory.xpath.evaluateFirst fault: " + sStackTrace.strInterruptedException(ex));
+                messageDetails.MsgReason.append("ExecuteSQLincludedXML.XPathFactory.xpath.evaluateFirst fault: ").append(strInterruptedException(ex));
 
                 return -1;
             }
         }catch (JDOMException | IOException ex) {
             ex.printStackTrace(System.err);
             messageDetails.MsgReason.setLength(0);
-            messageDetails.MsgReason.append("ExecuteSQLincludedXML.documentBuilder fault: " + sStackTrace.strInterruptedException(ex));
+            messageDetails.MsgReason.append("ExecuteSQLincludedXML.documentBuilder fault: ").append(strInterruptedException(ex));
         }
 
-/******************** ПОТОМ
+/*/////////////////////////// ПОТОМ
  try {
  theadDataAccess.stmtMsgQueueDet.setLong(1, messageQueueVO.getQueue_Id());
  ResultSet rs = theadDataAccess.stmtMsgQueueDet.executeQuery();
@@ -876,7 +878,7 @@ public class XmlSQLStatement {
  e.printStackTrace();
  return nn;
  }
- ************************************************************/
+///////////////////////////////////////////////*/
         return nn;
     }
 }

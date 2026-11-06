@@ -210,7 +210,7 @@ public class PerfotmInputMessages {
                                 break;
 
                             case "GetRequest_TextLog4Message":
-                                resultSQL = CustomJavaMethods.GetRequest_TextLog4Message( messageQueueVO, Message,  Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
+                                resultSQL = CustomJavaMethods.GetRequest_TextLog4Message( messageQueueVO, Message, theadDataAccess, Message.MessageTemplate4Perform.getIsDebugged(), MessegeReceive_Log);
                                 break;
                             default:
                                 Message.MsgReason.append(" попытка вызова незарегистрированного в системе Java метода:` ");

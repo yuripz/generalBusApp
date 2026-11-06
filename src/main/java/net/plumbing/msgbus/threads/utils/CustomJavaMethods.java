@@ -2,6 +2,7 @@ package net.plumbing.msgbus.threads.utils;
 //import oracle.jdbc.OracleCallableStatement;
 import net.plumbing.msgbus.common.ApplicationProperties;
 import net.plumbing.msgbus.model.MessageDetails;
+import net.plumbing.msgbus.model.MessageDetails4Send;
 import net.plumbing.msgbus.model.MessageQueueVO;
 //import net.plumbing.msgbus.model.MessageTemplate;
 import net.plumbing.msgbus.model.MessageTemplateVO;
@@ -27,6 +28,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.stream.Stream;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
@@ -34,6 +37,8 @@ import java.util.Base64;
 import java.util.List;
 
 import com.github.underscore.U;
+
+import  net.plumbing.msgbus.threads.utils.MessageUtils;
 
 // import static net.plumbing.msgbus.common.ClientIpHelper.toCamelCase;
 //import static net.plumbing.msgbus.threads.utils.MessageUtils.stripNonValidXMLCharacters;
@@ -141,7 +146,7 @@ public class CustomJavaMethods {
 		return 0;
 	}
 
-    public static int GetRequest_TextLog4Message(MessageQueueVO messageQueueVO, MessageDetails messageDetails,
+    public static int GetRequest_TextLog4Message(MessageQueueVO messageQueueVO, MessageDetails messageDetails, TheadDataAccess theadDataAccess,
                                                  boolean isDebugged, Logger MessegeReceive_Log) {
         messageDetails.Message.clear();
         messageDetails.MessageRowNum = 0;
@@ -165,13 +170,42 @@ public class CustomJavaMethods {
             //
         } catch ( NumberFormatException e ) {
             MessegeReceive_Log.warn("[{}] ] В запросе GetRequest_TextLog4Message параметр Parametrs/QueryString/Queue_Id =`{}` не может быть конвертирован в Long", messageQueueVO.getQueue_Id(), Queue_Id_Value);
-
+            Queue_Id_4_FindRequest = 0L;
         }
 
         int nn = 0;
         Path loggingFilePath = Paths.get(ApplicationProperties.loggingFileName);
         if ( isDebugged )
             MessegeReceive_Log.info("[{}] GetRequest_TextLog4Message from {}, look for pattern ='{}'", messageQueueVO.getQueue_Id(), ApplicationProperties.loggingFileName, Queue_Id_Value);
+
+        // Получаем дату-время сообщения, если оно передано в параметрах
+        if (Queue_Id_4_FindRequest > 0L ) {
+            MessageQueueVO messageQueueVO4_FindRequest = new MessageQueueVO();
+            MessageUtils.readMessage_QueueVO(Queue_Id_4_FindRequest, messageQueueVO4_FindRequest, null, theadDataAccess, isDebugged,
+                    MessegeReceive_Log );
+            java.sql.Timestamp Queue_Date_4_FindRequest = messageQueueVO4_FindRequest.getQueue_Date();
+            if ( (Queue_Date_4_FindRequest ) !=null )
+            {
+                File currentDir = new File(".");
+                long timestampMillis = Queue_Date_4_FindRequest.getTime();
+
+                File foundFile = Arrays.stream(currentDir.listFiles())
+                        .filter(f -> f.isFile())
+                        .filter(f -> f.getName().matches(ApplicationProperties.loggingFileName + "\\..*\\.gz"))
+                        .filter(f -> f.lastModified() > timestampMillis)
+                        .min(Comparator.comparing(File::lastModified))
+                        .orElse(null);
+
+                if (foundFile != null) {
+                    System.out.println("Найден файл: " + foundFile.getName());
+                    System.out.println("Создан: " + new Date(foundFile.lastModified()));
+                } else {
+                    System.out.println("Подходящих файлов не найдено");
+                }
+
+            }
+        }
+
 
         // Проверяем, существует ли файл, чтобы избежать лишних ошибок
         if (!Files.exists(loggingFilePath)) {
