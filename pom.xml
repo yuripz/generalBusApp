@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.1.1</version>
+		<version>4.1.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>net.plumbing.msgbus</groupId>
 	<artifactId>Receiver</artifactId>
-    <version>0.4.26.11.06</version>
+    <version>0.4.26.11.09</version>
     <name>Receiver</name>
     <description>servlet project for Spring Boot</description>
     <url>https://github.com/yuripz/generalBusApp</url>
@@ -22,16 +22,35 @@
             <comments>use the software for any purpose, to distribute it, to modify it, and to distribute modified versions of the software</comments>
         </license>
     </licenses>
-    	<properties>
+    <properties>
 	    <java.version>21</java.version>
-            <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>tools.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>3.1.8</version>
+                <scope>compile</scope>
+            </dependency>
+            <!-- Source: https://mvnrepository.com/artifact/tools.jackson.core/jackson-databind -->
+            <dependency>
+                <groupId>tools.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>3.1.8</version>
+                <scope>compile</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>4.1.1</version>
+            <version>4.1.2</version>
             <exclusions>
                 <exclusion>
                     <artifactId>tomcat-embed-el</artifactId>
@@ -67,11 +86,22 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- Log4j2 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+            <version>4.1.2</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jetty</artifactId>
-            <version>4.1.1</version>
+            <version>4.1.2</version>
             <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
                 <exclusion>
                     <artifactId>tomcat-embed-el</artifactId>
                     <groupId>org.apache.tomcat.embed</groupId>
@@ -84,26 +114,27 @@
                     <artifactId>tomcat-embed-websocket</artifactId>
                     <groupId>org.apache.tomcat.embed</groupId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.eclipse.jetty.ee10.websocket</groupId>
-                    <artifactId>jetty-ee10-websocket-jakarta-server</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.eclipse.jetty.ee10.websocket</groupId>
-                    <artifactId>jetty-ee10-websocket-jetty-server</artifactId>
-                </exclusion>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty.ee11.websocket</groupId>
+                        <artifactId>jetty-ee11-websocket-jakarta-server</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty.ee11.websocket</groupId>
+                        <artifactId>jetty-ee11-websocket-jetty-server</artifactId>
+                    </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
-            <version>4.1.1</version>
+            <version>4.1.2</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+            <version>4.1.2</version>
         </dependency>
 
         <dependency>
@@ -262,26 +293,26 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.13</version>
+            <version>42.7.14</version>
         </dependency>
 
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc11</artifactId>
-            <version>23.4.0.24.05</version>
+            <artifactId>ojdbc17</artifactId>
+            <version>23.26.4.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.oracle.database.nls</groupId>
             <artifactId>orai18n</artifactId>
-            <version>23.4.0.24.05</version>
+            <version>23.26.4.0.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.facebook.presto/presto-jdbc -->
         <dependency>
             <groupId>com.facebook.presto</groupId>
             <artifactId>presto-jdbc</artifactId>
-            <version>0.289</version>
+            <version>0.299</version>
         </dependency>
 
     </dependencies>
@@ -321,7 +352,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>4.1.1</version>
+                <version>4.1.2</version>
                 <configuration>
                     <!--<executable>true</executable>-->
                     <includeSystemScope>true</includeSystemScope>
