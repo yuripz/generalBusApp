@@ -530,7 +530,7 @@ public class PerfotmInputMessages {
                         }
 
                         if (try_count == 0) {   //time4waitMessageReplyQueue = ApplicationProperties.ApiRestWaitTime/1000;
-                            try_count = ApplicationProperties.ApiRestWaitTime / (2 * 1000);
+                            try_count = ApplicationProperties.ApiRestWaitTime / (2 * 60 ); // (2 * 1000); ApiRestWaitTime в секундах!
                             if (try_count == 0) try_count = 1;
                         }
                         ///! try_count = 1;

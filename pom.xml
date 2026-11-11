@@ -42,6 +42,12 @@
                 <version>3.1.8</version>
                 <scope>compile</scope>
             </dependency>
+
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>activemq-pool</artifactId>
+                <version>5.19.12</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -82,7 +88,7 @@
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.activemq</groupId>
-                    <artifactId>aactivemq-jms-pool</artifactId>
+                    <artifactId>activemq-jms-pool</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -188,13 +194,13 @@
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-client-jakarta</artifactId>
-            <version>5.19.10</version>
+            <version>5.19.12</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-pool</artifactId>
-                    <version>5.19.10</version>
+                    <version>5.19.12</version>
                     <exclusions>
                         <exclusion>
                             <groupId>org.apache.activemq</groupId>
